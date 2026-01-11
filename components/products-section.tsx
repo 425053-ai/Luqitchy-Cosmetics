@@ -46,6 +46,22 @@ const products = [
     color: "from-pink-400 to-pink-600",
     accent: "bg-pink-400",
   },
+  {
+    id: "body-lotion-splash",
+    name: "Body Lotion + Splash Bundle",
+    description: "Luxury bundle with two delightful scents",
+    image: "/images/body-lotion-splash-bundle.jpeg",
+    color: "from-purple-600 to-pink-600",
+    accent: "bg-purple-500",
+  },
+  {
+    id: "lip-balm",
+    name: "LipBalm",
+    description: "Nourishing lip care with delicious flavor",
+    image: "/images/lip-balm.jpeg",
+    color: "from-rose-500 to-pink-500",
+    accent: "bg-rose-400",
+  },
 ]
 
 export function ProductsSection() {

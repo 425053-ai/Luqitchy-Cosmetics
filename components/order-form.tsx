@@ -1,48 +1,121 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
+import { useRouter } from "next/navigation"
+import emailjs from "emailjs-com"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { ShoppingBag, Sparkles, Check, Loader2 } from "lucide-react"
+import { ShoppingBag, Sparkles, Loader2 } from "lucide-react"
+
+emailjs.init("ktl_e7JluBPYFFjM4")
+
+interface Scent {
+  id: string
+  name: string
+  description: string
+}
 
 interface OrderFormProps {
   productName: string
   productPrice: string
+  scents?: Scent[]
 }
 
-export function OrderForm({ productName, productPrice }: OrderFormProps) {
+export function OrderForm({ productName, productPrice, scents }: OrderFormProps) {
   const [quantity, setQuantity] = useState(1)
+  const [selectedScent, setSelectedScent] = useState<string>(scents?.[0]?.id || "")
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isSubmitted, setIsSubmitted] = useState(false)
+  const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsSubmitting(true)
 
-    // Simulate form submission
-    await new Promise((resolve) => setTimeout(resolve, 1500))
+    try {
+      const formData = new FormData(e.currentTarget)
+      const name = formData.get("name") as string
+      const phone = formData.get("phone") as string
+      const email = formData.get("email") as string
+      const address = formData.get("address") as string
+      const notes = formData.get("notes") as string
+      const totalPrice = Number.parseInt(productPrice.replace(/[^0-9]/g, "")) * quantity
 
-    setIsSubmitting(false)
-    setIsSubmitted(true)
-  }
+      if (!email || email.trim() === "") {
+        throw new Error("Email address is required")
+      }
 
-  if (isSubmitted) {
-    return (
-      <div className="text-center py-8">
-        <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-          <Check className="w-10 h-10 text-green-600" />
-        </div>
-        <h3 className="font-serif text-2xl font-bold text-foreground mb-3">Order Received! 🎉</h3>
-        <p className="text-muted-foreground mb-2">
-          Thank you for ordering <span className="text-accent font-semibold">{productName}</span>
-        </p>
-        <p className="text-sm text-muted-foreground">We will contact you soon to confirm your order.</p>
-      </div>
-    )
+      const orderId = `ORD-${Date.now()}`
+      const scent = selectedScent ? scents?.find((s) => s.id === selectedScent)?.name : ""
+
+      const customerEmailParams = {
+        to_email: email,
+        from_name: "Luqitchy Cosmetics",
+        customer_name: name,
+        order_id: orderId,
+        product_name: productName,
+        quantity: quantity.toString(),
+        scent: scent || "N/A",
+        total_price: totalPrice.toString(),
+        phone: phone,
+        address: address,
+      }
+
+      const adminEmailParams = {
+        to_email: "luqitchycosmetics@gmail.com",
+        from_name: "Luqitchy Cosmetics",
+        order_id: orderId,
+        customer_name: name,
+        customer_email: email,
+        customer_phone: phone,
+        product_name: productName,
+        quantity: quantity.toString(),
+        scent: scent || "N/A",
+        total_price: totalPrice.toString(),
+        delivery_address: address,
+        special_notes: notes,
+      }
+
+      // Send customer confirmation email
+      await emailjs.send("service_cyg3pcs", "template_nq7ayum", customerEmailParams)
+
+      // Send admin notification email
+      await emailjs.send("service_cyg3pcs", "template_nn2n23j", adminEmailParams)
+
+      const whatsappMessage = `New Order Received! 🎉\n\nOrder ID: ${orderId}\nCustomer: ${name}\nPhone: ${phone}\nEmail: ${email}\nProduct: ${productName}\nScent: ${scent || "N/A"}\nQuantity: ${quantity}\nTotal: EGP ${totalPrice}\nAddress: ${address}\nNotes: ${notes || "None"}`
+
+      try {
+        await fetch("/api/send-whatsapp", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            message: whatsappMessage,
+            phone: "201012622315",
+            orderId,
+            customerName: name,
+            customerPhone: phone,
+            customerEmail: email,
+            productName,
+            quantity,
+            scent: scent || "N/A",
+            totalPrice,
+            address,
+            notes,
+          }),
+        })
+      } catch (error) {
+        console.error("WhatsApp notification failed, but order was processed:", error)
+      }
+
+      setIsSubmitting(false)
+      router.push("/order/confirmation")
+    } catch (error) {
+      console.error("Error processing order:", error)
+      setIsSubmitting(false)
+      alert("There was an error processing your order. Please try again.")
+    }
   }
 
   return (
@@ -87,6 +160,35 @@ export function OrderForm({ productName, productPrice }: OrderFormProps) {
         </div>
       </div>
 
+      {scents && scents.length > 0 && (
+        <div>
+          <Label className="text-foreground font-medium mb-3 block">
+            Select Scent <span className="text-accent">*</span>
+          </Label>
+          <div className="space-y-3">
+            {scents.map((scent) => (
+              <label
+                key={scent.id}
+                className="flex items-start gap-3 p-4 rounded-2xl border-2 border-border cursor-pointer hover:border-accent hover:bg-secondary/50 transition-all"
+              >
+                <input
+                  type="radio"
+                  name="scent"
+                  value={scent.id}
+                  checked={selectedScent === scent.id}
+                  onChange={(e) => setSelectedScent(e.target.value)}
+                  className="mt-1 w-4 h-4 cursor-pointer accent-accent"
+                />
+                <div className="flex-1">
+                  <div className="font-semibold text-foreground">{scent.name}</div>
+                  <div className="text-sm text-muted-foreground">{scent.description}</div>
+                </div>
+              </label>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Customer Info */}
       <div className="space-y-4">
         <div>
@@ -98,6 +200,20 @@ export function OrderForm({ productName, productPrice }: OrderFormProps) {
             name="name"
             required
             placeholder="Enter your full name"
+            className="mt-2 rounded-xl border-border focus:ring-accent"
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="email" className="text-foreground font-medium">
+            Email Address <span className="text-accent">*</span>
+          </Label>
+          <Input
+            id="email"
+            name="email"
+            type="email"
+            required
+            placeholder="Enter your email for order confirmation"
             className="mt-2 rounded-xl border-border focus:ring-accent"
           />
         </div>

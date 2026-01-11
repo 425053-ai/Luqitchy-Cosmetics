@@ -14,7 +14,7 @@ const products = [
     image: "/images/black-honey.jpeg",
     color: "from-amber-700 to-amber-900",
     accent: "bg-amber-600",
-    price: "EGP 150",
+    price: "EGP 100",
     features: ["Long-lasting formula", "Vitamin E enriched", "Non-sticky texture", "Buildable coverage"],
   },
   {
@@ -26,7 +26,7 @@ const products = [
     image: "/images/burgundy.jpeg",
     color: "from-red-800 to-red-950",
     accent: "bg-red-800",
-    price: "EGP 150",
+    price: "EGP 100",
     features: ["Intense pigmentation", "Hydrating formula", "Smooth application", "All-day wear"],
   },
   {
@@ -38,7 +38,7 @@ const products = [
     image: "/images/wine.jpeg",
     color: "from-red-600 to-red-800",
     accent: "bg-red-600",
-    price: "EGP 150",
+    price: "EGP 100",
     features: ["High-shine finish", "Moisturizing blend", "Fade-resistant", "Comfortable wear"],
   },
   {
@@ -50,7 +50,7 @@ const products = [
     image: "/images/mocha.jpeg",
     color: "from-amber-800 to-amber-950",
     accent: "bg-amber-800",
-    price: "EGP 150",
+    price: "EGP 100",
     features: ["Universal shade", "Nourishing oils", "Subtle shimmer", "Lightweight feel"],
   },
   {
@@ -62,8 +62,44 @@ const products = [
     image: "/images/strawberry-milk.jpeg",
     color: "from-pink-400 to-pink-600",
     accent: "bg-pink-400",
-    price: "EGP 150",
+    price: "EGP 100",
     features: ["Delicious scent", "Plumping effect", "Sheer to full coverage", "Refreshing formula"],
+  },
+  {
+    id: "body-lotion-splash",
+    name: "Body Lotion + Splash Bundle",
+    description: "Luxurious bundle combining nourishing body lotion with refreshing splash fragrances.",
+    longDescription:
+      "Experience the ultimate pampering with our Body Lotion + Splash Bundle. Choose between two enchanting scents - Mulberry for a sweet, sophisticated aroma, or Sugar Drop for a playful, sugary delight. Each bundle includes premium body lotion and coordinating splash fragrance to keep you feeling fresh and fabulous all day.",
+    image: "/images/body-lotion-splash-bundle.jpeg",
+    color: "from-purple-600 to-pink-600",
+    accent: "bg-purple-500",
+    price: "EGP 300",
+    features: ["Nourishing formula", "Two scent options", "Long-lasting fragrance", "Premium packaging"],
+    scents: [
+      {
+        id: "mulberry",
+        name: "Mulberry",
+        description: "Sweet, sophisticated berry scent with floral notes",
+      },
+      {
+        id: "sugar-drop",
+        name: "Sugar Drop",
+        description: "Playful, sugary fragrance with vanilla undertones",
+      },
+    ],
+  },
+  {
+    id: "lip-balm",
+    name: "LipBalm",
+    description: "Nourishing lip care with delicious flavor and moisturizing ingredients.",
+    longDescription:
+      "Keep your lips soft, smooth, and moisturized with our nourishing LipBalm. Enriched with natural oils and vitamins, this silky formula provides long-lasting hydration while leaving a subtle shine. Perfect for everyday wear or as a base for lipstick.",
+    image: "/images/lip-balm.jpeg",
+    color: "from-rose-500 to-pink-500",
+    accent: "bg-rose-400",
+    price: "EGP 100",
+    features: ["Moisturizing formula", "Natural ingredients", "Subtle shine", "Portable size"],
   },
 ]
 
@@ -194,7 +230,7 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
                 Place Your Order
                 <span className="animate-heartbeat">💖</span>
               </h2>
-              <OrderForm productName={product.name} productPrice={product.price} />
+              <OrderForm productName={product.name} productPrice={product.price} scents={product.scents} />
             </div>
           </div>
         </div>
