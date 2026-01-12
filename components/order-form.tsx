@@ -1,6 +1,5 @@
 "use client"
 
-import type React from "react"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import emailjs from "emailjs-com"
@@ -8,7 +7,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { ShoppingBag, Sparkles, Loader2 } from "lucide-react"
 
 emailjs.init("ktl_e7JluBPYFFjM4")
 
@@ -56,9 +54,9 @@ export function OrderForm({ productName, productPrice, scents }: OrderFormProps)
           ? scents.find((s) => s.id === selectedScent)?.name
           : "N/A"
 
-      // ✅ CUSTOMER EMAIL
+      // Customer email
       await emailjs.send("service_cyg3pcs", "template_nq7ayum", {
-        email, // ✅ REQUIRED BY EMAILJS
+        email,
         customer_name: name,
         order_id: orderId,
         product_name: productName,
@@ -69,9 +67,9 @@ export function OrderForm({ productName, productPrice, scents }: OrderFormProps)
         address,
       })
 
-      // ✅ ADMIN EMAIL
+      // Admin email
       await emailjs.send("service_cyg3pcs", "template_nn2n23j", {
-        email: "luqitchycosmetics@gmail.com", // ✅ REQUIRED
+        email: "luqitchycosmetics@gmail.com",
         customer_name: name,
         customer_email: email,
         customer_phone: phone,
@@ -84,7 +82,7 @@ export function OrderForm({ productName, productPrice, scents }: OrderFormProps)
         order_id: orderId,
       })
 
-      router.push("/order/confirmation")
+      router.push(`/order/confirmation?order_id=${orderId}`)
     } catch (error) {
       console.error("Error processing order:", error)
       alert("Order failed. Please try again.")
