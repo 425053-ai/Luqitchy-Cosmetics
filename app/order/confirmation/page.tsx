@@ -1,18 +1,19 @@
 'use client';
 
-import { useSearchParams } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function OrderConfirmationPage() {
-  const searchParams = useSearchParams()
-  const [orderId, setOrderId] = useState<string | null>(null)
+  const searchParams = useSearchParams();
+  const [orderId, setOrderId] = useState<string | null>(null);
 
   useEffect(() => {
-    const id = searchParams.get("order_id") || `ORD-${Date.now()}`
-    setOrderId(id)
-  }, [searchParams])
+    // احصل على order_id فقط بعد ما الصفحة تتعمل client render
+    const id = searchParams?.get("order_id") || `ORD-${Date.now()}`;
+    setOrderId(id);
+  }, []); // خلي الـ dependency array فاضية
 
-  if (!orderId) return <div>Loading...</div>
+  if (!orderId) return <div>Loading...</div>;
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen text-center p-4">
@@ -20,5 +21,5 @@ export default function OrderConfirmationPage() {
       <p className="text-lg">Thank you for your order!</p>
       <p className="mt-2 text-blue-600 font-medium">Your Order ID: {orderId}</p>
     </div>
-  )
+  );
 }
