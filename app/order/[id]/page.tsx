@@ -1,11 +1,8 @@
-"use client"
-
 import { notFound } from "next/navigation"
 import Image from "next/image"
 import Link from "next/link"
 import { OrderForm } from "@/components/order-form"
 import { ArrowLeft, Sparkles, Star, Shield, Truck, Heart } from "lucide-react"
-import { useState } from "react"
 
 const products = [
   {
@@ -71,25 +68,25 @@ const products = [
   {
     id: "body-lotion-splash",
     name: "Body Lotion + Splash Bundle",
-    description: "Luxurious bundle combining nourishing body lotion with refreshing splash fragrances.",
-    longDescription:
-      "Experience the ultimate pampering with our Body Lotion + Splash Bundle. Choose between two enchanting scents - Mulberry for a sweet, sophisticated aroma, or Sugar Drop for a playful, sugary delight. Each bundle includes premium body lotion and coordinating splash fragrance to keep you feeling fresh and fabulous all day.",
-    image: "/images/body-lotion-splash-bundle.jpeg",
+    description: "",
+    longDescription: "",
+    image: "",
     color: "from-purple-600 to-pink-600",
     accent: "bg-purple-500",
     price: "EGP 300",
-    features: ["Nourishing formula", "Two scent options", "Long-lasting fragrance", "Premium packaging"],
+    features: ["Hydrating lotion", "Beautifully packaged", "Refreshing splash", "Great as a gift"],
     scents: [
       {
         id: "mulberry",
-        name: "MULBERRY",
-        description: "Rich, fruity-floral fragrance with deep berry notes and soft floral undertones.",
+        name: "Mulberry",
+        description:
+          "Rich, fruity-floral fragrance with deep berry notes and soft floral undertones.",
         image: "/images/body-lotion-splash-mulberry.jpeg",
       },
       {
-        id: "sugardrop",
-        name: "SUGARDROP",
-        description: "A light, sweet candy-like scent - airy, playful, and uplifting.",
+        id: "sugar-drop",
+        name: "Sugar Drop",
+        description: "Light, sweet candy-like scent - airy, playful, and uplifting.",
         image: "/images/body-lotion-splash-sugardrop.jpeg",
       },
     ],
@@ -114,27 +111,16 @@ export async function generateStaticParams() {
   }))
 }
 
-export default async function OrderPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params
+export default function OrderPage({ params }: { params: { id: string } }) {
+  const { id } = params
   const product = products.find((p) => p.id === id)
 
   if (!product) {
     notFound()
   }
 
-  // State فقط للمنتج body-lotion-splash
-  const [selectedScent, setSelectedScent] = useState(
-    product.id === "body-lotion-splash" ? product.scents[0] : undefined
-  )
-
-  const displayImage =
-    product.id === "body-lotion-splash" && selectedScent ? selectedScent.image : product.image
-  const displayDescription =
-    product.id === "body-lotion-splash" && selectedScent ? selectedScent.description : product.longDescription
-  const displayName =
-    product.id === "body-lotion-splash" && selectedScent
-      ? `${product.name} - ${selectedScent.name}`
-      : product.name
+  // For Body Lotion + Splash, default to first scent
+  let selectedScent = product.scents?.[0] || null
 
   return (
     <main className="min-h-screen bg-background">
@@ -170,7 +156,6 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
             <div
               className={`absolute inset-0 bg-gradient-to-br ${product.color} opacity-20 blur-3xl rounded-full transform scale-90`}
             />
-
             <div
               className="relative aspect-[3/4] rounded-3xl overflow-hidden shadow-2xl shadow-primary/30 animate-float-slow"
               style={{
@@ -178,22 +163,15 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
               }}
             >
               <Image
-                src={displayImage || "/placeholder.svg"}
-                alt={displayName}
+                src={selectedScent?.image || product.image || "/placeholder.svg"}
+                alt={product.name}
                 fill
                 className="object-cover"
                 priority
               />
-
-              {/* Floating decorations */}
               <span className="absolute -top-4 -right-4 text-4xl animate-sparkle">✨</span>
               <span className="absolute -bottom-2 -left-4 text-3xl animate-heartbeat">💖</span>
               <span className="absolute top-1/4 -right-6 text-2xl animate-float">🎀</span>
-            </div>
-
-            <div className="absolute bottom-8 left-8 bg-card/95 backdrop-blur-sm px-6 py-3 rounded-full border border-primary/30 shadow-lg flex items-center gap-3">
-              <div className={`w-8 h-8 rounded-full ${product.accent} ring-2 ring-white shadow-md`} />
-              <span className="font-semibold text-foreground">{product.name}</span>
             </div>
           </div>
 
@@ -206,14 +184,18 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
               </div>
 
               <h1 className="font-serif text-4xl md:text-5xl font-bold text-foreground mb-4">
-                {displayName}
+                {product.name}
+                {selectedScent && <> - {selectedScent.name}</>}
                 <span className="ml-3 text-3xl animate-sparkle">✨</span>
               </h1>
 
-              <p className="text-xl text-muted-foreground mb-6 leading-relaxed">{displayDescription}</p>
+              <p className="text-xl text-muted-foreground mb-6 leading-relaxed">
+                {selectedScent?.description || product.longDescription || product.description}
+              </p>
 
               <div className="text-3xl font-bold text-accent mb-8">{product.price}</div>
 
+              {/* Features */}
               <div className="grid grid-cols-2 gap-4 mb-8">
                 {product.features.map((feature, index) => (
                   <div key={index} className="flex items-center gap-2 text-muted-foreground">
@@ -240,37 +222,13 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
               </div>
             </div>
 
-            {/* Scent Selector for Body Lotion + Splash */}
-            {product.id === "body-lotion-splash" && selectedScent && (
-              <div className="mb-6">
-                <h2 className="font-semibold text-lg mb-2">Choose Type</h2>
-                <div className="flex gap-4">
-                  {product.scents.map((scent) => (
-                    <button
-                      key={scent.id}
-                      onClick={() => setSelectedScent(scent)}
-                      className={`px-4 py-2 rounded-xl border ${
-                        selectedScent.id === scent.id ? "border-accent bg-accent/20" : "border-border"
-                      }`}
-                    >
-                      {scent.name}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
             {/* Order Form */}
             <div className="bg-card rounded-3xl border border-border p-6 md:p-8 shadow-lg shadow-primary/10">
               <h2 className="font-serif text-2xl font-bold text-foreground mb-6 flex items-center gap-2">
                 Place Your Order
                 <span className="animate-heartbeat">💖</span>
               </h2>
-              <OrderForm
-                productName={displayName}
-                productPrice={product.price}
-                scents={product.id === "body-lotion-splash" ? product.scents : undefined}
-              />
+              <OrderForm productName={product.name} productPrice={product.price} scents={product.scents} />
             </div>
           </div>
         </div>
