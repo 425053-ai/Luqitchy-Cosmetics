@@ -1,70 +1,24 @@
 "use client"
 
-import Link from "next/link"
 import { useSearchParams } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { CheckCircle, Mail, MessageCircle, ArrowRight } from "lucide-react"
+import { useEffect, useState } from "react"
 
-export default function ConfirmationPage() {
+export default function OrderConfirmationPage() {
   const searchParams = useSearchParams()
-  const orderId = searchParams.get("order_id") || `ORD-${Date.now()}`
+  const [orderId, setOrderId] = useState<string | null>(null)
+
+  useEffect(() => {
+    const id = searchParams.get("order_id") || `ORD-${Date.now()}`
+    setOrderId(id)
+  }, [searchParams])
+
+  if (!orderId) return <div>Loading...</div>
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-background via-secondary/30 to-background flex items-center justify-center px-4 py-8">
-      <div className="w-full max-w-2xl relative">
-        <div className="relative bg-card rounded-3xl border-2 border-primary/30 p-8 md:p-12 shadow-2xl shadow-primary/20 backdrop-blur-sm">
-          <div className="flex justify-center mb-8">
-            <div className="relative">
-              <div className="absolute inset-0 bg-accent/20 blur-xl rounded-full w-32 h-32 animate-pulse" />
-              <div className="relative w-32 h-32 bg-gradient-to-br from-green-400 to-accent rounded-full flex items-center justify-center animate-bounce">
-                <CheckCircle className="w-16 h-16 text-white" />
-              </div>
-            </div>
-          </div>
-
-          <h1 className="text-4xl md:text-5xl font-serif font-bold text-center text-foreground mb-4">
-            Thank You! 🎉
-          </h1>
-
-          <p className="text-xl text-center text-muted-foreground mb-8 leading-relaxed">
-            Your order has been received and is being processed with love.
-          </p>
-
-          <div className="bg-secondary/50 rounded-2xl p-6 mb-8 border border-border">
-            <h2 className="font-serif text-xl font-bold text-foreground mb-6 flex items-center gap-2">📋 Order Details</h2>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center pb-4 border-b border-border/50">
-                <span className="text-muted-foreground">Order ID:</span>
-                <span className="font-mono font-bold text-accent">{orderId}</span>
-              </div>
-              <div className="flex justify-between items-center pb-4 border-b border-border/50">
-                <span className="text-muted-foreground">Status:</span>
-                <span className="inline-flex items-center gap-2 bg-green-100/20 text-green-600 px-4 py-1 rounded-full text-sm font-semibold">
-                  <span className="w-2 h-2 bg-green-600 rounded-full animate-pulse" />
-                  Processing
-                </span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-muted-foreground">Confirmation Sent:</span>
-                <span className="text-foreground font-medium">✓ Check your email</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/#products" className="flex-1">
-              <Button className="w-full bg-accent hover:bg-accent/90 text-accent-foreground rounded-full py-6 font-semibold shadow-lg shadow-accent/30 hover:shadow-xl hover:shadow-accent/40 transition-all duration-300 hover:scale-[1.02]">
-                Continue Shopping <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            </Link>
-            <Link href="/" className="flex-1">
-              <Button variant="outline" className="w-full rounded-full py-6 font-semibold border-2 border-primary/30 hover:border-primary/60 transition-colors duration-300 bg-transparent">
-                Back to Home
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </div>
-    </main>
+    <div className="flex flex-col items-center justify-center min-h-screen text-center p-4">
+      <h1 className="text-3xl font-bold mb-4">Order Confirmation</h1>
+      <p className="text-lg">Thank you for your order!</p>
+      <p className="mt-2 text-blue-600 font-medium">Your Order ID: {orderId}</p>
+    </div>
   )
 }
