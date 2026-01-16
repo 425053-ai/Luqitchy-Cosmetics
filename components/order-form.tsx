@@ -1,176 +1,173 @@
 "use client"
 
-import type React from "react"
-
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import emailjs from "@emailjs/browser"
+import Image from "next/image"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
+import { ShoppingBag, Sparkles } from "lucide-react"
 
-emailjs.init({
-  publicKey: "ktl_e7JluBPYFFjM4",
-  blockHeadless: false,
-  limitRate: {
-    id: "app",
-    throttle: 50,
+const products = [
+  {
+    id: "black-honey",
+    name: "Black Honey",
+    description: "A rich, warm honey-brown with golden shimmer",
+    image: "/images/black-honey.jpeg",
+    color: "from-amber-700 to-amber-900",
+    accent: "bg-amber-600",
   },
-})
+  {
+    id: "burgundy",
+    name: "Burgundy",
+    description: "A deep, luxurious berry red with cherry undertones",
+    image: "/images/burgundy.jpeg",
+    color: "from-red-800 to-red-950",
+    accent: "bg-red-800",
+  },
+  {
+    id: "wine",
+    name: "Wine",
+    description: "An elegant wine-inspired red with a glossy finish",
+    image: "/images/wine.jpeg",
+    color: "from-red-600 to-red-800",
+    accent: "bg-red-600",
+  },
+  {
+    id: "mocha",
+    name: "Mocha",
+    description: "A creamy coffee-inspired nude with warm undertones",
+    image: "/images/mocha.jpeg",
+    color: "from-amber-800 to-amber-950",
+    accent: "bg-amber-800",
+  },
+  {
+    id: "strawberry-milk",
+    name: "Strawberry Milk",
+    description: "A sweet, playful pink with creamy shimmer",
+    image: "/images/strawberry-milk.jpeg",
+    color: "from-pink-400 to-pink-600",
+    accent: "bg-pink-400",
+  },
+  {
+    id: "body-lotion-splash",
+    name: "Body Lotion + Splash Bundle",
+    description: "Luxury bundle with delightful scents",
+    image: "/images/body-lotion-splash-bundle.jpeg",
+    color: "from-purple-600 to-pink-600",
+    accent: "bg-purple-500",
+  },
+  {
+    id: "lip-balm",
+    name: "LipBalm",
+    description: "Nourishing lip care with delicious flavor",
+    image: "/images/lip-balm.jpeg",
+    color: "from-rose-500 to-pink-500",
+    accent: "bg-rose-400",
+  },
+]
 
-interface Scent {
-  id: string
-  name: string
-  description: string
-}
-
-interface OrderFormProps {
-  productName: string
-  productPrice: string
-  scents?: Scent[]
-}
-
-export function OrderForm({ productName, productPrice, scents }: OrderFormProps) {
-  const [quantity, setQuantity] = useState(1)
-  const [selectedScent, setSelectedScent] = useState<string>(scents?.[0]?.id || "")
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const router = useRouter()
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    setIsSubmitting(true)
-
-    try {
-      const formData = new FormData(e.currentTarget)
-
-      const name = String(formData.get("name") || "").trim()
-      const phone = String(formData.get("phone") || "").trim()
-      const email = String(formData.get("email") || "").trim()
-      const address = String(formData.get("address") || "").trim()
-      const notes = String(formData.get("notes") || "").trim()
-
-      console.log("[v0] Form submission - Validating fields:", { name, email, phone, address })
-
-      if (!name || !email || !phone || !address) {
-        throw new Error("Please fill in all required fields (Name, Email, Phone, Address)")
-      }
-
-      if (!email.includes("@")) {
-        throw new Error("Please enter a valid email address")
-      }
-
-      const totalPrice = Number.parseInt(productPrice.replace(/[^0-9]/g, "")) * quantity
-
-      const orderId = `ORD-${Date.now()}`
-      const scentName = selectedScent && scents ? scents.find((s) => s.id === selectedScent)?.name : "Standard"
-
-      console.log("[v0] Attempting to send emails with:", { email, name, totalPrice })
-
-      await emailjs.send("service_cyg3pcs", "template_nq7ayum", {
-        to_email: email,
-        customer_name: name,
-        order_id: orderId,
-        product_name: productName,
-        quantity: quantity.toString(),
-        scent: scentName || "Standard",
-        total_price: totalPrice.toString(),
-        phone: phone,
-        address: address,
-        notes: notes || "No special notes",
-      })
-
-      console.log("[v0] Customer email sent successfully to:", email)
-
-      await emailjs.send("service_cyg3pcs", "template_nn2n23j", {
-        to_email: "luqitchycosmetics@gmail.com",
-        customer_name: name,
-        customer_email: email,
-        customer_phone: phone,
-        product_name: productName,
-        quantity: quantity.toString(),
-        scent: scentName || "Standard",
-        total_price: totalPrice.toString(),
-        delivery_address: address,
-        special_notes: notes || "No special notes",
-        order_id: orderId,
-      })
-
-      console.log("[v0] Admin email sent successfully")
-
-      router.push(`/order/confirmation?order_id=${orderId}`)
-    } catch (error: any) {
-      console.error("[v0] Error processing order:", error.message)
-      alert(`Error: ${error.message || "Order processing failed. Please try again."}`)
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
-
+export function ProductsSection() {
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="space-y-2">
-        <Label htmlFor="name">Full Name</Label>
-        <Input
-          id="name"
-          name="name"
-          placeholder="Enter your full name"
-          required
-          className="focus-visible:ring-accent"
-        />
-      </div>
+    <section
+      id="products"
+      className="py-20 md:py-32 bg-gradient-to-b from-secondary/50 via-background to-secondary/30 relative overflow-hidden"
+      aria-labelledby="products-heading"
+    >
+      <div className="absolute top-20 left-10 text-4xl animate-float opacity-30">🌸</div>
+      <div className="absolute bottom-32 right-16 text-3xl animate-bounce-rotate opacity-30">💄</div>
 
-      <div className="space-y-2">
-        <Label htmlFor="email">Email Address</Label>
-        <Input
-          id="email"
-          name="email"
-          type="email"
-          placeholder="Enter your email address"
-          required
-          className="focus-visible:ring-accent"
-        />
-      </div>
+      <div className="container mx-auto px-4">
+        <div className="text-center mb-16 md:mb-20">
+          <div className="inline-flex items-center gap-3 bg-card/80 backdrop-blur-sm px-5 py-2.5 rounded-full border border-primary/30 mb-8 shadow-lg shadow-primary/10 animate-fade-in-up">
+            <span className="animate-wiggle text-xl">💄</span>
+            <span className="text-sm font-semibold text-foreground">Our Collection</span>
+            <Sparkles className="w-4 h-4 text-accent animate-sparkle" />
+          </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="phone">Phone Number</Label>
-        <Input
-          id="phone"
-          name="phone"
-          placeholder="Enter your phone number"
-          required
-          className="focus-visible:ring-accent"
-        />
-      </div>
+          <h2
+            id="products-heading"
+            className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6"
+          >
+            Luqitchy <span className="gradient-text">Cosmetics</span>
+          </h2>
 
-      <div className="space-y-2">
-        <Label htmlFor="address">Delivery Address</Label>
-        <Textarea
-          id="address"
-          name="address"
-          placeholder="Enter your complete delivery address"
-          required
-          className="focus-visible:ring-accent min-h-24"
-        />
-      </div>
+          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto text-pretty leading-relaxed">
+            Discover our stunning collection of premium cosmetics, each crafted to perfection for the ultimate
+            <span className="text-accent font-semibold"> beauty experience</span>.
+          </p>
+        </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="notes">Additional Notes</Label>
-        <Textarea
-          id="notes"
-          name="notes"
-          placeholder="Any special instructions or notes (optional)"
-          className="focus-visible:ring-accent min-h-20"
-        />
-      </div>
+        <div className="space-y-32">
+          {products.map((product, index) => (
+            <article
+              key={product.name}
+              className="group relative animate-fade-in-up"
+              style={{ animationDelay: `${index * 0.1}s` }}
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center">
+                <Link
+                  href={`/order/${product.id}`}
+                  onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                  className="relative"
+                  aria-label={`View ${product.name} order page`}
+                >
+                  <span className="sr-only">Order {product.name}</span>
+                  <div className="relative h-96 rounded-2xl overflow-hidden shadow-2xl shadow-primary/30 transition-all duration-500 group-hover:shadow-3xl group-hover:shadow-accent/40 group-hover:scale-105">
+                    <Image
+                      src={product.image || "/placeholder.svg"}
+                      alt={product.name}
+                      fill
+                      className="object-cover group-hover:scale-110 transition-transform duration-700"
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                    />
 
-      <Button
-        type="submit"
-        disabled={isSubmitting}
-        className="w-full bg-accent hover:bg-accent/90 text-white font-semibold py-2 rounded-lg transition-all duration-300"
-      >
-        {isSubmitting ? "Processing Order..." : "Confirm Order"}
-      </Button>
-    </form>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+                    <div className="absolute inset-0 pointer-events-none">
+                      <div className="absolute top-4 right-4 w-8 h-8 bg-accent/20 rounded-full blur-md animate-pulse opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      <div className="absolute bottom-4 left-4 w-6 h-6 bg-accent/30 rounded-full blur-md animate-floating-sparkles opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    </div>
+
+                    <div
+                      className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${product.color} opacity-0 group-hover:opacity-100 transition-opacity duration-300 animate-gloss-shine`}
+                    />
+                  </div>
+                </Link>
+
+                <div className="flex flex-col justify-center space-y-6">
+                  <div>
+                    <h3 className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-3">{product.name}</h3>
+                    <p className="text-lg text-muted-foreground mb-6">{product.description}</p>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <span className="text-3xl font-bold text-foreground">100 EGP</span>
+                    <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                      <span className="inline-block animate-sparkle">✨</span>
+                      Premium Quality
+                    </div>
+                  </div>
+
+                  <Link href={`/order/${product.id}`}>
+                    <Button
+                      className={`w-full md:w-auto px-8 py-3 ${product.accent} hover:opacity-90 text-white font-semibold transition-all duration-300 group-hover:scale-105 group-hover:shadow-lg relative overflow-hidden`}
+                    >
+                      <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 pointer-events-none" />
+                      <ShoppingBag className="w-5 h-5 mr-2" />
+                      Shop Now
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+
+              <div
+                className={`absolute -inset-0.5 rounded-2xl opacity-0 group-hover:opacity-50 blur transition-opacity duration-300 pointer-events-none -z-10 animate-pulse`}
+                style={{
+                  background: `linear-gradient(135deg, ${product.color})`,
+                }}
+              />
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
   )
 }
