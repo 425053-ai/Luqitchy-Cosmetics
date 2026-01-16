@@ -1,10 +1,22 @@
 "use client"
 
+import type React from "react"
+
 import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import emailjs from "@emailjs/browser"
 import { ArrowLeft, Star } from "lucide-react"
+import { useRouter } from "next/navigation"
+
+emailjs.init({
+  publicKey: "ktl_e7JluBPYFFjM4",
+  blockHeadless: false,
+  limitRate: {
+    id: "app",
+    throttle: 50,
+  },
+})
 
 const product = {
   id: "lip-balm",
@@ -23,7 +35,8 @@ export default function LipBalmPage() {
     quantity: 1,
     notes: "",
   })
-  const [submitted, setSubmitted] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const router = useRouter()
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
@@ -31,77 +44,63 @@ export default function LipBalmPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    const total_price = formData.quantity * product.price
+    setIsSubmitting(true)
+
     try {
+      const totalPrice = formData.quantity * product.price
+      const orderId = `ORD-${Date.now()}`
+
+      const templateData = {
+        to_email: formData.email,
+        customer_name: formData.name,
+        order_id: orderId,
+        product_name: product.name,
+        quantity: formData.quantity.toString(),
+        total_price: totalPrice.toString(),
+        phone: formData.phone,
+        address: formData.address,
+        notes: formData.notes || "No special notes",
+      }
+
+      // Send email to customer
+      await emailjs.send("service_cyg3pcs", "template_nq7ayum", templateData)
+
+      // Send email to admin
       await emailjs.send("service_cyg3pcs", "template_nn2n23j", {
-        order_id: Date.now(),
-        product_name: product.name,
-        product_variant: "",
-        quantity: formData.quantity,
-        product_price: product.price,
-        total_price,
+        to_email: "luqitchycosmetics@gmail.com",
         customer_name: formData.name,
         customer_email: formData.email,
         customer_phone: formData.phone,
-        delivery_address: formData.address,
-        customer_notes: formData.notes,
-        order_time: new Date().toLocaleString(),
-      }, "ktl_e7JluBPYFFjM4")
-
-      await emailjs.send("service_cyg3pcs", "template_nq7ayum", {
-        order_id: Date.now(),
         product_name: product.name,
-        product_variant: "",
-        quantity: formData.quantity,
-        product_price: product.price,
-        total_price,
-        customer_name: formData.name,
-        customer_email: formData.email,
-        customer_phone: formData.phone,
+        quantity: formData.quantity.toString(),
+        total_price: totalPrice.toString(),
         delivery_address: formData.address,
-        customer_notes: formData.notes,
-        order_time: new Date().toLocaleString(),
-        title: "Your order has been received 💖",
-      }, "ktl_e7JluBPYFFjM4")
+        special_notes: formData.notes || "No special notes",
+        order_id: orderId,
+      })
 
-      setSubmitted(true)
-    } catch (err) {
-      console.error(err)
-      alert("حدث خطأ أثناء إرسال الطلب، حاول مرة أخرى")
+      router.push(`/order/confirmation?order_id=${orderId}&product=${product.name}&total=${totalPrice}`)
+    } catch (error: any) {
+      console.error("[v0] Error processing order:", error)
+      alert("Error: " + (error.message || "Order processing failed. Please try again."))
+    } finally {
+      setIsSubmitting(false)
     }
-  }
-
-  if (submitted) {
-    return (
-      <div className="min-h-screen flex flex-col justify-center items-center p-4 bg-background text-center space-y-6">
-        <h1 className="text-4xl font-bold text-accent">شكراً على طلبك 💖</h1>
-        <div className="bg-white p-4 rounded-lg shadow-md max-w-md w-full text-left">
-          <p><strong>المنتج:</strong> {product.name}</p>
-          <p><strong>الكمية:</strong> {formData.quantity}</p>
-          <p><strong>السعر الفردي:</strong> {product.price} EGP</p>
-          <p><strong>السعر الكلي:</strong> {formData.quantity * product.price} EGP</p>
-          <p><strong>الاسم:</strong> {formData.name}</p>
-          <p><strong>البريد الإلكتروني:</strong> {formData.email}</p>
-          <p><strong>رقم الهاتف:</strong> {formData.phone}</p>
-          <p><strong>العنوان:</strong> {formData.address}</p>
-          <p><strong>ملاحظات:</strong> {formData.notes}</p>
-        </div>
-        <Link href="/" className="mt-4 px-4 py-2 bg-accent text-white rounded-lg">
-          العودة للصفحة الرئيسية
-        </Link>
-      </div>
-    )
   }
 
   return (
     <div className="min-h-screen bg-background p-4">
-      <Link href="/" className="flex items-center gap-2 text-muted-foreground hover:text-accent mb-6">
+      <Link
+        href="/"
+        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+        className="flex items-center gap-2 text-muted-foreground hover:text-accent mb-6"
+      >
         <ArrowLeft className="w-5 h-5" /> Back to Products
       </Link>
 
       <div className="max-w-4xl mx-auto grid lg:grid-cols-2 gap-12">
         <div className="relative aspect-[3/4] rounded-3xl overflow-hidden shadow-2xl shadow-primary/30">
-          <Image src={product.image} alt={product.name} fill className="object-cover" />
+          <Image src={product.image || "/placeholder.svg"} alt={product.name} fill className="object-cover" />
         </div>
 
         <div className="space-y-6">
@@ -116,13 +115,81 @@ export default function LipBalmPage() {
           </ul>
 
           <form className="space-y-4" onSubmit={handleSubmit}>
-            <input type="text" name="name" placeholder="الاسم الكامل" value={formData.name} onChange={handleChange} required className="w-full p-2 border rounded-lg" />
-            <input type="email" name="email" placeholder="البريد الإلكتروني" value={formData.email} onChange={handleChange} required className="w-full p-2 border rounded-lg" />
-            <input type="tel" name="phone" placeholder="رقم الهاتف" value={formData.phone} onChange={handleChange} required className="w-full p-2 border rounded-lg" />
-            <textarea name="address" placeholder="العنوان" value={formData.address} onChange={handleChange} required className="w-full p-2 border rounded-lg" />
-            <input type="number" name="quantity" min={1} value={formData.quantity} onChange={handleChange} className="w-full p-2 border rounded-lg" />
-            <textarea name="notes" placeholder="ملاحظات إضافية" value={formData.notes} onChange={handleChange} className="w-full p-2 border rounded-lg" />
-            <button type="submit" className="bg-accent text-white px-4 py-2 rounded-lg w-full">تأكيد الطلب</button>
+            <div>
+              <label className="block text-sm font-medium mb-2">Full Name *</label>
+              <input
+                type="text"
+                name="name"
+                placeholder="Enter your full name"
+                value={formData.name}
+                onChange={handleChange}
+                required
+                className="w-full p-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">Email Address *</label>
+              <input
+                type="email"
+                name="email"
+                placeholder="Enter your email address"
+                value={formData.email}
+                onChange={handleChange}
+                required
+                className="w-full p-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">Phone Number *</label>
+              <input
+                type="tel"
+                name="phone"
+                placeholder="Enter your phone number"
+                value={formData.phone}
+                onChange={handleChange}
+                required
+                className="w-full p-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">Delivery Address *</label>
+              <textarea
+                name="address"
+                placeholder="Enter your complete delivery address"
+                value={formData.address}
+                onChange={handleChange}
+                required
+                className="w-full p-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent min-h-24"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">Quantity</label>
+              <input
+                type="number"
+                name="quantity"
+                min={1}
+                value={formData.quantity}
+                onChange={handleChange}
+                className="w-full p-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">Additional Notes</label>
+              <textarea
+                name="notes"
+                placeholder="Any special instructions (optional)"
+                value={formData.notes}
+                onChange={handleChange}
+                className="w-full p-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent min-h-20"
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full bg-accent text-white px-4 py-2 rounded-lg font-semibold hover:bg-accent/90 transition-all disabled:opacity-50"
+            >
+              {isSubmitting ? "Processing Order..." : "Confirm Order"}
+            </button>
           </form>
         </div>
       </div>

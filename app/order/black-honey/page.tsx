@@ -133,7 +133,7 @@ export default function BlackHoneyPage() {
             <input
               type="text"
               name="name"
-              placeholder="الاسم الكامل"
+              placeholder="Name"
               value={formData.name}
               onChange={handleChange}
               required
@@ -142,7 +142,7 @@ export default function BlackHoneyPage() {
             <input
               type="email"
               name="email"
-              placeholder="البريد الإلكتروني"
+              placeholder="Email"
               value={formData.email}
               onChange={handleChange}
               required
@@ -151,7 +151,7 @@ export default function BlackHoneyPage() {
             <input
               type="tel"
               name="phone"
-              placeholder="رقم الهاتف"
+              placeholder="Phone"
               value={formData.phone}
               onChange={handleChange}
               required
@@ -159,7 +159,7 @@ export default function BlackHoneyPage() {
             />
             <textarea
               name="address"
-              placeholder="العنوان"
+              placeholder="Address"
               value={formData.address}
               onChange={handleChange}
               required
@@ -175,7 +175,7 @@ export default function BlackHoneyPage() {
             />
             <textarea
               name="notes"
-              placeholder="ملاحظات إضافية"
+              placeholder="Notes"
               value={formData.notes}
               onChange={handleChange}
               className="w-full p-2 border rounded-lg"
@@ -184,7 +184,7 @@ export default function BlackHoneyPage() {
               type="submit"
               className="bg-accent text-white px-4 py-2 rounded-lg w-full"
             >
-              تأكيد الطلب
+              Place order
             </button>
           </form>
         </div>
