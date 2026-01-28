@@ -1,0 +1,797 @@
+"use client"
+
+import { useState } from "react"
+import Image from "next/image"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { ArrowLeft, Star, ShoppingCart, Plus, Minus, Check } from "lucide-react"
+import { useCart } from "@/context/CartContext"
+import { useOrderHistory } from "@/context/OrderHistoryContext"
+import { Button } from "@/components/ui/button"
+import { sendSingleProductOrder } from "@/lib/telegram-service"
+
+interface ProductPageProps {
+  product: {
+    id: string
+    name: string
+    image: string
+    price: number
+    color: string
+    features: string[]
+    description?: string
+  }
+}
+
+export function ProductPage({ product }: ProductPageProps) {
+  const router = useRouter()
+  const { addToCart } = useCart()
+  const { addOrder } = useOrderHistory()
+  const [quantity, setQuantity] = useState(1)
+  const [addedToCart, setAddedToCart] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [formData, setFormData] = useState({
+    fullName: "",
+    email: "",
+    phone: "",
+    whatsapp: "",
+    governorate: "",
+    city: "",
+    streetAddress: "",
+    landmark: "",
+    notes: "",
+  })
+  const [submitted, setSubmitted] = useState(false)
+  const [sameAsPhone, setSameAsPhone] = useState(true)
+  
+  // Save submitted order data
+  const [submittedOrder, setSubmittedOrder] = useState<{
+    orderId: string;
+    productName: string;
+    productImage: string;
+    quantity: number;
+    unitPrice: number;
+    totalPrice: number;
+    customerData: typeof formData;
+    orderTime: string;
+  } | null>(null)
+
+  const handleAddToCart = () => {
+    addToCart({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      image: product.image,
+      color: product.color,
+      quantity: quantity,
+    })
+    setAddedToCart(true)
+    setTimeout(() => setAddedToCart(false), 2000)
+  }
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value })
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsSubmitting(true)
+    const total_price = quantity * product.price
+    const order_id = `ORD-${Date.now()}`
+    const order_date = new Date().toLocaleString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+    
+    try {
+      // Send email via Brevo API
+      const response = await fetch('/api/sendOrder', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          customer_name: formData.fullName,
+          customer_email: formData.email,
+          phone: formData.phone,
+          whatsapp: sameAsPhone ? formData.phone : formData.whatsapp,
+          order_id: order_id,
+          order_date: order_date,
+          products: [{
+            name: product.name,
+            quantity: quantity,
+            price: product.price,
+            total: total_price
+          }],
+          total_amount: total_price,
+          governorate: formData.governorate,
+          city: formData.city,
+          street: formData.streetAddress,
+          landmark: formData.landmark,
+          notes: formData.notes || "No additional notes"
+        }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.message || 'Failed to send order')
+      }
+
+      // Send Telegram notification
+      await sendSingleProductOrder({
+        orderId: order_id,
+        productName: product.name,
+        quantity: quantity,
+        productPrice: product.price,
+        totalPrice: total_price,
+        customerData: { ...formData },
+      })
+
+      // Save to order history
+      const fullAddressForHistory = `${formData.streetAddress}${formData.landmark ? ` (${formData.landmark})` : ''}, ${formData.city}, ${formData.governorate}`;
+      addOrder({
+        orderId: order_id,
+        items: [{
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          quantity: quantity,
+          image: product.image,
+        }],
+        totalPrice: total_price,
+        customerName: formData.fullName,
+        customerEmail: formData.email,
+        customerPhone: formData.phone,
+        deliveryAddress: fullAddressForHistory,
+        orderDate: new Date().toISOString(),
+        status: "pending",
+      })
+
+      // Save order data
+      setSubmittedOrder({
+        orderId: order_id,
+        productName: product.name,
+        productImage: product.image,
+        quantity: quantity,
+        unitPrice: product.price,
+        totalPrice: total_price,
+        customerData: { ...formData },
+        orderTime: order_date,
+      })
+
+      setSubmitted(true)
+    } catch (err: any) {
+      console.error("Order Error:", err)
+      const errorMessage = err?.message || "Unable to process order"
+      console.error("Detailed error:", errorMessage)
+      alert(`Error: ${errorMessage}`)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  if (submitted && submittedOrder) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-secondary/20 to-background relative overflow-hidden">
+        {/* Animated Background Elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-20 left-10 w-72 h-72 bg-green-500/10 rounded-full blur-3xl animate-morph" />
+          <div className="absolute bottom-20 right-10 w-96 h-96 bg-accent/10 rounded-full blur-3xl animate-morph" style={{ animationDelay: "2s" }} />
+          
+          {/* Confetti-like particles */}
+          {[...Array(12)].map((_, i) => (
+            <span 
+              key={i}
+              className="absolute text-2xl animate-float opacity-20"
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+                animationDelay: `${i * 0.3}s`,
+                animationDuration: `${3 + Math.random() * 2}s`
+              }}
+            >
+              {['✨', '💖', '🎉', '⭐', '💫'][i % 5]}
+            </span>
+          ))}
+        </div>
+
+        <div className="max-w-3xl mx-auto space-y-8 py-12 px-4 relative z-10">
+          {/* Success Animation Header */}
+          <div className="text-center space-y-6">
+            <div className="relative inline-block">
+              <div className="absolute inset-0 animate-pulse-ring">
+                <div className="w-24 h-24 rounded-full bg-green-500/20" />
+              </div>
+              <div className="relative w-24 h-24 mx-auto bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center shadow-2xl shadow-green-500/30 animate-success-check">
+                <svg className="w-12 h-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+            </div>
+            
+            <div className="space-y-3 animate-slide-up opacity-0" style={{ animationDelay: "0.3s" }}>
+              <h1 className="text-4xl md:text-6xl font-serif font-bold">
+                <span className="gradient-text">Thank You!</span>
+              </h1>
+              <p className="text-xl text-muted-foreground">
+                Your order has been confirmed successfully
+              </p>
+            </div>
+          </div>
+
+          {/* Screenshot Notice */}
+          <div className="animate-slide-up opacity-0" style={{ animationDelay: "0.4s" }}>
+            <div className="bg-gradient-to-r from-amber-500/10 via-yellow-500/10 to-amber-500/10 border border-yellow-500/30 rounded-2xl p-5 backdrop-blur-sm">
+              <div className="flex items-center justify-center gap-3">
+                <span className="text-3xl animate-bounce-subtle">📸</span>
+                <div className="text-center">
+                  <p className="text-yellow-700 dark:text-yellow-400 font-bold text-lg">Save Your Order Details</p>
+                  <p className="text-yellow-600/80 dark:text-yellow-500/80 text-sm">Take a screenshot of this receipt for your records</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Premium Order Receipt Card */}
+          <div className="animate-slide-up opacity-0" style={{ animationDelay: "0.5s" }}>
+            <div className="premium-card rounded-3xl overflow-hidden">
+              {/* Receipt Header */}
+              <div className="relative bg-gradient-to-r from-accent via-pink-500 to-accent text-white p-8 text-center overflow-hidden">
+                <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxjaXJjbGUgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjEpIiBjeD0iMjAiIGN5PSIyMCIgcj0iMiIvPjwvZz48L3N2Zz4=')] opacity-50" />
+                <div className="relative">
+                  <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-1.5 rounded-full mb-4">
+                    <span className="text-sm font-medium">Order Confirmed</span>
+                    <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+                  </div>
+                  <h2 className="text-3xl font-bold mb-2">Order Receipt</h2>
+                  <p className="font-mono text-xl tracking-wider">{submittedOrder.orderId}</p>
+                  <p className="text-white/70 text-sm mt-2">{submittedOrder.orderTime}</p>
+                </div>
+              </div>
+
+              {/* Receipt Body */}
+              <div className="receipt-pattern">
+                {/* Customer Info */}
+                <div className="p-6 border-b border-border/50">
+                  <div className="flex items-center gap-3 mb-5">
+                    <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
+                      <span className="text-xl">👤</span>
+                    </div>
+                    <h3 className="text-lg font-bold">Customer Information</h3>
+                  </div>
+                  <div className="grid gap-4 text-sm bg-muted/30 rounded-2xl p-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-muted-foreground">Full Name</span>
+                      <span className="font-semibold">{submittedOrder.customerData.fullName}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-muted-foreground">Phone</span>
+                      <span className="font-semibold font-mono" dir="ltr">{submittedOrder.customerData.phone}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-muted-foreground">WhatsApp</span>
+                      <span className="font-semibold font-mono" dir="ltr">{submittedOrder.customerData.whatsapp}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-muted-foreground">Email</span>
+                      <span className="font-semibold text-xs md:text-sm font-mono" dir="ltr">{submittedOrder.customerData.email}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Delivery Address */}
+                <div className="p-6 border-b border-border/50">
+                  <div className="flex items-center gap-3 mb-5">
+                    <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
+                      <span className="text-xl">📍</span>
+                    </div>
+                    <h3 className="text-lg font-bold">Delivery Address</h3>
+                  </div>
+                  <div className="bg-muted/30 rounded-2xl p-4 space-y-3 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Governorate</span>
+                      <span className="font-semibold">{submittedOrder.customerData.governorate}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">City</span>
+                      <span className="font-semibold">{submittedOrder.customerData.city}</span>
+                    </div>
+                    <div className="flex justify-between items-start">
+                      <span className="text-muted-foreground">Street</span>
+                      <span className="font-semibold text-right max-w-[60%]">{submittedOrder.customerData.streetAddress}</span>
+                    </div>
+                    {submittedOrder.customerData.landmark && (
+                      <div className="flex justify-between items-start">
+                        <span className="text-muted-foreground">Landmark</span>
+                        <span className="font-semibold text-right max-w-[60%]">{submittedOrder.customerData.landmark}</span>
+                      </div>
+                    )}
+                    {submittedOrder.customerData.notes && (
+                      <div className="flex justify-between items-start pt-2 border-t border-border/50">
+                        <span className="text-muted-foreground">Notes</span>
+                        <span className="font-semibold text-right max-w-[60%] italic">{submittedOrder.customerData.notes}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Product */}
+                <div className="p-6 border-b border-border/50">
+                  <div className="flex items-center gap-3 mb-5">
+                    <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
+                      <span className="text-xl">📦</span>
+                    </div>
+                    <h3 className="text-lg font-bold">Product Details</h3>
+                  </div>
+                  <div className="flex items-center gap-5 bg-gradient-to-r from-muted/50 to-muted/30 rounded-2xl p-4 order-card">
+                    <div className="relative w-24 h-24 rounded-2xl overflow-hidden flex-shrink-0 shadow-lg ring-2 ring-white/50">
+                      <Image src={submittedOrder.productImage} alt={submittedOrder.productName} fill className="object-cover" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-xl mb-1">{submittedOrder.productName}</p>
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        <span className="bg-accent/10 px-3 py-1 rounded-full">Qty: {submittedOrder.quantity}</span>
+                        <span>{submittedOrder.unitPrice} EGP each</span>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm text-muted-foreground">Subtotal</p>
+                      <p className="font-bold text-accent text-2xl">{submittedOrder.totalPrice} EGP</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Total */}
+                <div className="p-6 bg-gradient-to-r from-accent/5 via-accent/10 to-accent/5">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <span className="text-muted-foreground text-sm">Grand Total</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-2xl">💰</span>
+                        <span className="font-bold text-2xl">Total Amount</span>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-4xl font-bold text-accent">{submittedOrder.totalPrice}</span>
+                      <span className="text-xl font-semibold text-accent ml-1">EGP</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Status Footer */}
+                <div className="p-6 text-center space-y-4 bg-gradient-to-b from-transparent to-muted/20">
+                  <div className="inline-flex items-center gap-3 bg-green-500/10 border border-green-500/30 px-5 py-3 rounded-2xl">
+                    <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center animate-pulse">
+                      <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <span className="font-bold text-green-700 dark:text-green-400">Order Successfully Placed!</span>
+                  </div>
+                  
+                  <p className="text-muted-foreground">
+                    We will contact you at <strong className="text-foreground font-mono" dir="ltr">{submittedOrder.customerData.phone}</strong>
+                    <br />to confirm delivery details within 24-48 hours
+                  </p>
+                  
+                  <div className="flex items-center justify-center gap-6 pt-4 text-sm text-muted-foreground">
+                    <span className="flex items-center gap-2">
+                      <span>📧</span> luqitchycosmetics@gmail.com
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center animate-slide-up opacity-0" style={{ animationDelay: "0.6s" }}>
+            <Link 
+              href="/" 
+              className="luxury-btn inline-flex items-center justify-center gap-2 text-white font-semibold h-14 px-10 rounded-2xl transition-all duration-300"
+            >
+              <span>🏠</span> Return to Home
+            </Link>
+            <Link 
+              href="/#products" 
+              className="inline-flex items-center justify-center gap-2 border-2 border-accent/30 hover:border-accent hover:bg-accent/5 font-semibold h-14 px-10 rounded-2xl transition-all duration-300 backdrop-blur-sm bg-card/50"
+            >
+              <span>🛍️</span> Continue Shopping
+            </Link>
+          </div>
+
+          {/* Brand Footer */}
+          <div className="text-center pt-6 animate-slide-up opacity-0" style={{ animationDelay: "0.7s" }}>
+            <div className="inline-flex items-center gap-3 mb-3">
+              <div className="h-px w-12 bg-gradient-to-r from-transparent to-accent/50" />
+              <span className="text-2xl">✨</span>
+              <div className="h-px w-12 bg-gradient-to-l from-transparent to-accent/50" />
+            </div>
+            <p className="text-3xl font-serif font-bold gradient-text">Luqitchy Cosmetics</p>
+            <p className="text-muted-foreground mt-2">Your beauty journey starts here</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-background via-secondary/20 to-background relative overflow-hidden">
+      {/* Background Elements */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="hidden sm:block absolute top-20 right-10 w-60 md:w-96 h-60 md:h-96 bg-accent/5 rounded-full blur-2xl md:blur-3xl" />
+        <div className="hidden sm:block absolute bottom-40 left-10 w-48 md:w-72 h-48 md:h-72 bg-primary/5 rounded-full blur-2xl md:blur-3xl" />
+      </div>
+
+      <div className="relative z-10 p-3 sm:p-4 md:p-8">
+        {/* Back Button */}
+        <Link
+          href="/"
+          className="inline-flex items-center gap-1.5 sm:gap-2 text-muted-foreground hover:text-accent mb-4 sm:mb-6 md:mb-8 transition-all duration-300 group bg-card/50 backdrop-blur-sm px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-border/50 hover:border-accent/30 text-sm sm:text-base"
+        >
+          <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 group-hover:-translate-x-1 transition-transform" /> 
+          <span>Back to Products</span>
+        </Link>
+
+        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-6 sm:gap-8 md:gap-12 lg:gap-16">
+          {/* Product Image */}
+          <div className="animate-slide-in-left opacity-0" style={{ animationDelay: "0.1s" }}>
+            <div className="sticky top-4 sm:top-6 md:top-8">
+              <div className="relative aspect-square rounded-2xl sm:rounded-3xl overflow-hidden shadow-xl sm:shadow-2xl shadow-primary/20 group">
+                <Image 
+                  src={product.image} 
+                  alt={product.name} 
+                  fill 
+                  className="object-cover group-hover:scale-110 transition-transform duration-700" 
+                  priority
+                />
+                <div className={`absolute inset-0 bg-gradient-to-br ${product.color} opacity-0 group-hover:opacity-20 transition-opacity duration-500`} />
+                
+                {/* Premium overlay effect */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                
+                {/* Floating badge */}
+                <div className="absolute top-3 left-3 sm:top-4 sm:left-4 premium-badge px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm shadow-lg">
+                  ✨ Premium
+                </div>
+              </div>
+              
+              {/* Image thumbnails/indicators */}
+              <div className="flex justify-center gap-1.5 sm:gap-2 mt-3 sm:mt-4">
+                {[1, 2, 3].map((_, i) => (
+                  <div key={i} className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full ${i === 0 ? 'bg-accent' : 'bg-muted'} transition-colors cursor-pointer hover:bg-accent/70`} />
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Product Details */}
+          <div className="space-y-4 sm:space-y-6 md:space-y-8 animate-slide-in-right opacity-0" style={{ animationDelay: "0.2s" }}>
+            <div>
+              {/* Product Name & Price */}
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4 mb-3 sm:mb-4">
+                <h1 className="text-3xl sm:text-4xl md:text-5xl font-serif font-bold gradient-text leading-tight">{product.name}</h1>
+                <div className="flex-shrink-0 bg-accent/10 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl sm:rounded-2xl border border-accent/20 inline-flex sm:flex-col items-center sm:items-start gap-2 sm:gap-0">
+                  <span className="text-[10px] sm:text-xs text-muted-foreground">In Stock</span>
+                  <span className="text-xs sm:text-sm font-bold text-green-500">● Available</span>
+                </div>
+              </div>
+              
+              {/* Price Section */}
+              <div className="flex flex-wrap items-baseline gap-2 sm:gap-4 mb-4 sm:mb-6">
+                <span className="text-3xl sm:text-4xl md:text-5xl font-bold text-accent">{product.price}</span>
+                <span className="text-lg sm:text-xl md:text-2xl font-semibold text-accent">EGP</span>
+                <span className="text-base sm:text-lg md:text-xl text-muted-foreground line-through">{product.price + 50} EGP</span>
+                <span className="bg-green-500/10 text-green-600 dark:text-green-400 text-xs sm:text-sm font-bold px-2 sm:px-3 py-0.5 sm:py-1 rounded-full">
+                  Save {50} EGP
+                </span>
+              </div>
+              
+              {/* Product Description */}
+              {product.description && (
+                <div className="bg-muted/30 backdrop-blur-sm rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-5 border border-border/50 mb-4 sm:mb-6">
+                  <p className="text-sm sm:text-base md:text-lg text-muted-foreground leading-relaxed">
+                    {product.description}
+                  </p>
+                </div>
+              )}
+              
+              {/* Features */}
+              <div className="premium-card rounded-xl sm:rounded-2xl p-4 sm:p-5 md:p-6">
+                <h3 className="font-semibold text-base sm:text-lg mb-3 sm:mb-4 flex items-center gap-2">
+                  <Star className="w-4 h-4 sm:w-5 sm:h-5 text-accent fill-accent" />
+                  <span>Product Features</span>
+                </h3>
+                <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                  {product.features.map((f, i) => (
+                    <li key={i} className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm group">
+                      <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-accent/10 flex items-center justify-center group-hover:bg-accent/20 transition-colors flex-shrink-0">
+                        <Check className="w-3 h-3 sm:w-4 sm:h-4 text-accent" />
+                      </div>
+                      <span className="group-hover:text-accent transition-colors">{f}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            {/* Quantity Selector */}
+            <div className="premium-card rounded-xl sm:rounded-2xl p-4 sm:p-5 md:p-6">
+              <label className="block text-xs sm:text-sm font-semibold mb-3 sm:mb-4">Select Quantity</label>
+              <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
+                <div className="flex items-center gap-2 bg-muted/50 rounded-xl sm:rounded-2xl p-1.5 sm:p-2">
+                  <Button
+                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                    variant="ghost"
+                    size="icon"
+                    className="h-10 w-10 sm:h-12 sm:w-12 rounded-lg sm:rounded-xl hover:bg-accent/20 transition-colors"
+                  >
+                    <Minus className="w-4 h-4 sm:w-5 sm:h-5" />
+                  </Button>
+                  <span className="text-2xl sm:text-3xl font-bold w-12 sm:w-16 text-center">{quantity}</span>
+                  <Button
+                    onClick={() => setQuantity(quantity + 1)}
+                    variant="ghost"
+                    size="icon"
+                    className="h-10 w-10 sm:h-12 sm:w-12 rounded-lg sm:rounded-xl hover:bg-accent/20 transition-colors"
+                  >
+                    <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
+                  </Button>
+                </div>
+                <div className="flex-1 text-center sm:text-right">
+                  <div className="text-xs sm:text-sm text-muted-foreground mb-1">Subtotal</div>
+                  <div className="text-2xl sm:text-3xl font-bold text-accent">{quantity * product.price} <span className="text-base sm:text-lg">EGP</span></div>
+                </div>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-3 sm:gap-4">
+              <Button
+                onClick={handleAddToCart}
+                className="flex-1 h-12 sm:h-14 md:h-16 text-sm sm:text-base md:text-lg rounded-xl sm:rounded-2xl luxury-btn transition-all duration-300"
+                disabled={addedToCart}
+              >
+                {addedToCart ? (
+                  <>
+                    <Check className="w-5 h-5 sm:w-6 sm:h-6 mr-1.5 sm:mr-2" />
+                    Added!
+                  </>
+                ) : (
+                  <>
+                    <ShoppingCart className="w-5 h-5 sm:w-6 sm:h-6 mr-1.5 sm:mr-2" />
+                    Add to Cart
+                  </>
+                )}
+              </Button>
+              <Button
+                onClick={() => router.push('/cart')}
+                variant="outline"
+                className="h-12 sm:h-14 md:h-16 px-4 sm:px-6 rounded-xl sm:rounded-2xl border-2 border-accent/30 hover:border-accent hover:bg-accent/5 transition-all duration-300"
+              >
+                <ShoppingCart className="w-5 h-5 sm:w-6 sm:h-6" />
+                <span className="ml-1.5 sm:ml-2 font-bold text-sm sm:text-base">{quantity}</span>
+              </Button>
+            </div>
+
+            {/* Trust Badges */}
+            <div className="grid grid-cols-3 gap-2 sm:gap-3 md:gap-4">
+              {[
+                { icon: "🚚", label: "Fast Delivery", desc: "24-48 hours" },
+                { icon: "💯", label: "Premium Quality", desc: "Guaranteed" },
+                { icon: "🔒", label: "Secure Order", desc: "Protected" },
+              ].map((badge) => (
+                <div key={badge.label} className="text-center p-2.5 sm:p-3 md:p-4 rounded-xl sm:rounded-2xl bg-muted/30 border border-border/50 hover:border-accent/30 transition-colors">
+                  <span className="text-lg sm:text-xl md:text-2xl mb-1 sm:mb-2 block">{badge.icon}</span>
+                  <span className="text-[10px] sm:text-xs font-semibold block">{badge.label}</span>
+                  <span className="text-[9px] sm:text-xs text-muted-foreground">{badge.desc}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Direct Order Section */}
+            <div className="premium-card rounded-3xl p-8">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-accent to-pink-600 flex items-center justify-center text-white shadow-lg shadow-accent/30">
+                  <span className="text-xl">📝</span>
+                </div>
+                <div>
+                  <h3 className="font-bold text-xl">Quick Order</h3>
+                  <p className="text-sm text-muted-foreground">Fill in your details to order directly</p>
+                </div>
+              </div>
+              
+              <form className="space-y-5" onSubmit={handleSubmit}>
+                {/* Full Name */}
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold flex items-center gap-2">
+                    <span>👤</span> Full Name (4 parts) <span className="text-accent">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="fullName"
+                    placeholder="e.g. Ahmed Mohamed Ali Hassan"
+                    value={formData.fullName}
+                    onChange={handleChange}
+                    required
+                    className="premium-input w-full p-4 rounded-xl bg-background/50 backdrop-blur-sm focus:outline-none"
+                  />
+                </div>
+
+                {/* Email */}
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold flex items-center gap-2">
+                    <span>📧</span> Email <span className="text-accent">*</span>
+                  </label>
+                  <input
+                    type="email"
+                    name="email"
+                    placeholder="your@email.com"
+                    value={formData.email}
+                    onChange={handleChange}
+                    required
+                    className="premium-input w-full p-4 rounded-xl bg-background/50 backdrop-blur-sm focus:outline-none"
+                  />
+                </div>
+
+                {/* Phone Number */}
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold flex items-center gap-2">
+                    <span>📱</span> Phone Number <span className="text-accent">*</span>
+                  </label>
+                  <input
+                    type="tel"
+                    name="phone"
+                    placeholder="01xxxxxxxxx"
+                    value={formData.phone}
+                    onChange={(e) => {
+                      handleChange(e);
+                      if (sameAsPhone) {
+                        setFormData(prev => ({ ...prev, whatsapp: e.target.value }));
+                      }
+                    }}
+                    required
+                    className="premium-input w-full p-4 rounded-xl bg-background/50 backdrop-blur-sm focus:outline-none"
+                  />
+                </div>
+
+                {/* WhatsApp */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-semibold flex items-center gap-2">
+                      <span>💬</span> WhatsApp <span className="text-accent">*</span>
+                    </label>
+                    <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer hover:text-accent transition-colors">
+                      <input
+                        type="checkbox"
+                        checked={sameAsPhone}
+                        onChange={(e) => {
+                          setSameAsPhone(e.target.checked);
+                          if (e.target.checked) {
+                            setFormData(prev => ({ ...prev, whatsapp: prev.phone }));
+                          }
+                        }}
+                        className="rounded border-accent text-accent focus:ring-accent"
+                      />
+                      Same as phone
+                    </label>
+                  </div>
+                  <input
+                    type="tel"
+                    name="whatsapp"
+                    placeholder="01xxxxxxxxx"
+                    value={formData.whatsapp}
+                    onChange={handleChange}
+                    required
+                    disabled={sameAsPhone}
+                    className="premium-input w-full p-4 rounded-xl bg-background/50 backdrop-blur-sm focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                  />
+                </div>
+
+                {/* Address Section */}
+                <div className="space-y-4 pt-4 border-t border-border/50">
+                  <div className="flex items-center gap-2 text-sm font-semibold">
+                    <span className="text-lg">📍</span> Delivery Address
+                  </div>
+                  
+                  {/* Governorate & City */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="block text-xs font-medium">Governorate <span className="text-accent">*</span></label>
+                      <input
+                        type="text"
+                        name="governorate"
+                        placeholder="e.g. Cairo"
+                        value={formData.governorate}
+                        onChange={handleChange}
+                        required
+                        className="premium-input w-full p-4 rounded-xl bg-background/50 backdrop-blur-sm focus:outline-none text-sm"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="block text-xs font-medium">City/District <span className="text-accent">*</span></label>
+                      <input
+                        type="text"
+                        name="city"
+                        placeholder="e.g. Nasr City"
+                        value={formData.city}
+                        onChange={handleChange}
+                        required
+                        className="premium-input w-full p-4 rounded-xl bg-background/50 backdrop-blur-sm focus:outline-none text-sm"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Street Address */}
+                  <div className="space-y-2">
+                    <label className="block text-xs font-medium">Street Address <span className="text-accent">*</span></label>
+                    <input
+                      type="text"
+                      name="streetAddress"
+                      placeholder="Building number, Street name, Floor, Apartment"
+                      value={formData.streetAddress}
+                      onChange={handleChange}
+                      required
+                      className="premium-input w-full p-4 rounded-xl bg-background/50 backdrop-blur-sm focus:outline-none text-sm"
+                    />
+                  </div>
+
+                  {/* Landmark */}
+                  <div className="space-y-2">
+                    <label className="block text-xs font-medium">Nearest Landmark <span className="text-muted-foreground">(Optional)</span></label>
+                    <input
+                      type="text"
+                      name="landmark"
+                      placeholder="e.g. Near City Stars Mall"
+                      value={formData.landmark}
+                      onChange={handleChange}
+                      className="premium-input w-full p-4 rounded-xl bg-background/50 backdrop-blur-sm focus:outline-none text-sm"
+                    />
+                  </div>
+                </div>
+
+                {/* Notes */}
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold flex items-center gap-2">
+                    <span>📝</span> Additional Notes <span className="text-muted-foreground font-normal">(Optional)</span>
+                  </label>
+                  <textarea
+                    name="notes"
+                    placeholder="Any special instructions for your order..."
+                    value={formData.notes}
+                    onChange={handleChange}
+                    rows={3}
+                    className="premium-input w-full p-4 rounded-xl bg-background/50 backdrop-blur-sm focus:outline-none resize-none"
+                  />
+                </div>
+
+                {/* Order Summary */}
+                <div className="bg-accent/5 rounded-2xl p-4 border border-accent/20">
+                  <div className="flex justify-between items-center">
+                    <span className="font-semibold">Order Total:</span>
+                    <span className="text-2xl font-bold text-accent">{quantity * product.price} EGP</span>
+                  </div>
+                </div>
+
+                <Button
+                  type="submit"
+                  className="w-full h-16 luxury-btn text-xl rounded-2xl transition-all duration-300 group"
+                >
+                  <span className="mr-2">🛒</span>
+                  Place Order
+                  <span className="ml-2 group-hover:translate-x-1 transition-transform">→</span>
+                </Button>
+                
+                <p className="text-center text-xs text-muted-foreground">
+                  By placing this order, you agree to our terms and conditions
+                </p>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
