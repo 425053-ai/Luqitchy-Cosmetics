@@ -66,30 +66,6 @@ const products = [
     features: ["Delicious scent", "Plumping effect", "Sheer to full coverage", "Refreshing formula"],
   },
   {
-    id: "body-lotion-splash",
-    name: "Body Lotion + Splash Bundle",
-    description: "Luxurious bundle combining nourishing body lotion with refreshing splash fragrances.",
-    longDescription:
-      "Experience the ultimate pampering with our Body Lotion + Splash Bundle. Choose between two enchanting scents - Mulberry for a sweet, sophisticated aroma, or Sugar Drop for a playful, sugary delight. Each bundle includes premium body lotion and coordinating splash fragrance to keep you feeling fresh and fabulous all day.",
-    image: "/images/body-lotion-splash-bundle.jpeg",
-    color: "from-purple-600 to-pink-600",
-    accent: "bg-purple-500",
-    price: "EGP 300",
-    features: ["Nourishing formula", "Two scent options", "Long-lasting fragrance", "Premium packaging"],
-    scents: [
-      {
-        id: "mulberry",
-        name: "Mulberry",
-        description: "Sweet, sophisticated berry scent with floral notes",
-      },
-      {
-        id: "sugar-drop",
-        name: "Sugar Drop",
-        description: "Playful, sugary fragrance with vanilla undertones",
-      },
-    ],
-  },
-  {
     id: "lip-balm",
     name: "LipBalm",
     description: "Nourishing lip care with delicious flavor and moisturizing ingredients.",
