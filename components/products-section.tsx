@@ -2,8 +2,13 @@
 
 import Image from "next/image"
 import Link from "next/link"
+import { motion, useInView } from "framer-motion"
+import { useRef } from "react"
 import { Button } from "@/components/ui/button"
-import { ShoppingBag, Sparkles } from "lucide-react"
+import { ShoppingBag, Sparkles, Heart, ArrowRight } from "lucide-react"
+import { useCart } from "@/context/CartContext"
+import { useWishlist } from "@/context/WishlistContext"
+import { useToast } from "@/components/ui/toast"
 
 const products = [
   {
@@ -13,6 +18,8 @@ const products = [
     image: "/images/black-honey.jpeg",
     color: "from-amber-700 to-amber-900",
     accent: "bg-amber-600",
+    price: 100,
+    isNew: false,
   },
   {
     id: "burgundy",
@@ -21,6 +28,8 @@ const products = [
     image: "/images/burgundy.jpeg",
     color: "from-red-800 to-red-950",
     accent: "bg-red-800",
+    price: 100,
+    isNew: false,
   },
   {
     id: "wine",
@@ -29,6 +38,8 @@ const products = [
     image: "/images/wine.jpeg",
     color: "from-red-600 to-red-800",
     accent: "bg-red-600",
+    price: 100,
+    isNew: false,
   },
   {
     id: "mocha",
@@ -37,6 +48,8 @@ const products = [
     image: "/images/mocha.jpeg",
     color: "from-amber-800 to-amber-950",
     accent: "bg-amber-800",
+    price: 100,
+    isNew: false,
   },
   {
     id: "strawberry-milk",
@@ -45,143 +58,347 @@ const products = [
     image: "/images/strawberry-milk.jpeg",
     color: "from-pink-400 to-pink-600",
     accent: "bg-pink-400",
-  },
-  {
-    id: "body-lotion-splash",
-    name: "Body Lotion + Splash Bundle",
-    description: "Luxury bundle with two delightful scents",
-    image: "/images/body-lotion-splash-bundle.jpeg",
-    color: "from-purple-600 to-pink-600",
-    accent: "bg-purple-500",
+    price: 100,
+    isNew: false,
   },
   {
     id: "lip-balm",
-    name: "LipBalm",
+    name: "Lip Balm",
     description: "Nourishing lip care with delicious flavor",
     image: "/images/lip-balm.jpeg",
     color: "from-rose-500 to-pink-500",
     accent: "bg-rose-400",
+    price: 100,
+    isNew: true,
+  },
+  {
+    id: "body-lotion-splash-mulberry",
+    name: "Body Lotion + Splash Bundle - Mulberry",
+    description: "Luxury bundle with two delightful scents",
+    image: "/images/body-lotion-splash-mulberry.png",
+    color: "from-purple-600 to-pink-600",
+    accent: "bg-purple-500",
+    price: 300,
+    isNew: true,
+  },
+  {
+    id: "body-lotion-splash-sugar-drop",
+    name: "Body Lotion + Splash Bundle - Sugar Drop",
+    description: "Sweet luxury bundle with irresistible fragrance",
+    image: "/images/Body Lotion + Splash Bundle - Sugar Drop.png",
+    color: "from-pink-400 to-orange-300",
+    accent: "bg-pink-400",
+    price: 300,
+    isNew: true,
   },
 ]
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.2
+    }
+  }
+}
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 50, scale: 0.9 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: {
+      type: "spring" as const,
+      stiffness: 100,
+      damping: 15
+    }
+  }
+}
+
 export function ProductsSection() {
+  const ref = useRef(null)
+  const isInView = useInView(ref, { once: true, margin: "-100px" })
+  const { addToCart } = useCart()
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist()
+  const { showToast } = useToast()
+
+  const handleQuickAdd = (product: typeof products[0]) => {
+    addToCart({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      image: product.image,
+      color: product.color,
+      quantity: 1,
+    })
+    showToast(`${product.name} added to cart!`, "cart")
+  }
+
+  const toggleWishlist = (product: typeof products[0]) => {
+    if (isInWishlist(product.id)) {
+      removeFromWishlist(product.id)
+      showToast("Removed from wishlist", "info")
+    } else {
+      addToWishlist({
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        image: product.image,
+        color: product.color,
+      })
+      showToast("Added to wishlist! ❤️", "success")
+    }
+  }
+
   return (
     <section
       id="products"
-      className="py-20 md:py-32 bg-secondary/30 relative overflow-hidden"
+      className="py-24 md:py-36 bg-gradient-to-b from-secondary/30 via-background to-secondary/20 relative overflow-hidden"
       aria-labelledby="products-heading"
     >
-      <div className="absolute top-20 left-10 text-4xl animate-float opacity-30">🌸</div>
-      <div className="absolute bottom-32 right-16 text-3xl animate-bounce-rotate opacity-30">💄</div>
+      {/* Background decorations */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <motion.div 
+          className="hidden sm:block absolute top-20 left-10 text-4xl opacity-30"
+          animate={{ y: [0, -15, 0], rotate: [0, 5, 0] }}
+          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+        >
+          🌸
+        </motion.div>
+        <motion.div 
+          className="hidden sm:block absolute bottom-32 right-16 text-3xl opacity-30"
+          animate={{ y: [0, 10, 0], rotate: [0, -10, 0] }}
+          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+        >
+          💄
+        </motion.div>
+        <motion.div 
+          className="hidden md:block absolute top-40 right-20 text-2xl opacity-25"
+          animate={{ scale: [1, 1.2, 1], rotate: [0, 180, 360] }}
+          transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+        >
+          ✨
+        </motion.div>
+        <motion.div 
+          className="hidden lg:block absolute bottom-40 left-20 text-3xl opacity-25"
+          animate={{ y: [0, -20, 0], x: [0, 10, 0] }}
+          transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
+        >
+          🎀
+        </motion.div>
+        <motion.div 
+          className="hidden md:block absolute top-1/3 left-5 text-2xl opacity-20"
+          animate={{ rotate: [0, 15, -15, 0] }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+        >
+          💋
+        </motion.div>
+        <motion.div 
+          className="hidden lg:block absolute top-2/3 right-10 text-3xl opacity-25"
+          animate={{ scale: [1, 1.3, 1] }}
+          transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+        >
+          💖
+        </motion.div>
+        <motion.div 
+          className="hidden xl:block absolute top-1/4 right-1/3 text-2xl opacity-20"
+          animate={{ y: [0, -10, 0], rotate: [0, 360] }}
+          transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
+        >
+          🦋
+        </motion.div>
+        <motion.div 
+          className="hidden xl:block absolute bottom-1/4 left-1/3 text-2xl opacity-20"
+          animate={{ scale: [0.8, 1.2, 0.8], opacity: [0.2, 0.4, 0.2] }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+        >
+          🌟
+        </motion.div>
+        <div className="hidden md:block absolute top-1/2 left-1/4 w-64 lg:w-96 h-64 lg:h-96 bg-accent/5 rounded-full blur-3xl" />
+        <div className="hidden md:block absolute bottom-1/4 right-1/4 w-48 lg:w-72 h-48 lg:h-72 bg-primary/5 rounded-full blur-3xl" />
+      </div>
 
-      <div className="container mx-auto px-4">
-        <div className="text-center mb-16 md:mb-20">
-          <div className="inline-flex items-center gap-3 bg-card/80 backdrop-blur-sm px-5 py-2.5 rounded-full border border-primary/30 mb-8 shadow-lg shadow-primary/10 animate-fade-in-up">
-            <span className="animate-wiggle text-xl">💄</span>
-            <span className="text-sm font-semibold text-foreground">Our Collection</span>
-            <Sparkles className="w-4 h-4 text-accent animate-sparkle" />
-          </div>
+      <div className="container mx-auto px-4 relative z-10">
+        {/* Section Header */}
+        <motion.div 
+          className="text-center mb-16 md:mb-24"
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+        >
+          <motion.div 
+            className="inline-flex items-center gap-3 bg-card/80 backdrop-blur-sm px-6 py-3 rounded-full border border-primary/30 mb-8 shadow-lg shadow-primary/10 hover-jelly"
+            whileHover={{ scale: 1.05 }}
+            transition={{ type: "spring", stiffness: 300 }}
+          >
+            <span className="animate-dance text-xl">💄</span>
+            <span className="text-sm font-bold text-foreground uppercase tracking-wider">Our Collection</span>
+            <Sparkles className="w-4 h-4 text-accent animate-sparkle-burst" />
+            <span className="animate-heart-pop text-lg">💖</span>
+          </motion.div>
 
           <h2
             id="products-heading"
-            className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6"
+            className="font-serif text-4xl md:text-5xl lg:text-7xl font-bold text-foreground mb-6 relative inline-block"
           >
-            Luqitchy <span className="gradient-text">Cosmetics</span>
+            <span className="absolute -top-6 -left-6 text-2xl animate-float-rotate">✨</span>
+            Luqitchy{" "}
+            <span className="rainbow-text">
+              Collection
+            </span>
+            <span className="absolute -top-4 -right-6 text-2xl animate-star-twirl">🌟</span>
+            <span className="absolute -bottom-2 right-1/4 text-xl animate-kawaii-bounce">🎀</span>
           </h2>
 
-          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto text-pretty leading-relaxed">
-            Discover our stunning collection of high-end cosmetics, each crafted to perfection for the ultimate
-            <span className="text-accent font-semibold"> beauty experience</span>.
+          <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto text-pretty leading-relaxed">
+            <span className="inline-block animate-float mr-1">🌸</span>
+            Discover our stunning collection of premium cosmetics, each meticulously crafted to deliver the ultimate
+            <span className="text-accent font-semibold"> luxury beauty experience</span>
+            <span className="inline-block animate-sparkle ml-1">✨</span>
           </p>
-        </div>
+        </motion.div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-8 md:gap-10">
+        {/* Products Grid */}
+        <motion.div 
+          ref={ref}
+          variants={containerVariants}
+          initial="hidden"
+          animate={isInView ? "visible" : "hidden"}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 md:gap-8"
+        >
           {products.map((product, index) => (
-            <article key={product.name} className="group relative" style={{ animationDelay: `${index * 0.1}s` }}>
-              {/* 3D Floating Product Container */}
-              <div className="relative h-80 mb-6 perspective-1000">
-                {/* Glow effect behind product */}
-                <div
-                  className={`absolute inset-0 bg-gradient-to-br ${product.color} opacity-20 blur-3xl rounded-full transform scale-75 group-hover:scale-100 group-hover:opacity-40 transition-all duration-700`}
-                />
-
-                {/* Floating 3D Product Image */}
-                <div
-                  className="relative w-full h-full transform-gpu transition-all duration-700 group-hover:scale-110 animate-float-slow"
-                  style={{
-                    transformStyle: "preserve-3d",
-                    animation: `float-slow ${3 + index * 0.5}s ease-in-out infinite`,
-                    animationDelay: `${index * 0.2}s`,
-                  }}
-                >
+            <motion.article 
+              key={product.name} 
+              variants={itemVariants}
+              className="group relative"
+              whileHover={{ y: -8 }}
+              transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            >
+              {/* Premium Card Container */}
+              <div className="premium-card kawaii-card rounded-2xl sm:rounded-3xl overflow-hidden h-full bg-card border border-border/50 hover:border-accent/30 transition-all duration-500 hover:shadow-xl hover:shadow-accent/10">
+                {/* Product Image Container */}
+                <div className="relative h-56 sm:h-64 md:h-72 overflow-hidden">
+                  {/* Glow effect */}
                   <div
-                    className="absolute inset-0 rounded-3xl overflow-hidden shadow-2xl shadow-primary/30 group-hover:shadow-accent/50 transition-shadow duration-500 transform rotate-y-12 group-hover:rotate-y-0"
-                    style={{
-                      transform: "rotateY(-5deg) rotateX(5deg)",
-                      transition: "transform 0.7s ease-out",
-                    }}
-                  >
-                    <Image
-                      src={product.image || "/placeholder.svg"}
-                      alt={`${product.name} Cosmetic Product`}
-                      fill
-                      className="object-cover transition-transform duration-700 group-hover:scale-105"
-                    />
+                    className={`absolute inset-0 bg-gradient-to-br ${product.color} opacity-0 group-hover:opacity-30 transition-all duration-700`}
+                  />
 
-                    {/* Shimmer overlay */}
-                    <div
-                      className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 transform -translate-x-full group-hover:translate-x-full"
-                      style={{ transition: "transform 1s ease-out, opacity 0.3s ease-out" }}
+                  {/* Image with lazy loading */}
+                  <Image
+                    src={product.image || "/placeholder.svg"}
+                    alt={`${product.name} Cosmetic Product`}
+                    fill
+                    loading={index < 4 ? "eager" : "lazy"}
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                    className="object-cover transition-all duration-700 group-hover:scale-110"
+                    unoptimized
+                  />
+
+                  {/* Gradient overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+                  {/* Shimmer effect */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+
+                  {/* Cute floating emoji on hover */}
+                  <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-4xl opacity-0 group-hover:opacity-100 transition-all duration-500 animate-kawaii-bounce pointer-events-none">💖</span>
+
+                  {/* New badge */}
+                  {product.isNew && (
+                    <div className="absolute top-4 left-4 premium-badge px-3 py-1 rounded-full shadow-lg transform translate-y-0 group-hover:-translate-y-1 transition-transform duration-300 z-10 animate-glow-soft">
+                      <span className="text-xs font-bold flex items-center gap-1">
+                        <span className="animate-sparkle">✨</span>
+                        NEW
+                        <span className="animate-star-twirl">🌟</span>
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Wishlist button */}
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault()
+                      toggleWishlist(product)
+                    }}
+                    className={`absolute top-4 right-4 w-9 h-9 rounded-full backdrop-blur-md border shadow-lg z-10 flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 ${
+                      isInWishlist(product.id)
+                        ? "bg-red-500 border-red-400 text-white"
+                        : "bg-card/90 border-white/20 text-muted-foreground hover:text-red-500"
+                    }`}
+                    aria-label={isInWishlist(product.id) ? "Remove from wishlist" : "Add to wishlist"}
+                  >
+                    <Heart className={`w-4 h-4 ${isInWishlist(product.id) ? "fill-current" : ""}`} />
+                  </button>
+
+                  {/* Quick add button - appears on hover */}
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault()
+                      handleQuickAdd(product)
+                    }}
+                    className="absolute bottom-4 right-4 bg-accent hover:bg-accent/90 text-white px-3 py-2 rounded-xl shadow-lg z-10 flex items-center gap-2 transform translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 hover:scale-105 active:scale-95 btn-kawaii"
+                    aria-label={`Quick add ${product.name} to cart`}
+                  >
+                    <ShoppingBag className="w-4 h-4" />
+                    <span className="text-xs font-semibold">Quick Add</span>
+                    <span className="animate-sparkle">✨</span>
+                  </button>
+
+                  {/* Price badge */}
+                  <motion.div 
+                    className="absolute bottom-4 left-4 bg-card/90 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/20 shadow-lg z-10"
+                    initial={{ y: 10, opacity: 0 }}
+                    whileHover={{ scale: 1.05 }}
+                  >
+                    <span className="text-lg font-bold text-accent">{product.price}</span>
+                    <span className="text-sm text-muted-foreground ml-1">EGP</span>
+                  </motion.div>
+                </div>
+
+                {/* Product Info */}
+                <div className="p-4 sm:p-5 md:p-6">
+
+                  {/* Color indicator & name */}
+                  <div className="flex items-start justify-between gap-2 sm:gap-3 mb-2 sm:mb-3">
+                    <h3 className="font-serif text-lg sm:text-xl font-bold text-foreground group-hover:text-accent transition-colors leading-tight">
+                      {product.name}
+                    </h3>
+                    <motion.div 
+                      className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full ${product.accent} ring-2 ring-white shadow-lg flex-shrink-0`}
+                      whileHover={{ scale: 1.2 }}
+                      transition={{ type: "spring", stiffness: 300 }}
                     />
                   </div>
 
-                  {/* Floating sparkles */}
-                  <span className="absolute -top-4 -right-2 text-2xl animate-sparkle opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    ✨
-                  </span>
-                  <span
-                    className="absolute -bottom-2 -left-2 text-xl animate-heartbeat opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                    style={{ animationDelay: "0.5s" }}
-                  >
-                    💖
-                  </span>
-                </div>
+                  <p className="text-xs sm:text-sm text-muted-foreground mb-4 sm:mb-5 line-clamp-2 leading-relaxed">{product.description}</p>
 
-                {/* New badge */}
-                <div className="absolute top-4 right-4 bg-card/95 backdrop-blur-sm px-4 py-1.5 rounded-full border border-primary/30 shadow-md transform translate-y-0 group-hover:-translate-y-2 transition-transform duration-300 z-10">
-                  <span className="text-xs font-bold text-accent flex items-center gap-1">
-                    <Sparkles className="w-3 h-3" />
-                    New
-                  </span>
+                  {/* Action Button */}
+                  <Link href={`/order/${product.id}`} className="block">
+                    <motion.div
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      <Button
+                        className="w-full bg-accent hover:bg-accent/90 text-white rounded-xl sm:rounded-2xl shadow-lg transition-all duration-300 group/btn h-10 sm:h-12 text-sm sm:text-base btn-kawaii animate-glow-soft"
+                        size="default"
+                      >
+                        <span className="animate-wiggle mr-1">🛒</span>
+                        <ShoppingBag className="w-4 h-4 mr-2 group-hover/btn:animate-bounce" />
+                        <span>Order Now</span>
+                        <ArrowRight className="w-4 h-4 ml-2 opacity-0 group-hover/btn:opacity-100 group-hover/btn:translate-x-1 transition-all" />
+                        <span className="ml-1 animate-heart-pop">💖</span>
+                      </Button>
+                    </motion.div>
+                  </Link>
                 </div>
               </div>
-
-              {/* Product Info */}
-              <div className="text-center px-2">
-                <h3 className="font-serif text-xl font-bold text-foreground mb-2 group-hover:text-accent transition-colors flex items-center justify-center gap-2">
-                  {product.name}
-                  <span className="opacity-0 group-hover:opacity-100 transition-opacity animate-sparkle">✨</span>
-                </h3>
-                <p className="text-sm text-muted-foreground mb-5 line-clamp-2 leading-relaxed">{product.description}</p>
-
-                {/* Color indicator */}
-                <div className="flex items-center justify-center gap-2 mb-4">
-                  <div className={`w-5 h-5 rounded-full ${product.accent} ring-2 ring-white shadow-lg`} />
-                </div>
-
-                <Link href={`/order/${product.id}`}>
-                  <Button
-                    className="w-full bg-accent hover:bg-accent/90 text-accent-foreground rounded-full shadow-lg shadow-accent/30 hover:shadow-xl hover:shadow-accent/40 transition-all duration-300 hover:scale-[1.02] group/btn"
-                    size="default"
-                  >
-                    <ShoppingBag className="w-4 h-4 mr-2 group-hover/btn:animate-bounce" />
-                    Order Now
-                  </Button>
-                </Link>
-              </div>
-            </article>
+            </motion.article>
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   )
