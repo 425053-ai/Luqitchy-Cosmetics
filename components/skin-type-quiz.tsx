@@ -321,7 +321,7 @@ export function SkinTypeQuiz() {
                               src={product.image}
                               alt={product.name}
                               fill
-                              className="object-cover"
+                              className="object-contain p-1"
                             />
                           </div>
                           {index === 0 && (

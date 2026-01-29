@@ -96,12 +96,12 @@ export function CartPreview() {
                   className="group flex gap-3 p-2 rounded-xl hover:bg-secondary/30 transition-all duration-300"
                 >
                   {/* Product Image */}
-                  <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-secondary/50 flex-shrink-0">
+                  <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-gradient-to-br from-pink-50 to-rose-50 dark:from-pink-950/20 dark:to-rose-950/20 flex-shrink-0">
                     <Image
                       src={item.image}
                       alt={item.name}
                       fill
-                      className="object-cover group-hover:scale-110 transition-transform duration-300"
+                      className="object-contain p-1 group-hover:scale-110 transition-transform duration-300"
                     />
                   </div>
 

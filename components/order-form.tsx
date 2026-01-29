@@ -117,12 +117,12 @@ export function ProductsSection() {
                   aria-label={`View ${product.name} order page`}
                 >
                   <span className="sr-only">Order {product.name}</span>
-                  <div className="relative h-96 rounded-2xl overflow-hidden shadow-2xl shadow-primary/30 transition-all duration-500 group-hover:shadow-3xl group-hover:shadow-accent/40 group-hover:scale-105">
+                  <div className="relative h-96 rounded-2xl overflow-hidden shadow-2xl shadow-primary/30 transition-all duration-500 group-hover:shadow-3xl group-hover:shadow-accent/40 group-hover:scale-105 bg-gradient-to-br from-pink-50 to-rose-50 dark:from-pink-950/20 dark:to-rose-950/20">
                     <Image
                       src={product.image || "/placeholder.svg"}
                       alt={product.name}
                       fill
-                      className="object-cover group-hover:scale-110 transition-transform duration-700"
+                      className="object-contain p-4 group-hover:scale-110 transition-transform duration-700"
                       sizes="(max-width: 768px) 100vw, 50vw"
                     />
 

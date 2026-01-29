@@ -459,12 +459,12 @@ export function ProductPage({ product }: ProductPageProps) {
           {/* Product Image */}
           <div className="animate-slide-in-left opacity-0" style={{ animationDelay: "0.1s" }}>
             <div className="sticky top-4 sm:top-6 md:top-8">
-              <div className="relative aspect-square rounded-2xl sm:rounded-3xl overflow-hidden shadow-xl sm:shadow-2xl shadow-primary/20 group">
+              <div className="relative aspect-square rounded-2xl sm:rounded-3xl overflow-hidden shadow-xl sm:shadow-2xl shadow-primary/20 group bg-gradient-to-br from-pink-50 to-rose-50 dark:from-pink-950/20 dark:to-rose-950/20">
                 <Image 
                   src={product.image} 
                   alt={product.name} 
                   fill 
-                  className="object-cover group-hover:scale-110 transition-transform duration-700" 
+                  className="object-contain p-4 group-hover:scale-110 transition-transform duration-700" 
                   priority
                 />
                 <div className={`absolute inset-0 bg-gradient-to-br ${product.color} opacity-0 group-hover:opacity-20 transition-opacity duration-500`} />

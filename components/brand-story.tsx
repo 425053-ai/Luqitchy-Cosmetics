@@ -165,7 +165,7 @@ export function BrandStory() {
               {/* Image Grid */}
               <div className="grid grid-cols-2 gap-4">
                 <motion.div
-                  className="relative h-64 md:h-80 rounded-2xl overflow-hidden"
+                  className="relative h-64 md:h-80 rounded-2xl overflow-hidden bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-950/20 dark:to-yellow-950/20"
                   whileHover={{ scale: 1.02 }}
                   transition={{ type: "spring", stiffness: 300 }}
                 >
@@ -173,13 +173,13 @@ export function BrandStory() {
                     src="/images/black-honey.jpeg"
                     alt="Luqitchy Black Honey"
                     fill
-                    className="object-cover"
+                    className="object-contain p-2"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
                 </motion.div>
 
                 <motion.div
-                  className="relative h-64 md:h-80 rounded-2xl overflow-hidden mt-8"
+                  className="relative h-64 md:h-80 rounded-2xl overflow-hidden mt-8 bg-gradient-to-br from-pink-50 to-rose-50 dark:from-pink-950/20 dark:to-rose-950/20"
                   whileHover={{ scale: 1.02 }}
                   transition={{ type: "spring", stiffness: 300 }}
                 >
@@ -187,13 +187,13 @@ export function BrandStory() {
                     src="/images/strawberry-milk.jpeg"
                     alt="Luqitchy Strawberry Milk"
                     fill
-                    className="object-cover"
+                    className="object-contain p-2"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
                 </motion.div>
 
                 <motion.div
-                  className="relative h-64 md:h-80 rounded-2xl overflow-hidden -mt-8"
+                  className="relative h-64 md:h-80 rounded-2xl overflow-hidden -mt-8 bg-gradient-to-br from-rose-50 to-pink-50 dark:from-rose-950/20 dark:to-pink-950/20"
                   whileHover={{ scale: 1.02 }}
                   transition={{ type: "spring", stiffness: 300 }}
                 >
@@ -201,13 +201,13 @@ export function BrandStory() {
                     src="/images/burgundy.jpeg"
                     alt="Luqitchy Burgundy"
                     fill
-                    className="object-cover"
+                    className="object-contain p-2"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
                 </motion.div>
 
                 <motion.div
-                  className="relative h-64 md:h-80 rounded-2xl overflow-hidden"
+                  className="relative h-64 md:h-80 rounded-2xl overflow-hidden bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20"
                   whileHover={{ scale: 1.02 }}
                   transition={{ type: "spring", stiffness: 300 }}
                 >
@@ -215,29 +215,11 @@ export function BrandStory() {
                     src="/images/mocha.jpeg"
                     alt="Luqitchy Mocha"
                     fill
-                    className="object-cover"
+                    className="object-contain p-2"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
                 </motion.div>
               </div>
-
-              {/* Floating Badge */}
-              <motion.div
-                className="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-card border border-border shadow-xl rounded-2xl px-6 py-4"
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.5 }}
-                whileHover={{ scale: 1.05 }}
-              >
-                <div className="flex items-center gap-3">
-                  <div className="text-3xl">💄</div>
-                  <div>
-                    <div className="font-bold text-foreground">Premium Quality</div>
-                    <div className="text-sm text-muted-foreground">Made with Love</div>
-                  </div>
-                </div>
-              </motion.div>
             </div>
 
             {/* Floating Emojis */}
