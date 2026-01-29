@@ -1,18 +1,29 @@
 import { NextResponse } from 'next/server'
 import { Redis } from '@upstash/redis'
 
-// Initialize Upstash Redis client (trim to handle whitespace/newlines in env vars)
-const redis = new Redis({
-  url: (process.env.UPSTASH_REDIS_REST_URL || '').trim(),
-  token: (process.env.UPSTASH_REDIS_REST_TOKEN || '').trim(),
-})
-
 const COUNTER_KEY = 'luqitchy:order_counter'
+
+// Lazy initialization - only create Redis client when needed (not at build time)
+let redis: Redis | null = null
+
+function getRedis(): Redis {
+  if (!redis) {
+    const url = (process.env.UPSTASH_REDIS_REST_URL || '').trim()
+    const token = (process.env.UPSTASH_REDIS_REST_TOKEN || '').trim()
+    
+    if (!url || !token) {
+      throw new Error('Redis credentials not configured')
+    }
+    
+    redis = new Redis({ url, token })
+  }
+  return redis
+}
 
 // GET - Get current order number without incrementing
 export async function GET() {
   try {
-    const counter = await redis.get<number>(COUNTER_KEY) || 0
+    const counter = await getRedis().get<number>(COUNTER_KEY) || 0
     return NextResponse.json({ currentOrder: counter })
   } catch (error) {
     console.error('Error getting order counter:', error)
@@ -24,7 +35,7 @@ export async function GET() {
 export async function POST() {
   try {
     // INCR is atomic - no race conditions even with concurrent requests!
-    const newCounter = await redis.incr(COUNTER_KEY)
+    const newCounter = await getRedis().incr(COUNTER_KEY)
     
     // Format: ORD-0001, ORD-0002, etc.
     const orderId = `ORD-${String(newCounter).padStart(4, '0')}`
