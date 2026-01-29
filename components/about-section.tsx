@@ -7,6 +7,7 @@ const features = [
     description: "Every product is crafted with the finest ingredients for a luxurious feel and lasting beauty.",
     emoji: "👑",
     gradient: "from-amber-500 to-orange-500",
+    animation: "animate-float-rotate",
   },
   {
     icon: Heart,
@@ -14,6 +15,7 @@ const features = [
     description: "Each product is carefully designed to bring joy and confidence to your beauty routine.",
     emoji: "💖",
     gradient: "from-pink-500 to-rose-500",
+    animation: "animate-heart-pop",
   },
   {
     icon: Star,
@@ -21,14 +23,15 @@ const features = [
     description: "Our exclusive color palette is designed to complement every skin tone beautifully.",
     emoji: "✨",
     gradient: "from-purple-500 to-pink-500",
+    animation: "animate-sparkle-burst",
   },
 ]
 
 const stats = [
-  { value: "8", label: "Products", icon: "💄" },
-  { value: "100%", label: "Cruelty-Free", icon: "🐰" },
-  { value: "24-48h", label: "Delivery", icon: "🚚" },
-  { value: "5.0", label: "Rating", icon: "⭐" },
+  { value: "8", label: "Products", icon: "💄", animation: "animate-dance" },
+  { value: "100%", label: "Cruelty-Free", icon: "🐰", animation: "animate-kawaii-bounce" },
+  { value: "24-48h", label: "Delivery", icon: "🚚", animation: "animate-wiggle" },
+  { value: "5.0", label: "Rating", icon: "⭐", animation: "animate-star-twirl" },
 ]
 
 export function AboutSection() {
@@ -95,7 +98,7 @@ export function AboutSection() {
                   className="text-center group hover-jelly"
                 >
                   <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 lg:w-20 lg:h-20 mx-auto mb-2 sm:mb-3 rounded-xl sm:rounded-2xl bg-card/80 backdrop-blur-sm border border-border/50 flex items-center justify-center shadow-lg group-hover:shadow-xl group-hover:border-accent/30 transition-all duration-300 group-hover:-translate-y-1 kawaii-card">
-                    <span className="text-xl sm:text-2xl md:text-3xl animate-kawaii-bounce" style={{ animationDelay: `${index * 0.2}s` }}>{stat.icon}</span>
+                    <span className={`text-xl sm:text-2xl md:text-3xl ${stat.animation}`} style={{ animationDelay: `${index * 0.2}s` }}>{stat.icon}</span>
                   </div>
                   <div className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-foreground group-hover:text-accent transition-colors">{stat.value}</div>
                   <div className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider">{stat.label}</div>
@@ -119,8 +122,8 @@ export function AboutSection() {
                   <div className="relative">
                     {/* Icon container */}
                     <div className={`relative w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 bg-gradient-to-br ${feature.gradient} rounded-xl sm:rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-5 md:mb-6 shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300 animate-glow-soft`}>
-                      <feature.icon className="w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 text-white" />
-                      <span className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 text-lg sm:text-xl md:text-2xl animate-kawaii-bounce">{feature.emoji}</span>
+                      <feature.icon className="w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 text-white animate-pulse-glow" />
+                      <span className={`absolute -top-1 -right-1 sm:-top-2 sm:-right-2 text-lg sm:text-xl md:text-2xl ${feature.animation}`}>{feature.emoji}</span>
                     </div>
 
                     <h3 className="font-serif text-lg sm:text-xl md:text-2xl font-bold text-foreground mb-2 sm:mb-3 md:mb-4 text-center group-hover:text-accent transition-colors">

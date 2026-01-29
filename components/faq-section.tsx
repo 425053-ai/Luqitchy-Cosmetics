@@ -13,54 +13,63 @@ const faqs = [
     answer:
       "We offer a complete beauty collection: 5 stunning Lip Gloss shades (Black Honey, Burgundy, Wine, Mocha, and Strawberry Milk), a nourishing Lip Balm, and 2 luxurious Body Lotion + Splash Bundles (Mulberry and Sugar Drop). Each product is carefully crafted with premium ingredients.",
     emoji: "💄",
+    animation: "animate-dance",
   },
   {
     question: "What are the Lip Gloss shades?",
     answer:
       "Our Lip Gloss collection features 5 beautiful shades: Black Honey (warm honey-brown with golden shimmer), Burgundy (deep berry red with cherry undertones), Wine (elegant wine-inspired red), Mocha (creamy coffee-inspired nude), and Strawberry Milk (sweet playful pink). Each shade complements various skin tones.",
     emoji: "🎨",
+    animation: "animate-float-rotate",
   },
   {
     question: "What's included in the Body Lotion Bundles?",
     answer:
       "Each Body Lotion + Splash Bundle includes a luxurious hydrating body lotion and a refreshing fragrant body splash. Available in Mulberry (wild berry scent) and Sugar Drop (sweet candy-like fragrance). Perfect as a gift or for your daily skincare routine!",
     emoji: "🧴",
+    animation: "animate-kawaii-bounce",
   },
   {
     question: "How long do the products last?",
     answer:
       "Our Lip Gloss provides long-lasting wear of 4-6 hours. The Lip Balm offers all-day moisture protection. Body Lotion fragrance lasts 6-8 hours, while the Splash provides an instant refreshing burst that lingers beautifully.",
     emoji: "⏰",
+    animation: "animate-wiggle",
   },
   {
     question: "What are the prices?",
     answer:
       "Lip Gloss shades are 100 EGP each, Lip Balm is 100 EGP, and Body Lotion + Splash Bundles are 300 EGP each. We offer premium quality at affordable prices!",
     emoji: "💰",
+    animation: "animate-sparkle-burst",
   },
   {
     question: "Is a deposit required for orders?",
     answer:
       "Yes, a deposit is required to confirm your order. This helps us manage inventory and ensure timely delivery of your products within 24-48 hours.",
     emoji: "💳",
+    animation: "animate-swing",
   },
   {
     question: "What is your refund policy?",
     answer:
       "All sales are final with no refunds or exchanges. We encourage you to review product details carefully before ordering. If you receive a damaged item, please contact us immediately and we'll resolve the issue.",
     emoji: "📋",
+    animation: "animate-float",
   },
   {
     question: "Are the products cruelty-free?",
     answer:
       "Absolutely! All Luqitchy products are 100% cruelty-free. We never test on animals and use only ethically sourced, natural ingredients. Beauty should never come at the cost of our furry friends!",
     emoji: "🐰",
+    animation: "animate-kawaii-bounce",
   },
   {
     question: "How do I store my products?",
     answer:
       "Store all products in a cool, dry place away from direct sunlight. Close caps tightly after use to maintain freshness and quality. Our products have a shelf life of 12-24 months when stored properly.",
     emoji: "💖",
+    animation: "animate-heart-pop",
   },
 ]
 
@@ -139,7 +148,7 @@ export function FAQSection() {
                 <AccordionTrigger className="text-left font-semibold text-foreground hover:text-accent py-4 sm:py-5 md:py-6 text-sm sm:text-base md:text-lg data-[state=open]:text-accent transition-all duration-300 hover:no-underline">
                   <span className="flex items-center gap-2 sm:gap-3 md:gap-4">
                     <span className="w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-lg sm:rounded-xl bg-accent/10 flex items-center justify-center text-base sm:text-lg md:text-xl flex-shrink-0 group-hover:scale-110 group-hover:bg-accent/20 transition-all duration-300 group-data-[state=open]:bg-accent/30 group-data-[state=open]:scale-110">
-                      {faq.emoji}
+                      <span className={faq.animation}>{faq.emoji}</span>
                     </span>
                     <span className="group-hover:translate-x-1 transition-transform duration-300">{faq.question}</span>
                   </span>

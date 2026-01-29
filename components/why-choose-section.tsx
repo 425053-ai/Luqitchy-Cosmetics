@@ -7,6 +7,7 @@ const reasons = [
     description: "Luxurious formulations using the finest ingredients for lip glosses, lip balm, and body care products.",
     emoji: "👑",
     gradient: "from-amber-500 to-orange-500",
+    animation: "animate-float-rotate",
   },
   {
     icon: Palette,
@@ -14,6 +15,7 @@ const reasons = [
     description: "5 lip gloss shades, 1 nourishing lip balm, and 2 body lotion bundles - a complete beauty collection.",
     emoji: "🎨",
     gradient: "from-purple-500 to-pink-500",
+    animation: "animate-dance",
   },
   {
     icon: Leaf,
@@ -21,6 +23,7 @@ const reasons = [
     description: "100% cruelty-free products with natural ingredients. Beauty without compromise.",
     emoji: "🌿",
     gradient: "from-green-500 to-emerald-500",
+    animation: "animate-swing",
   },
   {
     icon: Truck,
@@ -28,6 +31,7 @@ const reasons = [
     description: "Quick 24-48 hour delivery across Egypt. Your beauty essentials arrive when you need them.",
     emoji: "🚚",
     gradient: "from-blue-500 to-cyan-500",
+    animation: "animate-wiggle",
   },
 ]
 
@@ -106,8 +110,8 @@ export function WhyChooseSection() {
 
                 <div className="relative">
                   <div className={`relative w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 bg-gradient-to-br ${reason.gradient} rounded-xl sm:rounded-2xl flex items-center justify-center mb-3 sm:mb-4 md:mb-5 group-hover:scale-110 transition-all shadow-lg`}>
-                    <reason.icon className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 text-white" />
-                    <span className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 text-sm sm:text-base md:text-lg animate-wiggle">{reason.emoji}</span>
+                    <reason.icon className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 text-white group-hover:animate-pulse" />
+                    <span className={`absolute -top-1 -right-1 sm:-top-2 sm:-right-2 text-sm sm:text-base md:text-lg ${reason.animation}`}>{reason.emoji}</span>
                   </div>
                   <h3 className="font-serif text-base sm:text-lg md:text-xl font-bold text-foreground mb-2 sm:mb-3 group-hover:text-accent transition-colors">
                     {reason.title}

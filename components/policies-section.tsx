@@ -10,6 +10,7 @@ const policies = [
     highlight: "Secure your order",
     emoji: "💳",
     gradient: "from-blue-500 to-cyan-500",
+    animation: "animate-wiggle",
   },
   {
     icon: Truck,
@@ -19,6 +20,7 @@ const policies = [
     highlight: "24-48h delivery",
     emoji: "🚚",
     gradient: "from-green-500 to-emerald-500",
+    animation: "animate-dance",
   },
   {
     icon: ShieldCheck,
@@ -28,6 +30,7 @@ const policies = [
     highlight: "No refund or exchange",
     emoji: "🛡️",
     gradient: "from-amber-500 to-orange-500",
+    animation: "animate-float-rotate",
   },
   {
     icon: Heart,
@@ -37,6 +40,7 @@ const policies = [
     highlight: "Premium quality assured",
     emoji: "💖",
     gradient: "from-pink-500 to-rose-500",
+    animation: "animate-heart-pop",
   },
 ]
 
@@ -90,8 +94,8 @@ export function PoliciesSection() {
               <div className="relative">
                 <CardHeader className="text-center pb-2 sm:pb-3">
                   <div className={`relative w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 bg-gradient-to-br ${policy.gradient} rounded-xl sm:rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4 md:mb-5 group-hover:scale-110 transition-all shadow-lg`}>
-                    <policy.icon className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 text-white" />
-                    <span className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 text-sm sm:text-base md:text-lg animate-bounce-rotate">{policy.emoji}</span>
+                    <policy.icon className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 text-white group-hover:animate-pulse" />
+                    <span className={`absolute -top-1 -right-1 sm:-top-2 sm:-right-2 text-sm sm:text-base md:text-lg ${policy.animation}`}>{policy.emoji}</span>
                   </div>
                   <CardTitle className="font-serif text-base sm:text-lg text-foreground group-hover:text-accent transition-colors">
                     {policy.title}

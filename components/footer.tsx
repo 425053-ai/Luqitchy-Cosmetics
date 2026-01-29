@@ -127,8 +127,8 @@ export function Footer() {
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 sm:gap-3 justify-center sm:justify-start text-background/60 hover:text-primary transition-colors group"
                 >
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400 rounded-lg sm:rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform flex-shrink-0">
-                    <Instagram className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400 rounded-lg sm:rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform flex-shrink-0 animate-glow-soft">
+                    <Instagram className="w-4 h-4 sm:w-5 sm:h-5 text-white animate-dance" />
                   </div>
                   <div>
                     <span className="block font-medium text-background/80 group-hover:text-primary text-xs sm:text-sm">Instagram</span>
@@ -143,9 +143,9 @@ export function Footer() {
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 sm:gap-3 justify-center sm:justify-start text-background/60 hover:text-primary transition-colors group"
                 >
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-black via-gray-800 to-pink-500 rounded-lg sm:rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform flex-shrink-0">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-black via-gray-800 to-pink-500 rounded-lg sm:rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform flex-shrink-0 animate-glow-soft">
                     <svg
-                      className="w-4 h-4 sm:w-5 sm:h-5 fill-white"
+                      className="w-4 h-4 sm:w-5 sm:h-5 fill-white animate-wiggle"
                       viewBox="0 0 24 24"
                       xmlns="http://www.w3.org/2000/svg"
                     >
@@ -170,14 +170,14 @@ export function Footer() {
             </h3>
             <ul className="space-y-3 sm:space-y-4 text-xs sm:text-sm">
               <li className="flex items-center gap-2 sm:gap-3 justify-center sm:justify-start">
-                <div className="w-7 h-7 sm:w-8 sm:h-8 bg-background/10 rounded-full flex items-center justify-center flex-shrink-0">
-                  <MapPin className="w-3 h-3 sm:w-4 sm:h-4 text-primary" />
+                <div className="w-7 h-7 sm:w-8 sm:h-8 bg-background/10 rounded-full flex items-center justify-center flex-shrink-0 animate-glow-soft">
+                  <MapPin className="w-3 h-3 sm:w-4 sm:h-4 text-primary animate-float" />
                 </div>
                 <span className="text-background/60">Egypt</span>
               </li>
               <li className="flex items-center gap-2 sm:gap-3 justify-center sm:justify-start">
-                <div className="w-7 h-7 sm:w-8 sm:h-8 bg-background/10 rounded-full flex items-center justify-center flex-shrink-0">
-                  <Clock className="w-3 h-3 sm:w-4 sm:h-4 text-primary" />
+                <div className="w-7 h-7 sm:w-8 sm:h-8 bg-background/10 rounded-full flex items-center justify-center flex-shrink-0 animate-glow-soft">
+                  <Clock className="w-3 h-3 sm:w-4 sm:h-4 text-primary animate-wiggle" />
                 </div>
                 <span className="text-background/60">24-48h Delivery</span>
               </li>
@@ -186,11 +186,11 @@ export function Footer() {
             {/* Trust Badge */}
             <div className="mt-4 sm:mt-6 p-3 sm:p-4 bg-background/5 rounded-lg sm:rounded-xl border border-background/10">
               <div className="flex items-center gap-1.5 sm:gap-2 justify-center sm:justify-start text-[10px] sm:text-xs text-background/50">
-                <span className="text-green-400">✓</span>
+                <span className="text-green-400 animate-sparkle">✓</span>
                 100% Cruelty-Free
               </div>
               <div className="flex items-center gap-1.5 sm:gap-2 justify-center sm:justify-start text-[10px] sm:text-xs text-background/50 mt-1">
-                <span className="text-green-400">✓</span>
+                <span className="text-green-400 animate-sparkle" style={{ animationDelay: '0.5s' }}>✓</span>
                 Premium Quality Products
               </div>
             </div>
