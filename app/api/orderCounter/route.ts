@@ -1,43 +1,18 @@
 import { NextResponse } from 'next/server'
-import { promises as fs } from 'fs'
-import path from 'path'
+import { Redis } from '@upstash/redis'
 
-// File path for storing the order counter
-const counterFilePath = path.join(process.cwd(), 'data', 'order-counter.json')
+// Initialize Upstash Redis client
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL || '',
+  token: process.env.UPSTASH_REDIS_REST_TOKEN || '',
+})
 
-// Ensure data directory exists
-async function ensureDataDir() {
-  const dataDir = path.join(process.cwd(), 'data')
-  try {
-    await fs.access(dataDir)
-  } catch {
-    await fs.mkdir(dataDir, { recursive: true })
-  }
-}
-
-// Get current counter value
-async function getCounter(): Promise<number> {
-  try {
-    await ensureDataDir()
-    const data = await fs.readFile(counterFilePath, 'utf-8')
-    const json = JSON.parse(data)
-    return json.counter || 0
-  } catch {
-    // If file doesn't exist, start from 0
-    return 0
-  }
-}
-
-// Save counter value
-async function saveCounter(counter: number): Promise<void> {
-  await ensureDataDir()
-  await fs.writeFile(counterFilePath, JSON.stringify({ counter, updatedAt: new Date().toISOString() }))
-}
+const COUNTER_KEY = 'luqitchy:order_counter'
 
 // GET - Get current order number without incrementing
 export async function GET() {
   try {
-    const counter = await getCounter()
+    const counter = await redis.get<number>(COUNTER_KEY) || 0
     return NextResponse.json({ currentOrder: counter })
   } catch (error) {
     console.error('Error getting order counter:', error)
@@ -45,12 +20,11 @@ export async function GET() {
   }
 }
 
-// POST - Generate next order ID
+// POST - Generate next order ID (atomic increment)
 export async function POST() {
   try {
-    const currentCounter = await getCounter()
-    const newCounter = currentCounter + 1
-    await saveCounter(newCounter)
+    // INCR is atomic - no race conditions even with concurrent requests!
+    const newCounter = await redis.incr(COUNTER_KEY)
     
     // Format: ORD-0001, ORD-0002, etc.
     const orderId = `ORD-${String(newCounter).padStart(4, '0')}`
@@ -61,6 +35,13 @@ export async function POST() {
     })
   } catch (error) {
     console.error('Error generating order ID:', error)
-    return NextResponse.json({ error: 'Failed to generate order ID' }, { status: 500 })
+    
+    // Fallback to timestamp-based ID if Redis fails
+    const fallbackId = `ORD-${Date.now()}`
+    return NextResponse.json({ 
+      orderId: fallbackId,
+      orderNumber: Date.now(),
+      warning: 'Used fallback ID due to database error'
+    })
   }
 }
