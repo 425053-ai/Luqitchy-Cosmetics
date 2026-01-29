@@ -85,7 +85,7 @@ const products = [
     id: "body-lotion-splash-sugar-drop",
     name: "Body Lotion + Splash Bundle - Sugar Drop",
     description: "Sweet luxury bundle with irresistible fragrance",
-    image: "/images/Body Lotion + Splash Bundle - Sugar Drop.png",
+    image: "/images/body-lotion-splash-sugar-drop.png",
     color: "from-pink-400 to-orange-300",
     accent: "bg-pink-400",
     price: 300,

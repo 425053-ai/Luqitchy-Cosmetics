@@ -5,7 +5,7 @@ import { ProductPage } from "@/components/product-page"
 const product = {
   id: "body-lotion-splash-sugar-drop",
   name: "Body Lotion + Splash Bundle - Sugar Drop",
-  image: "/images/Body Lotion + Splash Bundle - Sugar Drop.png",
+  image: "/images/body-lotion-splash-sugar-drop.png",
   price: 300,
   color: "from-pink-400 to-orange-300",
   features: ["Luxurious hydrating lotion", "Refreshing fragrant splash", "Premium packaging", "Perfect gift set"],
