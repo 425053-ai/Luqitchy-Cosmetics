@@ -298,8 +298,8 @@ export function ProductsSection() {
             >
               {/* Premium Card Container */}
               <div className="premium-card kawaii-card rounded-2xl sm:rounded-3xl overflow-hidden h-full bg-card border border-border/50 hover:border-accent/30 transition-all duration-500 hover:shadow-xl hover:shadow-accent/10">
-                {/* Product Image Container - taller on mobile for better product visibility */}
-                <div className={`relative aspect-[4/5] sm:aspect-[3/4] md:aspect-square overflow-hidden ${product.containerBg}`}>
+                {/* Product Image Container - consistent aspect ratio across all devices */}
+                <div className={`relative aspect-[4/5] overflow-hidden ${product.containerBg}`}>
                   {/* Glow effect */}
                   <div
                     className={`absolute inset-0 bg-gradient-to-br ${product.color} opacity-0 group-hover:opacity-30 transition-all duration-700`}
