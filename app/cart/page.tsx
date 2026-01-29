@@ -49,7 +49,22 @@ export default function CartPage() {
     }
 
     setIsSubmitting(true)
-    const order_id = `ORD-${Date.now()}`
+    
+    // Generate sequential order ID
+    let order_id: string
+    try {
+      const orderIdResponse = await fetch('/api/orderCounter', { method: 'POST' })
+      if (orderIdResponse.ok) {
+        const { orderId } = await orderIdResponse.json()
+        order_id = orderId
+      } else {
+        // Fallback to timestamp if API fails
+        order_id = `ORD-${Date.now()}`
+      }
+    } catch {
+      order_id = `ORD-${Date.now()}`
+    }
+    
     const order_date = new Date().toLocaleString('en-US', {
       year: 'numeric',
       month: 'long',
@@ -113,6 +128,9 @@ export default function CartPage() {
         customerData: { ...formData },
         orderTime: order_date,
       })
+      
+      // Save order ID to localStorage for confirmation page
+      localStorage.setItem('lastOrderId', order_id)
       
       // Scroll to top of page
       window.scrollTo({ top: 0, left: 0, behavior: "instant" })

@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { CheckCircle, Mail, MessageCircle, ArrowRight, Sparkles } from "lucide-react"
@@ -8,13 +9,28 @@ import { ConfettiEffect } from "@/components/confetti-effect"
 
 export default function ConfirmationPage() {
   const [showConfetti, setShowConfetti] = useState(true)
-  const [orderId] = useState(() => `ORD-${Date.now()}`)
+  const searchParams = useSearchParams()
+  const [orderId, setOrderId] = useState<string>("")
 
   useEffect(() => {
+    // Get order ID from URL params or localStorage
+    const urlOrderId = searchParams.get('orderId')
+    if (urlOrderId) {
+      setOrderId(urlOrderId)
+    } else {
+      // Try to get from localStorage (last order)
+      const lastOrder = localStorage.getItem('lastOrderId')
+      if (lastOrder) {
+        setOrderId(lastOrder)
+      } else {
+        setOrderId('Processing...')
+      }
+    }
+    
     // Hide confetti after 5 seconds
     const timer = setTimeout(() => setShowConfetti(false), 5000)
     return () => clearTimeout(timer)
-  }, [])
+  }, [searchParams])
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-background via-secondary/30 to-background flex items-center justify-center px-3 sm:px-4 py-6 sm:py-8 overflow-hidden relative">

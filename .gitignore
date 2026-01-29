@@ -26,3 +26,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 Luqitchy-Cosmetics-clean/
+
+# data folder (order counter is managed per deployment)
+/data/
