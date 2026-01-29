@@ -130,109 +130,109 @@ export default function CartPage() {
 
   if (submitted && submittedOrder) {
     return (
-      <div className="min-h-screen p-4 bg-gradient-to-br from-background via-secondary/20 to-background">
-        <div className="max-w-2xl mx-auto space-y-6 py-8">
+      <div className="min-h-screen p-3 sm:p-4 bg-gradient-to-br from-background via-secondary/20 to-background">
+        <div className="max-w-2xl mx-auto space-y-4 sm:space-y-6 py-6 sm:py-8">
           {/* Header */}
-          <div className="text-center space-y-4">
-            <div className="text-6xl animate-bounce">🎉</div>
-            <h1 className="text-4xl md:text-5xl font-serif font-bold gradient-text">Thank You For Your Order!</h1>
-            <p className="text-lg text-muted-foreground">
+          <div className="text-center space-y-3 sm:space-y-4">
+            <div className="text-4xl sm:text-5xl md:text-6xl animate-bounce">🎉</div>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-serif font-bold gradient-text px-2">Thank You For Your Order!</h1>
+            <p className="text-sm sm:text-base md:text-lg text-muted-foreground px-4">
               Your order has been received successfully. We will contact you soon!
             </p>
           </div>
 
           {/* Screenshot Notice */}
-          <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-2xl p-4 text-center">
-            <p className="text-yellow-600 dark:text-yellow-400 font-semibold flex items-center justify-center gap-2">
-              📸 Save this page! Take a screenshot of your order
+          <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl sm:rounded-2xl p-3 sm:p-4 text-center mx-2 sm:mx-0">
+            <p className="text-yellow-600 dark:text-yellow-400 font-semibold flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 text-xs sm:text-sm md:text-base">
+              <span>📸</span> <span>Save this page! Take a screenshot of your order</span>
             </p>
           </div>
 
           {/* Order Receipt Card */}
-          <div className="bg-card rounded-3xl border border-border shadow-2xl overflow-hidden">
+          <div className="bg-card rounded-2xl sm:rounded-3xl border border-border shadow-xl sm:shadow-2xl overflow-hidden mx-2 sm:mx-0">
             {/* Receipt Header */}
-            <div className="bg-gradient-to-r from-accent to-accent/80 text-white p-6 text-center">
-              <h2 className="text-2xl font-bold mb-2">🧾 Order Receipt</h2>
-              <p className="text-white/90 font-mono text-lg">{submittedOrder.orderId}</p>
-              <p className="text-white/70 text-sm mt-1">{submittedOrder.orderTime}</p>
+            <div className="bg-gradient-to-r from-accent to-accent/80 text-white p-4 sm:p-5 md:p-6 text-center">
+              <h2 className="text-lg sm:text-xl md:text-2xl font-bold mb-1 sm:mb-2">🧾 Order Receipt</h2>
+              <p className="text-white/90 font-mono text-sm sm:text-base md:text-lg break-all">{submittedOrder.orderId}</p>
+              <p className="text-white/70 text-xs sm:text-sm mt-1">{submittedOrder.orderTime}</p>
             </div>
 
             {/* Customer Info */}
-            <div className="p-6 border-b border-border">
-              <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-                <span className="text-xl">👤</span> Customer Information
+            <div className="p-3 sm:p-4 md:p-6 border-b border-border">
+              <h3 className="text-sm sm:text-base md:text-lg font-bold mb-3 sm:mb-4 flex items-center gap-2">
+                <span className="text-base sm:text-lg md:text-xl">👤</span> Customer Information
               </h3>
-              <div className="grid gap-3 text-sm">
-                <div className="flex justify-between">
+              <div className="grid gap-2 sm:gap-3 text-xs sm:text-sm">
+                <div className="flex flex-col sm:flex-row sm:justify-between gap-0.5 sm:gap-2">
                   <span className="text-muted-foreground">Full Name:</span>
                   <span className="font-semibold">{submittedOrder.customerData.fullName}</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex flex-col sm:flex-row sm:justify-between gap-0.5 sm:gap-2">
                   <span className="text-muted-foreground">Phone:</span>
                   <span className="font-semibold" dir="ltr">{submittedOrder.customerData.phone}</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex flex-col sm:flex-row sm:justify-between gap-0.5 sm:gap-2">
                   <span className="text-muted-foreground">WhatsApp:</span>
                   <span className="font-semibold" dir="ltr">{submittedOrder.customerData.whatsapp}</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex flex-col sm:flex-row sm:justify-between gap-0.5 sm:gap-2">
                   <span className="text-muted-foreground">Email:</span>
-                  <span className="font-semibold text-xs md:text-sm" dir="ltr">{submittedOrder.customerData.email}</span>
+                  <span className="font-semibold text-xs sm:text-sm break-all" dir="ltr">{submittedOrder.customerData.email}</span>
                 </div>
               </div>
             </div>
 
             {/* Delivery Address */}
-            <div className="p-6 border-b border-border">
-              <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-                <span className="text-xl">📍</span> Delivery Address
+            <div className="p-3 sm:p-4 md:p-6 border-b border-border">
+              <h3 className="text-sm sm:text-base md:text-lg font-bold mb-3 sm:mb-4 flex items-center gap-2">
+                <span className="text-base sm:text-lg md:text-xl">📍</span> Delivery Address
               </h3>
-              <div className="grid gap-3 text-sm">
-                <div className="flex justify-between">
+              <div className="grid gap-2 sm:gap-3 text-xs sm:text-sm">
+                <div className="flex flex-col sm:flex-row sm:justify-between gap-0.5 sm:gap-2">
                   <span className="text-muted-foreground">Governorate:</span>
                   <span className="font-semibold">{submittedOrder.customerData.governorate}</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex flex-col sm:flex-row sm:justify-between gap-0.5 sm:gap-2">
                   <span className="text-muted-foreground">City:</span>
                   <span className="font-semibold">{submittedOrder.customerData.city}</span>
                 </div>
-                <div className="flex justify-between items-start">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-0.5 sm:gap-2">
                   <span className="text-muted-foreground">Street:</span>
-                  <span className="font-semibold text-right max-w-[60%]">{submittedOrder.customerData.streetAddress}</span>
+                  <span className="font-semibold sm:text-right sm:max-w-[60%]">{submittedOrder.customerData.streetAddress}</span>
                 </div>
                 {submittedOrder.customerData.landmark && (
-                  <div className="flex justify-between items-start">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-0.5 sm:gap-2">
                     <span className="text-muted-foreground">Landmark:</span>
-                    <span className="font-semibold text-right max-w-[60%]">{submittedOrder.customerData.landmark}</span>
+                    <span className="font-semibold sm:text-right sm:max-w-[60%]">{submittedOrder.customerData.landmark}</span>
                   </div>
                 )}
                 {submittedOrder.customerData.notes && (
-                  <div className="flex justify-between items-start">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-0.5 sm:gap-2">
                     <span className="text-muted-foreground">Notes:</span>
-                    <span className="font-semibold text-right max-w-[60%]">{submittedOrder.customerData.notes}</span>
+                    <span className="font-semibold sm:text-right sm:max-w-[60%]">{submittedOrder.customerData.notes}</span>
                   </div>
                 )}
               </div>
             </div>
 
             {/* Products */}
-            <div className="p-6 border-b border-border">
-              <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-                <span className="text-xl">📦</span> Products ({submittedOrder.totalQuantity} items)
+            <div className="p-3 sm:p-4 md:p-6 border-b border-border">
+              <h3 className="text-sm sm:text-base md:text-lg font-bold mb-3 sm:mb-4 flex items-center gap-2">
+                <span className="text-base sm:text-lg md:text-xl">📦</span> Products ({submittedOrder.totalQuantity} items)
               </h3>
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {submittedOrder.items.map((item, index) => (
-                  <div key={index} className="flex items-center gap-4 bg-muted/30 rounded-xl p-3">
-                    <div className="relative w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
+                  <div key={index} className="flex items-center gap-2 sm:gap-3 md:gap-4 bg-muted/30 rounded-lg sm:rounded-xl p-2 sm:p-3">
+                    <div className="relative w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-md sm:rounded-lg overflow-hidden flex-shrink-0">
                       <Image src={item.image} alt={item.name} fill className="object-cover" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-semibold truncate">{item.name}</p>
-                      <p className="text-sm text-muted-foreground">Qty: {item.quantity}</p>
+                      <p className="font-semibold truncate text-xs sm:text-sm md:text-base">{item.name}</p>
+                      <p className="text-xs sm:text-sm text-muted-foreground">Qty: {item.quantity}</p>
                     </div>
-                    <div className="text-right">
-                      <p className="font-bold text-accent">{item.price * item.quantity} EGP</p>
-                      <p className="text-xs text-muted-foreground">{item.price} × {item.quantity}</p>
+                    <div className="text-right flex-shrink-0">
+                      <p className="font-bold text-accent text-xs sm:text-sm md:text-base">{item.price * item.quantity} EGP</p>
+                      <p className="text-[10px] sm:text-xs text-muted-foreground">{item.price} × {item.quantity}</p>
                     </div>
                   </div>
                 ))}
@@ -240,49 +240,49 @@ export default function CartPage() {
             </div>
 
             {/* Total */}
-            <div className="p-6 bg-accent/5">
-              <div className="flex justify-between items-center text-xl">
+            <div className="p-3 sm:p-4 md:p-6 bg-accent/5">
+              <div className="flex justify-between items-center text-base sm:text-lg md:text-xl">
                 <span className="font-bold">💰 Total:</span>
-                <span className="font-bold text-accent text-2xl">{submittedOrder.totalPrice} EGP</span>
+                <span className="font-bold text-accent text-lg sm:text-xl md:text-2xl">{submittedOrder.totalPrice} EGP</span>
               </div>
             </div>
 
             {/* Footer Note */}
-            <div className="p-6 text-center space-y-3 bg-muted/20">
+            <div className="p-3 sm:p-4 md:p-6 text-center space-y-2 sm:space-y-3 bg-muted/20">
               <div className="flex items-center justify-center gap-2 text-green-600 dark:text-green-400">
-                <span className="text-xl">✅</span>
-                <span className="font-semibold">Your order has been confirmed!</span>
+                <span className="text-base sm:text-lg md:text-xl">✅</span>
+                <span className="font-semibold text-xs sm:text-sm md:text-base">Your order has been confirmed!</span>
               </div>
-              <p className="text-sm text-muted-foreground">
-                We will contact you at <strong dir="ltr">{submittedOrder.customerData.phone}</strong> to confirm delivery details
+              <p className="text-xs sm:text-sm text-muted-foreground px-2">
+                We will contact you at <strong dir="ltr" className="break-all">{submittedOrder.customerData.phone}</strong> to confirm delivery details
               </p>
-              <div className="flex items-center justify-center gap-4 pt-2 text-muted-foreground text-xs">
+              <div className="flex items-center justify-center gap-4 pt-1 sm:pt-2 text-muted-foreground text-[10px] sm:text-xs">
                 <span>📧 luqitchycosmetics@gmail.com</span>
               </div>
             </div>
           </div>
 
           {/* Actions */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col gap-3 sm:gap-4 justify-center px-2 sm:px-0">
             <Button
               onClick={() => router.push('/')}
-              className="bg-gradient-to-r from-accent to-accent/80 hover:from-accent/90 hover:to-accent/70 h-12 px-8 rounded-xl"
+              className="bg-gradient-to-r from-accent to-accent/80 hover:from-accent/90 hover:to-accent/70 h-10 sm:h-11 md:h-12 px-6 sm:px-8 rounded-lg sm:rounded-xl text-sm sm:text-base"
             >
               🏠 Back to Home
             </Button>
             <Button
               onClick={() => router.push('/#products')}
               variant="outline"
-              className="h-12 px-8 rounded-xl border-2"
+              className="h-10 sm:h-11 md:h-12 px-6 sm:px-8 rounded-lg sm:rounded-xl border-2 text-sm sm:text-base"
             >
               🛍️ Shop More
             </Button>
           </div>
 
           {/* Brand */}
-          <div className="text-center pt-4">
-            <p className="text-2xl font-serif font-bold gradient-text">Luqitchy Cosmetics</p>
-            <p className="text-sm text-muted-foreground">✨ Your beauty starts here</p>
+          <div className="text-center pt-2 sm:pt-4">
+            <p className="text-xl sm:text-2xl font-serif font-bold gradient-text">Luqitchy Cosmetics</p>
+            <p className="text-xs sm:text-sm text-muted-foreground">✨ Your beauty starts here</p>
           </div>
         </div>
       </div>

@@ -177,16 +177,16 @@ export function ProductPage({ product }: ProductPageProps) {
   if (submitted && submittedOrder) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-secondary/20 to-background relative overflow-hidden">
-        {/* Animated Background Elements */}
+        {/* Animated Background Elements - Hidden on mobile for performance */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-20 left-10 w-72 h-72 bg-green-500/10 rounded-full blur-3xl animate-morph" />
-          <div className="absolute bottom-20 right-10 w-96 h-96 bg-accent/10 rounded-full blur-3xl animate-morph" style={{ animationDelay: "2s" }} />
+          <div className="hidden sm:block absolute top-20 left-10 w-48 sm:w-72 h-48 sm:h-72 bg-green-500/10 rounded-full blur-3xl animate-morph" />
+          <div className="hidden sm:block absolute bottom-20 right-10 w-64 sm:w-96 h-64 sm:h-96 bg-accent/10 rounded-full blur-3xl animate-morph" style={{ animationDelay: "2s" }} />
           
-          {/* Confetti-like particles */}
-          {[...Array(12)].map((_, i) => (
+          {/* Confetti-like particles - fewer on mobile */}
+          {[...Array(6)].map((_, i) => (
             <span 
               key={i}
-              className="absolute text-2xl animate-float opacity-20"
+              className="hidden sm:block absolute text-xl sm:text-2xl animate-float opacity-20"
               style={{
                 left: `${Math.random() * 100}%`,
                 top: `${Math.random() * 100}%`,
@@ -199,25 +199,25 @@ export function ProductPage({ product }: ProductPageProps) {
           ))}
         </div>
 
-        <div className="max-w-3xl mx-auto space-y-8 py-12 px-4 relative z-10">
+        <div className="max-w-3xl mx-auto space-y-4 sm:space-y-6 md:space-y-8 py-6 sm:py-8 md:py-12 px-3 sm:px-4 relative z-10">
           {/* Success Animation Header */}
-          <div className="text-center space-y-6">
+          <div className="text-center space-y-4 sm:space-y-6">
             <div className="relative inline-block">
               <div className="absolute inset-0 animate-pulse-ring">
-                <div className="w-24 h-24 rounded-full bg-green-500/20" />
+                <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full bg-green-500/20" />
               </div>
-              <div className="relative w-24 h-24 mx-auto bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center shadow-2xl shadow-green-500/30 animate-success-check">
-                <svg className="w-12 h-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+              <div className="relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 mx-auto bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center shadow-2xl shadow-green-500/30 animate-success-check">
+                <svg className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                 </svg>
               </div>
             </div>
             
-            <div className="space-y-3 animate-slide-up opacity-0" style={{ animationDelay: "0.3s" }}>
-              <h1 className="text-4xl md:text-6xl font-serif font-bold">
+            <div className="space-y-2 sm:space-y-3 animate-slide-up opacity-0" style={{ animationDelay: "0.3s" }}>
+              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-serif font-bold">
                 <span className="gradient-text">Thank You!</span>
               </h1>
-              <p className="text-xl text-muted-foreground">
+              <p className="text-sm sm:text-base md:text-lg lg:text-xl text-muted-foreground px-2">
                 Your order has been confirmed successfully
               </p>
             </div>
@@ -225,12 +225,12 @@ export function ProductPage({ product }: ProductPageProps) {
 
           {/* Screenshot Notice */}
           <div className="animate-slide-up opacity-0" style={{ animationDelay: "0.4s" }}>
-            <div className="bg-gradient-to-r from-amber-500/10 via-yellow-500/10 to-amber-500/10 border border-yellow-500/30 rounded-2xl p-5 backdrop-blur-sm">
-              <div className="flex items-center justify-center gap-3">
-                <span className="text-3xl animate-bounce-subtle">📸</span>
+            <div className="bg-gradient-to-r from-amber-500/10 via-yellow-500/10 to-amber-500/10 border border-yellow-500/30 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-5 backdrop-blur-sm">
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3">
+                <span className="text-2xl sm:text-3xl animate-bounce-subtle">📸</span>
                 <div className="text-center">
-                  <p className="text-yellow-700 dark:text-yellow-400 font-bold text-lg">Save Your Order Details</p>
-                  <p className="text-yellow-600/80 dark:text-yellow-500/80 text-sm">Take a screenshot of this receipt for your records</p>
+                  <p className="text-yellow-700 dark:text-yellow-400 font-bold text-sm sm:text-base md:text-lg">Save Your Order Details</p>
+                  <p className="text-yellow-600/80 dark:text-yellow-500/80 text-xs sm:text-sm">Take a screenshot of this receipt for your records</p>
                 </div>
               </div>
             </div>
@@ -238,149 +238,149 @@ export function ProductPage({ product }: ProductPageProps) {
 
           {/* Premium Order Receipt Card */}
           <div className="animate-slide-up opacity-0" style={{ animationDelay: "0.5s" }}>
-            <div className="premium-card rounded-3xl overflow-hidden">
+            <div className="premium-card rounded-2xl sm:rounded-3xl overflow-hidden">
               {/* Receipt Header */}
-              <div className="relative bg-gradient-to-r from-accent via-pink-500 to-accent text-white p-8 text-center overflow-hidden">
+              <div className="relative bg-gradient-to-r from-accent via-pink-500 to-accent text-white p-4 sm:p-6 md:p-8 text-center overflow-hidden">
                 <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxjaXJjbGUgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjEpIiBjeD0iMjAiIGN5PSIyMCIgcj0iMiIvPjwvZz48L3N2Zz4=')] opacity-50" />
                 <div className="relative">
-                  <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-1.5 rounded-full mb-4">
-                    <span className="text-sm font-medium">Order Confirmed</span>
-                    <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+                  <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-3 sm:px-4 py-1 sm:py-1.5 rounded-full mb-2 sm:mb-4">
+                    <span className="text-xs sm:text-sm font-medium">Order Confirmed</span>
+                    <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-green-400 rounded-full animate-pulse" />
                   </div>
-                  <h2 className="text-3xl font-bold mb-2">Order Receipt</h2>
-                  <p className="font-mono text-xl tracking-wider">{submittedOrder.orderId}</p>
-                  <p className="text-white/70 text-sm mt-2">{submittedOrder.orderTime}</p>
+                  <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-1 sm:mb-2">Order Receipt</h2>
+                  <p className="font-mono text-sm sm:text-base md:text-xl tracking-wider break-all">{submittedOrder.orderId}</p>
+                  <p className="text-white/70 text-xs sm:text-sm mt-1 sm:mt-2">{submittedOrder.orderTime}</p>
                 </div>
               </div>
 
               {/* Receipt Body */}
               <div className="receipt-pattern">
                 {/* Customer Info */}
-                <div className="p-6 border-b border-border/50">
-                  <div className="flex items-center gap-3 mb-5">
-                    <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
-                      <span className="text-xl">👤</span>
+                <div className="p-3 sm:p-4 md:p-6 border-b border-border/50">
+                  <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4 md:mb-5">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-accent/10 flex items-center justify-center">
+                      <span className="text-base sm:text-xl">👤</span>
                     </div>
-                    <h3 className="text-lg font-bold">Customer Information</h3>
+                    <h3 className="text-sm sm:text-base md:text-lg font-bold">Customer Information</h3>
                   </div>
-                  <div className="grid gap-4 text-sm bg-muted/30 rounded-2xl p-4">
-                    <div className="flex justify-between items-center">
+                  <div className="grid gap-2 sm:gap-3 md:gap-4 text-xs sm:text-sm bg-muted/30 rounded-xl sm:rounded-2xl p-3 sm:p-4">
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-0.5 sm:gap-2">
                       <span className="text-muted-foreground">Full Name</span>
                       <span className="font-semibold">{submittedOrder.customerData.fullName}</span>
                     </div>
-                    <div className="flex justify-between items-center">
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-0.5 sm:gap-2">
                       <span className="text-muted-foreground">Phone</span>
                       <span className="font-semibold font-mono" dir="ltr">{submittedOrder.customerData.phone}</span>
                     </div>
-                    <div className="flex justify-between items-center">
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-0.5 sm:gap-2">
                       <span className="text-muted-foreground">WhatsApp</span>
                       <span className="font-semibold font-mono" dir="ltr">{submittedOrder.customerData.whatsapp}</span>
                     </div>
-                    <div className="flex justify-between items-center">
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-0.5 sm:gap-2">
                       <span className="text-muted-foreground">Email</span>
-                      <span className="font-semibold text-xs md:text-sm font-mono" dir="ltr">{submittedOrder.customerData.email}</span>
+                      <span className="font-semibold text-xs sm:text-sm font-mono break-all" dir="ltr">{submittedOrder.customerData.email}</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Delivery Address */}
-                <div className="p-6 border-b border-border/50">
-                  <div className="flex items-center gap-3 mb-5">
-                    <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
-                      <span className="text-xl">📍</span>
+                <div className="p-3 sm:p-4 md:p-6 border-b border-border/50">
+                  <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4 md:mb-5">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-accent/10 flex items-center justify-center">
+                      <span className="text-base sm:text-xl">📍</span>
                     </div>
-                    <h3 className="text-lg font-bold">Delivery Address</h3>
+                    <h3 className="text-sm sm:text-base md:text-lg font-bold">Delivery Address</h3>
                   </div>
-                  <div className="bg-muted/30 rounded-2xl p-4 space-y-3 text-sm">
-                    <div className="flex justify-between">
+                  <div className="bg-muted/30 rounded-xl sm:rounded-2xl p-3 sm:p-4 space-y-2 sm:space-y-3 text-xs sm:text-sm">
+                    <div className="flex flex-col sm:flex-row sm:justify-between gap-0.5 sm:gap-2">
                       <span className="text-muted-foreground">Governorate</span>
                       <span className="font-semibold">{submittedOrder.customerData.governorate}</span>
                     </div>
-                    <div className="flex justify-between">
+                    <div className="flex flex-col sm:flex-row sm:justify-between gap-0.5 sm:gap-2">
                       <span className="text-muted-foreground">City</span>
                       <span className="font-semibold">{submittedOrder.customerData.city}</span>
                     </div>
-                    <div className="flex justify-between items-start">
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-0.5 sm:gap-2">
                       <span className="text-muted-foreground">Street</span>
-                      <span className="font-semibold text-right max-w-[60%]">{submittedOrder.customerData.streetAddress}</span>
+                      <span className="font-semibold sm:text-right sm:max-w-[60%]">{submittedOrder.customerData.streetAddress}</span>
                     </div>
                     {submittedOrder.customerData.landmark && (
-                      <div className="flex justify-between items-start">
+                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-0.5 sm:gap-2">
                         <span className="text-muted-foreground">Landmark</span>
-                        <span className="font-semibold text-right max-w-[60%]">{submittedOrder.customerData.landmark}</span>
+                        <span className="font-semibold sm:text-right sm:max-w-[60%]">{submittedOrder.customerData.landmark}</span>
                       </div>
                     )}
                     {submittedOrder.customerData.notes && (
-                      <div className="flex justify-between items-start pt-2 border-t border-border/50">
+                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-0.5 sm:gap-2 pt-2 border-t border-border/50">
                         <span className="text-muted-foreground">Notes</span>
-                        <span className="font-semibold text-right max-w-[60%] italic">{submittedOrder.customerData.notes}</span>
+                        <span className="font-semibold sm:text-right sm:max-w-[60%] italic">{submittedOrder.customerData.notes}</span>
                       </div>
                     )}
                   </div>
                 </div>
 
                 {/* Product */}
-                <div className="p-6 border-b border-border/50">
-                  <div className="flex items-center gap-3 mb-5">
-                    <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
-                      <span className="text-xl">📦</span>
+                <div className="p-3 sm:p-4 md:p-6 border-b border-border/50">
+                  <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4 md:mb-5">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-accent/10 flex items-center justify-center">
+                      <span className="text-base sm:text-xl">📦</span>
                     </div>
-                    <h3 className="text-lg font-bold">Product Details</h3>
+                    <h3 className="text-sm sm:text-base md:text-lg font-bold">Product Details</h3>
                   </div>
-                  <div className="flex items-center gap-5 bg-gradient-to-r from-muted/50 to-muted/30 rounded-2xl p-4 order-card">
-                    <div className="relative w-24 h-24 rounded-2xl overflow-hidden flex-shrink-0 shadow-lg ring-2 ring-white/50">
+                  <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 md:gap-5 bg-gradient-to-r from-muted/50 to-muted/30 rounded-xl sm:rounded-2xl p-3 sm:p-4 order-card">
+                    <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-xl sm:rounded-2xl overflow-hidden flex-shrink-0 shadow-lg ring-2 ring-white/50">
                       <Image src={submittedOrder.productImage} alt={submittedOrder.productName} fill className="object-cover" />
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-bold text-xl mb-1">{submittedOrder.productName}</p>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        <span className="bg-accent/10 px-3 py-1 rounded-full">Qty: {submittedOrder.quantity}</span>
+                    <div className="flex-1 min-w-0 text-center sm:text-left">
+                      <p className="font-bold text-base sm:text-lg md:text-xl mb-1">{submittedOrder.productName}</p>
+                      <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
+                        <span className="bg-accent/10 px-2 sm:px-3 py-1 rounded-full">Qty: {submittedOrder.quantity}</span>
                         <span>{submittedOrder.unitPrice} EGP each</span>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-sm text-muted-foreground">Subtotal</p>
-                      <p className="font-bold text-accent text-2xl">{submittedOrder.totalPrice} EGP</p>
+                    <div className="text-center sm:text-right">
+                      <p className="text-xs sm:text-sm text-muted-foreground">Subtotal</p>
+                      <p className="font-bold text-accent text-xl sm:text-2xl">{submittedOrder.totalPrice} EGP</p>
                     </div>
                   </div>
                 </div>
 
                 {/* Total */}
-                <div className="p-6 bg-gradient-to-r from-accent/5 via-accent/10 to-accent/5">
-                  <div className="flex justify-between items-center">
+                <div className="p-3 sm:p-4 md:p-6 bg-gradient-to-r from-accent/5 via-accent/10 to-accent/5">
+                  <div className="flex flex-col sm:flex-row justify-between items-center gap-2 sm:gap-0">
                     <div>
                       <span className="text-muted-foreground text-sm">Grand Total</span>
                       <div className="flex items-center gap-2">
                         <span className="text-2xl">💰</span>
-                        <span className="font-bold text-2xl">Total Amount</span>
+                        <span className="font-bold text-lg sm:text-xl md:text-2xl">Total Amount</span>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <span className="text-4xl font-bold text-accent">{submittedOrder.totalPrice}</span>
-                      <span className="text-xl font-semibold text-accent ml-1">EGP</span>
+                    <div className="text-center sm:text-right">
+                      <span className="text-2xl sm:text-3xl md:text-4xl font-bold text-accent">{submittedOrder.totalPrice}</span>
+                      <span className="text-base sm:text-lg md:text-xl font-semibold text-accent ml-1">EGP</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Status Footer */}
-                <div className="p-6 text-center space-y-4 bg-gradient-to-b from-transparent to-muted/20">
-                  <div className="inline-flex items-center gap-3 bg-green-500/10 border border-green-500/30 px-5 py-3 rounded-2xl">
-                    <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center animate-pulse">
-                      <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <div className="p-3 sm:p-4 md:p-6 text-center space-y-3 sm:space-y-4 bg-gradient-to-b from-transparent to-muted/20">
+                  <div className="inline-flex items-center gap-2 sm:gap-3 bg-green-500/10 border border-green-500/30 px-3 sm:px-4 md:px-5 py-2 sm:py-3 rounded-xl sm:rounded-2xl">
+                    <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-green-500 flex items-center justify-center animate-pulse">
+                      <svg className="w-4 h-4 sm:w-5 sm:h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                       </svg>
                     </div>
-                    <span className="font-bold text-green-700 dark:text-green-400">Order Successfully Placed!</span>
+                    <span className="font-bold text-green-700 dark:text-green-400 text-xs sm:text-sm md:text-base">Order Successfully Placed!</span>
                   </div>
                   
-                  <p className="text-muted-foreground">
-                    We will contact you at <strong className="text-foreground font-mono" dir="ltr">{submittedOrder.customerData.phone}</strong>
+                  <p className="text-muted-foreground text-xs sm:text-sm md:text-base px-2">
+                    We will contact you at <strong className="text-foreground font-mono break-all" dir="ltr">{submittedOrder.customerData.phone}</strong>
                     <br />to confirm delivery details within 24-48 hours
                   </p>
                   
-                  <div className="flex items-center justify-center gap-6 pt-4 text-sm text-muted-foreground">
-                    <span className="flex items-center gap-2">
-                      <span>📧</span> luqitchycosmetics@gmail.com
+                  <div className="flex items-center justify-center gap-2 sm:gap-6 pt-2 sm:pt-4 text-xs sm:text-sm text-muted-foreground">
+                    <span className="flex items-center gap-1 sm:gap-2 break-all">
+                      <span>📧</span> <span className="hidden sm:inline">luqitchycosmetics@gmail.com</span><span className="sm:hidden">Email us</span>
                     </span>
                   </div>
                 </div>
@@ -389,30 +389,30 @@ export function ProductPage({ product }: ProductPageProps) {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center animate-slide-up opacity-0" style={{ animationDelay: "0.6s" }}>
+          <div className="flex flex-col gap-3 sm:gap-4 justify-center animate-slide-up opacity-0" style={{ animationDelay: "0.6s" }}>
             <Link 
               href="/" 
-              className="luxury-btn inline-flex items-center justify-center gap-2 text-white font-semibold h-14 px-10 rounded-2xl transition-all duration-300"
+              className="luxury-btn inline-flex items-center justify-center gap-2 text-white font-semibold h-11 sm:h-12 md:h-14 px-6 sm:px-8 md:px-10 rounded-xl sm:rounded-2xl transition-all duration-300 text-sm sm:text-base"
             >
               <span>🏠</span> Return to Home
             </Link>
             <Link 
               href="/#products" 
-              className="inline-flex items-center justify-center gap-2 border-2 border-accent/30 hover:border-accent hover:bg-accent/5 font-semibold h-14 px-10 rounded-2xl transition-all duration-300 backdrop-blur-sm bg-card/50"
+              className="inline-flex items-center justify-center gap-2 border-2 border-accent/30 hover:border-accent hover:bg-accent/5 font-semibold h-11 sm:h-12 md:h-14 px-6 sm:px-8 md:px-10 rounded-xl sm:rounded-2xl transition-all duration-300 backdrop-blur-sm bg-card/50 text-sm sm:text-base"
             >
               <span>🛍️</span> Continue Shopping
             </Link>
           </div>
 
           {/* Brand Footer */}
-          <div className="text-center pt-6 animate-slide-up opacity-0" style={{ animationDelay: "0.7s" }}>
-            <div className="inline-flex items-center gap-3 mb-3">
-              <div className="h-px w-12 bg-gradient-to-r from-transparent to-accent/50" />
-              <span className="text-2xl">✨</span>
-              <div className="h-px w-12 bg-gradient-to-l from-transparent to-accent/50" />
+          <div className="text-center pt-4 sm:pt-6 animate-slide-up opacity-0" style={{ animationDelay: "0.7s" }}>
+            <div className="inline-flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+              <div className="h-px w-8 sm:w-12 bg-gradient-to-r from-transparent to-accent/50" />
+              <span className="text-xl sm:text-2xl">✨</span>
+              <div className="h-px w-8 sm:w-12 bg-gradient-to-l from-transparent to-accent/50" />
             </div>
-            <p className="text-3xl font-serif font-bold gradient-text">Luqitchy Cosmetics</p>
-            <p className="text-muted-foreground mt-2">Your beauty journey starts here</p>
+            <p className="text-xl sm:text-2xl md:text-3xl font-serif font-bold gradient-text">Luqitchy Cosmetics</p>
+            <p className="text-muted-foreground mt-1 sm:mt-2 text-xs sm:text-sm md:text-base">Your beauty journey starts here</p>
           </div>
         </div>
       </div>
