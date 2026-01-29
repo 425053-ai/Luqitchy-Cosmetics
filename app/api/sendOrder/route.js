@@ -198,13 +198,28 @@ export async function POST(request) {
 
     // Send email to customer
     console.log('📧 Sending email to customer:', customer_email);
+    
+    // Validate customer email
+    if (!customer_email || !customer_email.includes('@')) {
+      console.error('📧 Invalid customer email:', customer_email);
+      throw new Error('Invalid customer email address');
+    }
+    
     const customerMailResult = await transporter.sendMail({
       from: `"Luqitchy Cosmetics 💄" <${process.env.GMAIL_USER}>`,
       to: customer_email,
-      subject: `🎉 Order Confirmation - ${order_id}`,
-      html: customerEmailHtml
+      replyTo: process.env.GMAIL_USER,
+      subject: `🎉 Order Confirmation - ${order_id} | Luqitchy Cosmetics`,
+      html: customerEmailHtml,
+      headers: {
+        'X-Priority': '1',
+        'X-MSMail-Priority': 'High',
+        'Importance': 'high'
+      }
     });
     console.log('📧 Customer email sent successfully! Message ID:', customerMailResult.messageId);
+    console.log('📧 Customer email accepted:', customerMailResult.accepted);
+    console.log('📧 Customer email rejected:', customerMailResult.rejected);
 
     // Also send notification to admin (different email template)
     console.log('📧 Sending email to admin:', process.env.GMAIL_USER);
