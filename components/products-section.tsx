@@ -20,7 +20,8 @@ const products = [
     accent: "bg-amber-600",
     price: 100,
     isNew: false,
-    imageClass: "object-cover",
+    // Mobile: cover with top focus, Desktop: cover
+    imageClass: "object-cover object-top",
     containerBg: "bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-950/30 dark:to-yellow-950/30",
   },
   {
@@ -32,7 +33,7 @@ const products = [
     accent: "bg-red-800",
     price: 100,
     isNew: false,
-    imageClass: "object-cover",
+    imageClass: "object-cover object-top",
     containerBg: "bg-gradient-to-br from-red-50 to-rose-50 dark:from-red-950/30 dark:to-rose-950/30",
   },
   {
@@ -44,7 +45,7 @@ const products = [
     accent: "bg-red-600",
     price: 100,
     isNew: false,
-    imageClass: "object-cover",
+    imageClass: "object-cover object-top",
     containerBg: "bg-gradient-to-br from-rose-50 to-red-50 dark:from-rose-950/30 dark:to-red-950/30",
   },
   {
@@ -56,7 +57,7 @@ const products = [
     accent: "bg-amber-800",
     price: 100,
     isNew: false,
-    imageClass: "object-cover",
+    imageClass: "object-cover object-top",
     containerBg: "bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30",
   },
   {
@@ -68,7 +69,7 @@ const products = [
     accent: "bg-pink-400",
     price: 100,
     isNew: false,
-    imageClass: "object-cover",
+    imageClass: "object-cover object-top",
     containerBg: "bg-gradient-to-br from-pink-50 to-rose-50 dark:from-pink-950/30 dark:to-rose-950/30",
   },
   {
@@ -80,7 +81,7 @@ const products = [
     accent: "bg-rose-400",
     price: 100,
     isNew: true,
-    imageClass: "object-cover",
+    imageClass: "object-cover object-center",
     containerBg: "bg-gradient-to-br from-rose-50 to-pink-50 dark:from-rose-950/30 dark:to-pink-950/30",
   },
   {
@@ -92,7 +93,8 @@ const products = [
     accent: "bg-purple-500",
     price: 300,
     isNew: true,
-    imageClass: "object-contain p-3",
+    // Bundle images need contain to show both products
+    imageClass: "object-cover object-center",
     containerBg: "bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30",
   },
   {
@@ -104,7 +106,7 @@ const products = [
     accent: "bg-pink-400",
     price: 300,
     isNew: true,
-    imageClass: "object-contain p-3",
+    imageClass: "object-cover object-center",
     containerBg: "bg-gradient-to-br from-pink-50 to-orange-50 dark:from-pink-950/30 dark:to-orange-950/30",
   },
 ]
@@ -296,8 +298,8 @@ export function ProductsSection() {
             >
               {/* Premium Card Container */}
               <div className="premium-card kawaii-card rounded-2xl sm:rounded-3xl overflow-hidden h-full bg-card border border-border/50 hover:border-accent/30 transition-all duration-500 hover:shadow-xl hover:shadow-accent/10">
-                {/* Product Image Container */}
-                <div className={`relative h-56 sm:h-64 md:h-72 overflow-hidden ${product.containerBg}`}>
+                {/* Product Image Container - taller on mobile for better product visibility */}
+                <div className={`relative aspect-[4/5] sm:aspect-[3/4] md:aspect-square overflow-hidden ${product.containerBg}`}>
                   {/* Glow effect */}
                   <div
                     className={`absolute inset-0 bg-gradient-to-br ${product.color} opacity-0 group-hover:opacity-30 transition-all duration-700`}
