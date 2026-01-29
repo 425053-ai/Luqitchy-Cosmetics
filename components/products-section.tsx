@@ -281,7 +281,7 @@ export function ProductsSection() {
               {/* Premium Card Container */}
               <div className="premium-card kawaii-card rounded-2xl sm:rounded-3xl overflow-hidden h-full bg-card border border-border/50 hover:border-accent/30 transition-all duration-500 hover:shadow-xl hover:shadow-accent/10">
                 {/* Product Image Container */}
-                <div className="relative h-56 sm:h-64 md:h-72 overflow-hidden bg-gradient-to-br from-secondary/30 to-background">
+                <div className="relative h-48 sm:h-64 md:h-72 overflow-hidden bg-gradient-to-br from-secondary/30 to-background">
                   {/* Glow effect */}
                   <div
                     className={`absolute inset-0 bg-gradient-to-br ${product.color} opacity-0 group-hover:opacity-30 transition-all duration-700`}
@@ -294,7 +294,7 @@ export function ProductsSection() {
                     fill
                     loading={index < 4 ? "eager" : "lazy"}
                     sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                    className="object-contain p-2 sm:object-cover sm:p-0 transition-all duration-700 group-hover:scale-110"
+                    className="object-contain p-4 sm:p-2 transition-all duration-700 group-hover:scale-110"
                     unoptimized
                   />
 
@@ -361,6 +361,18 @@ export function ProductsSection() {
 
                 {/* Product Info */}
                 <div className="p-4 sm:p-5 md:p-6">
+
+                  {/* Premium badges - below image */}
+                  <div className="flex items-center justify-center gap-2 mb-3">
+                    <span className="inline-flex items-center gap-1 text-xs bg-gradient-to-r from-pink-100 to-rose-100 dark:from-pink-900/30 dark:to-rose-900/30 text-pink-600 dark:text-pink-300 px-2 py-1 rounded-full">
+                      <span>💄</span>
+                      <span className="font-medium">Premium Quality</span>
+                    </span>
+                    <span className="inline-flex items-center gap-1 text-xs bg-gradient-to-r from-red-100 to-pink-100 dark:from-red-900/30 dark:to-pink-900/30 text-red-500 dark:text-red-300 px-2 py-1 rounded-full">
+                      <span>💖</span>
+                      <span className="font-medium">Made with Love</span>
+                    </span>
+                  </div>
 
                   {/* Color indicator & name */}
                   <div className="flex items-start justify-between gap-2 sm:gap-3 mb-2 sm:mb-3">
