@@ -7,6 +7,7 @@ import { WishlistProvider } from "@/context/WishlistContext"
 import { OrderHistoryProvider } from "@/context/OrderHistoryContext"
 import { ToastProvider } from "@/components/ui/toast"
 import { SkipLink } from "@/components/skip-link"
+import { ScrollToTop } from "@/components/scroll-to-top"
 import "./globals.css"
 
 const quicksand = Quicksand({
@@ -168,6 +169,7 @@ export default function RootLayout({
       </head>
       <body className={`${quicksand.variable} ${playfair.variable} font-sans antialiased`}>
         <SkipLink />
+        <ScrollToTop />
         <CartProvider>
           <WishlistProvider>
             <OrderHistoryProvider>

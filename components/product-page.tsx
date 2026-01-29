@@ -161,6 +161,8 @@ export function ProductPage({ product }: ProductPageProps) {
         orderTime: order_date,
       })
 
+      // Scroll to top of page
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" })
       setSubmitted(true)
     } catch (err: any) {
       console.error("Order Error:", err)

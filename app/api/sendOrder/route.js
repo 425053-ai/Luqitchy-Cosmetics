@@ -1,6 +1,8 @@
 import nodemailer from 'nodemailer';
 
 export async function POST(request) {
+  console.log('📧 Starting email send process...');
+  
   const {
     customer_name,
     customer_email,
@@ -16,6 +18,9 @@ export async function POST(request) {
     landmark,
     notes
   } = await request.json();
+
+  console.log('📧 Email will be sent to:', customer_email);
+  console.log('📧 Admin email:', process.env.GMAIL_USER);
 
   // Build products HTML for email
   const productsHtml = products.map(p => `
@@ -163,44 +168,77 @@ export async function POST(request) {
   `;
 
   try {
-    console.log('Sending email with Gmail SMTP...');
-    console.log('Sending to:', customer_email);
+    console.log('📧 Creating nodemailer transporter...');
+    console.log('📧 GMAIL_USER exists:', !!process.env.GMAIL_USER);
+    console.log('📧 GMAIL_APP_PASSWORD exists:', !!process.env.GMAIL_APP_PASSWORD);
+    
+    // Validate environment variables
+    if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
+      throw new Error('Email configuration missing: GMAIL_USER or GMAIL_APP_PASSWORD not set');
+    }
     
     // Create transporter with Gmail SMTP
     const transporter = nodemailer.createTransport({
       service: 'gmail',
+      host: 'smtp.gmail.com',
+      port: 587,
+      secure: false,
       auth: {
         user: process.env.GMAIL_USER,
         pass: process.env.GMAIL_APP_PASSWORD
-      }
+      },
+      debug: true,
+      logger: true
     });
 
+    // Verify transporter connection
+    console.log('📧 Verifying transporter connection...');
+    await transporter.verify();
+    console.log('📧 Transporter verified successfully!');
+
     // Send email to customer
-    await transporter.sendMail({
+    console.log('📧 Sending email to customer:', customer_email);
+    const customerMailResult = await transporter.sendMail({
       from: `"Luqitchy Cosmetics 💄" <${process.env.GMAIL_USER}>`,
       to: customer_email,
       subject: `🎉 Order Confirmation - ${order_id}`,
       html: customerEmailHtml
     });
+    console.log('📧 Customer email sent successfully! Message ID:', customerMailResult.messageId);
 
     // Also send notification to admin (different email template)
-    await transporter.sendMail({
+    console.log('📧 Sending email to admin:', process.env.GMAIL_USER);
+    const adminMailResult = await transporter.sendMail({
       from: `"Luqitchy Orders 📦" <${process.env.GMAIL_USER}>`,
       to: process.env.GMAIL_USER,
       subject: `🚨 NEW ORDER - ${order_id} - ${customer_name} - ${total_amount} EGP`,
       html: adminEmailHtml
     });
+    console.log('📧 Admin email sent successfully! Message ID:', adminMailResult.messageId);
 
-    console.log('Email sent successfully!');
-    return Response.json({ message: 'Email sent successfully' });
+    console.log('📧 All emails sent successfully!');
+    return Response.json({ 
+      message: 'Email sent successfully',
+      customerMessageId: customerMailResult.messageId,
+      adminMessageId: adminMailResult.messageId
+    });
     
   } catch (error) {
-    console.error('Email Error:', error);
-    // Still return success - order was placed, just email failed
+    console.error('📧 Email Error:', error);
+    console.error('📧 Error name:', error.name);
+    console.error('📧 Error message:', error.message);
+    console.error('📧 Error stack:', error.stack);
+    
+    // Return error details for debugging but still allow order to proceed
     return Response.json({ 
-      message: 'Order placed successfully! (Email notification pending)',
-      warning: 'Email service temporarily unavailable',
-      error: error.message
+      message: 'Order placed successfully! Email notification may have failed.',
+      warning: 'Email service encountered an issue',
+      error: error.message,
+      errorDetails: {
+        name: error.name,
+        code: error.code,
+        command: error.command
+      }
     }, { status: 200 });
   }
 }
