@@ -1,6 +1,11 @@
+"use client"
+
+import { useState } from "react"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-import { HelpCircle, Sparkles, MessageCircle } from "lucide-react"
+import { HelpCircle, Sparkles, MessageCircle, ChevronDown } from "lucide-react"
 import Link from "next/link"
+import { FloatingHearts } from "@/components/confetti-effect"
+import { FloatingEmojis } from "@/components/kawaii-elements"
 
 const faqs = [
   {
@@ -60,38 +65,57 @@ const faqs = [
 ]
 
 export function FAQSection() {
+  const [openItem, setOpenItem] = useState<string | undefined>(undefined)
+  const [showHearts, setShowHearts] = useState(false)
+  const [heartPosition, setHeartPosition] = useState({ x: 0, y: 0 })
+
+  const handleAccordionChange = (value: string) => {
+    setOpenItem(value)
+    // Show floating hearts on open
+    if (value) {
+      setShowHearts(true)
+      setTimeout(() => setShowHearts(false), 1500)
+    }
+  }
+
   return (
     <section id="faq" className="py-16 sm:py-20 md:py-28 lg:py-36 bg-gradient-to-b from-secondary/30 via-background to-secondary/20 relative overflow-hidden" aria-labelledby="faq-heading">
+      {/* Floating Hearts Animation */}
+      {showHearts && <FloatingHearts isActive={showHearts} />}
+      
+      {/* Floating Emojis Background */}
+      <FloatingEmojis emojis={["❓", "💭", "✨", "💖", "🌸"]} count={6} />
+
       {/* Background Elements - hidden on mobile */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="hidden sm:block absolute top-16 right-20 text-3xl animate-float-rotate opacity-30">💭</div>
-        <div className="hidden sm:block absolute bottom-24 left-16 text-2xl animate-dance opacity-30">🎀</div>
-        <div className="hidden md:block absolute top-1/4 left-10 text-2xl animate-kawaii-bounce opacity-25">❓</div>
-        <div className="hidden lg:block absolute bottom-1/4 right-16 text-3xl animate-sparkle-burst opacity-25">✨</div>
-        <div className="hidden lg:block absolute top-2/3 left-20 text-2xl animate-heart-pop opacity-20">💖</div>
-        <div className="hidden xl:block absolute top-1/3 right-1/4 text-2xl animate-star-twirl opacity-20">🌟</div>
+        <div className="hidden sm:block absolute top-16 right-20 text-3xl animate-float opacity-30">💭</div>
+        <div className="hidden sm:block absolute bottom-24 left-16 text-2xl animate-float opacity-30" style={{ animationDelay: '1s' }}>🎀</div>
+        <div className="hidden md:block absolute top-1/4 left-10 text-2xl animate-float opacity-25" style={{ animationDelay: '0.5s' }}>❓</div>
+        <div className="hidden lg:block absolute bottom-1/4 right-16 text-3xl animate-pulse opacity-25">✨</div>
+        <div className="hidden lg:block absolute top-2/3 left-20 text-2xl animate-float opacity-20" style={{ animationDelay: '1.5s' }}>💖</div>
+        <div className="hidden xl:block absolute top-1/3 right-1/4 text-2xl animate-pulse opacity-20">🌟</div>
         <div className="hidden md:block absolute top-1/3 right-10 w-64 lg:w-80 h-64 lg:h-80 bg-accent/5 rounded-full blur-3xl" />
         <div className="hidden md:block absolute bottom-1/3 left-10 w-72 lg:w-96 h-72 lg:h-96 bg-primary/5 rounded-full blur-3xl" />
       </div>
 
       <div className="container mx-auto px-4 relative z-10">
         <div className="text-center mb-10 sm:mb-12 md:mb-16">
-          <div className="inline-flex items-center gap-2 sm:gap-3 bg-card/80 backdrop-blur-sm px-4 sm:px-6 py-2 sm:py-3 rounded-full border border-primary/30 mb-6 sm:mb-8 shadow-lg shadow-primary/10 animate-slide-up opacity-0 hover-jelly">
-            <span className="animate-kawaii-bounce">❓</span>
+          <div className="inline-flex items-center gap-2 sm:gap-3 bg-card/80 backdrop-blur-sm px-4 sm:px-6 py-2 sm:py-3 rounded-full border border-primary/30 mb-6 sm:mb-8 shadow-lg shadow-primary/10 hover:scale-105 transition-transform duration-300 cursor-default">
+            <span className="animate-bounce">❓</span>
             <HelpCircle className="w-3 h-3 sm:w-4 sm:h-4 text-accent" />
             <span className="text-xs sm:text-sm font-bold text-foreground uppercase tracking-wider">Have Questions?</span>
-            <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 text-accent animate-sparkle-burst" />
-            <span className="animate-heart-pop">💖</span>
+            <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 text-accent animate-pulse" />
+            <span className="animate-pulse">💖</span>
           </div>
 
-          <h2 id="faq-heading" className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-foreground mb-4 sm:mb-6 animate-slide-up opacity-0 relative inline-block" style={{ animationDelay: "0.1s" }}>
-            <span className="absolute -top-4 -left-4 text-xl animate-float-rotate">✨</span>
-            Frequently Asked <span className="rainbow-text sparkle-decoration">Questions</span>
-            <span className="absolute -top-2 -right-4 text-xl animate-star-twirl">🌟</span>
-            <span className="absolute -bottom-2 right-1/4 text-lg animate-kawaii-bounce">💬</span>
+          <h2 id="faq-heading" className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-foreground mb-4 sm:mb-6 relative inline-block">
+            <span className="absolute -top-4 -left-4 text-xl animate-float">✨</span>
+            Frequently Asked <span className="rainbow-shimmer">Questions</span>
+            <span className="absolute -top-2 -right-4 text-xl animate-pulse">🌟</span>
+            <span className="absolute -bottom-2 right-1/4 text-lg animate-bounce">💬</span>
           </h2>
           
-          <p className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-2xl mx-auto animate-slide-up opacity-0 px-2" style={{ animationDelay: "0.2s" }}>
+          <p className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-2xl mx-auto px-2">
             <span className="inline-block animate-float mr-1">🌸</span>
             Everything you need to know about our products and services
             <span className="inline-block animate-sparkle ml-1">✨</span>
@@ -99,22 +123,32 @@ export function FAQSection() {
         </div>
 
         <div className="max-w-4xl mx-auto">
-          <Accordion type="single" collapsible className="space-y-3 sm:space-y-4">
+          <Accordion 
+            type="single" 
+            collapsible 
+            className="space-y-3 sm:space-y-4"
+            value={openItem}
+            onValueChange={handleAccordionChange}
+          >
             {faqs.map((faq, index) => (
               <AccordionItem
                 key={index}
                 value={`item-${index}`}
-                className="premium-card kawaii-card rounded-xl sm:rounded-2xl px-4 sm:px-6 border-none animate-slide-up opacity-0 hover-jelly"
-                style={{ animationDelay: `${0.1 + index * 0.05}s` }}
+                className="group bg-card/80 backdrop-blur-sm rounded-xl sm:rounded-2xl px-4 sm:px-6 border border-border/50 hover:border-accent/30 transition-all duration-300 hover:shadow-lg hover:shadow-accent/10 hover:-translate-y-1"
               >
-                <AccordionTrigger className="text-left font-semibold text-foreground hover:text-accent py-4 sm:py-5 md:py-6 text-sm sm:text-base md:text-lg group-data-[state=open]:text-accent transition-colors">
+                <AccordionTrigger className="text-left font-semibold text-foreground hover:text-accent py-4 sm:py-5 md:py-6 text-sm sm:text-base md:text-lg data-[state=open]:text-accent transition-all duration-300 hover:no-underline">
                   <span className="flex items-center gap-2 sm:gap-3 md:gap-4">
-                    <span className="w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-lg sm:rounded-xl bg-accent/10 flex items-center justify-center text-base sm:text-lg md:text-xl flex-shrink-0 animate-kawaii-bounce" style={{ animationDelay: `${index * 0.1}s` }}>{faq.emoji}</span>
-                    <span>{faq.question}</span>
+                    <span className="w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-lg sm:rounded-xl bg-accent/10 flex items-center justify-center text-base sm:text-lg md:text-xl flex-shrink-0 group-hover:scale-110 group-hover:bg-accent/20 transition-all duration-300 group-data-[state=open]:bg-accent/30 group-data-[state=open]:scale-110">
+                      {faq.emoji}
+                    </span>
+                    <span className="group-hover:translate-x-1 transition-transform duration-300">{faq.question}</span>
                   </span>
                 </AccordionTrigger>
                 <AccordionContent className="text-muted-foreground pb-4 sm:pb-5 md:pb-6 leading-relaxed text-xs sm:text-sm md:text-base pl-10 sm:pl-12 md:pl-14">
-                  {faq.answer}
+                  <div className="animate-in slide-in-from-top-2 fade-in duration-300">
+                    {faq.answer}
+                    <span className="inline-block ml-2 animate-pulse">✨</span>
+                  </div>
                 </AccordionContent>
               </AccordionItem>
             ))}
@@ -122,8 +156,8 @@ export function FAQSection() {
         </div>
         
         {/* Contact CTA */}
-        <div className="mt-10 sm:mt-12 md:mt-16 text-center animate-slide-up opacity-0" style={{ animationDelay: "0.8s" }}>
-          <div className="inline-flex flex-col sm:flex-row items-center gap-3 sm:gap-4 bg-card/80 backdrop-blur-sm border border-border/50 rounded-xl sm:rounded-2xl p-4 sm:p-5 md:p-6 hover-jelly">
+        <div className="mt-10 sm:mt-12 md:mt-16 text-center">
+          <div className="inline-flex flex-col sm:flex-row items-center gap-3 sm:gap-4 bg-card/80 backdrop-blur-sm border border-border/50 rounded-xl sm:rounded-2xl p-4 sm:p-5 md:p-6 hover:scale-105 hover:shadow-xl hover:shadow-accent/10 transition-all duration-300">
             <div className="flex items-center gap-2 sm:gap-3">
               <div className="w-10 h-10 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-full bg-green-500/10 flex items-center justify-center flex-shrink-0 animate-glow-soft">
                 <MessageCircle className="w-5 h-5 sm:w-5 sm:h-5 md:w-6 md:h-6 text-green-500" />

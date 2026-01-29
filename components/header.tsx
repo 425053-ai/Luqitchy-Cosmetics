@@ -8,6 +8,7 @@ import { Menu, X, Sparkles, ShoppingCart, Heart, Package } from "lucide-react"
 import { useCart } from "@/context/CartContext"
 import { useWishlist } from "@/context/WishlistContext"
 import { QuickSearch } from "@/components/quick-search"
+import { CartPreview } from "@/components/cart-preview"
 
 const navLinks = [
   { label: "Home", href: "#hero" },
@@ -73,11 +74,11 @@ export function Header() {
           <div className="hidden md:flex items-center gap-3">
             <QuickSearch />
             {/* Wishlist Button */}
-            <Link href="/wishlist" className="relative">
-              <Button variant="outline" size="icon" className="relative h-11 w-11 rounded-full hover:bg-red-50 hover:border-red-300 dark:hover:bg-red-900/20 transition-all">
-                <Heart className="w-5 h-5" />
+            <Link href="/wishlist" className="relative group">
+              <Button variant="outline" size="icon" className="relative h-11 w-11 rounded-full hover:bg-red-50 hover:border-red-300 dark:hover:bg-red-900/20 transition-all hover:scale-105 group-hover:animate-cute-wiggle">
+                <Heart className="w-5 h-5 group-hover:text-red-500 transition-colors" />
                 {wishlistCount > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center shadow-lg">
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center shadow-lg animate-pulse">
                     {wishlistCount}
                   </span>
                 )}
@@ -85,21 +86,12 @@ export function Header() {
             </Link>
             {/* Orders History Button */}
             <Link href="/orders" className="relative">
-              <Button variant="outline" size="icon" className="relative h-11 w-11 rounded-full hover:bg-accent/10 hover:border-accent transition-all">
+              <Button variant="outline" size="icon" className="relative h-11 w-11 rounded-full hover:bg-accent/10 hover:border-accent transition-all hover:scale-105">
                 <Package className="w-5 h-5" />
               </Button>
             </Link>
-            {/* Cart Button */}
-            <Link href="/cart" className="relative">
-              <Button variant="outline" size="icon" className="relative h-11 w-11 rounded-full hover:bg-accent/10 hover:border-accent transition-all">
-                <ShoppingCart className="w-5 h-5" />
-                {totalItems > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-accent text-accent-foreground text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center shadow-lg animate-kawaii-bounce">
-                    {totalItems}
-                  </span>
-                )}
-              </Button>
-            </Link>
+            {/* Cart Preview Dropdown */}
+            <CartPreview />
             <Link href="#products">
               <Button className="relative bg-accent hover:bg-accent/90 text-accent-foreground rounded-full px-7 py-5 shadow-lg shadow-accent/40 hover:shadow-xl hover:shadow-accent/50 transition-all duration-300 hover:scale-105 group overflow-hidden btn-kawaii animate-glow-soft">
                 <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />

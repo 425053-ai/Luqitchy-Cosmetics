@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Sparkles, Award, Shield, Truck, ArrowRight } from "lucide-react"
 import { SkinTypeQuiz } from "@/components/skin-type-quiz"
 import { useRef } from "react"
+import { Lipstick3D } from "@/components/animations-3d"
 
 const floatingVariants = {
   animate: {
@@ -271,6 +272,24 @@ export function HeroSectionPremium() {
               >
                 💖
               </motion.span>
+              
+              {/* 3D Lipstick Animation - Hidden on small screens */}
+              <motion.div 
+                className="hidden xl:block absolute -right-16 top-1/2 -translate-y-1/2"
+                initial={{ opacity: 0, x: 50 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 1, duration: 0.8 }}
+              >
+                <Lipstick3D color="#c44569" size="medium" />
+              </motion.div>
+              <motion.div 
+                className="hidden xl:block absolute -left-20 top-1/3"
+                initial={{ opacity: 0, x: -50 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 1.2, duration: 0.8 }}
+              >
+                <Lipstick3D color="#8b4513" size="small" />
+              </motion.div>
             </div>
           </motion.div>
         </div>

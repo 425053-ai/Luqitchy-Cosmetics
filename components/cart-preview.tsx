@@ -5,15 +5,13 @@ import Image from "next/image"
 import Link from "next/link"
 import { ShoppingBag, X, Minus, Plus, Trash2, ShoppingCart, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { useCart } from "@/context/CartContext"
+import { useCart, CartItem } from "@/context/CartContext"
 
 export function CartPreview() {
   const [isOpen, setIsOpen] = useState(false)
   const [isAnimating, setIsAnimating] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
-  const { cartItems, removeFromCart, updateQuantity, getCartTotal } = useCart()
-  
-  const itemCount = cartItems.reduce((total, item) => total + item.quantity, 0)
+  const { items, removeFromCart, updateQuantity, totalItems, totalPrice } = useCart()
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -29,12 +27,12 @@ export function CartPreview() {
 
   // Animate when item added
   useEffect(() => {
-    if (itemCount > 0) {
+    if (totalItems > 0) {
       setIsAnimating(true)
       const timer = setTimeout(() => setIsAnimating(false), 600)
       return () => clearTimeout(timer)
     }
-  }, [itemCount])
+  }, [totalItems])
 
   return (
     <div className="relative" ref={dropdownRef}>
@@ -49,11 +47,11 @@ export function CartPreview() {
         <ShoppingBag className="w-5 h-5 sm:w-6 sm:h-6 text-foreground group-hover:text-primary transition-colors" />
         
         {/* Item count badge */}
-        {itemCount > 0 && (
+        {totalItems > 0 && (
           <span className={`absolute -top-1 -right-1 w-5 h-5 bg-accent text-accent-foreground text-xs font-bold rounded-full flex items-center justify-center shadow-lg ${
             isAnimating ? 'animate-kawaii-bounce' : ''
           }`}>
-            {itemCount > 99 ? '99+' : itemCount}
+            {totalItems > 99 ? '99+' : totalItems}
           </span>
         )}
 
@@ -72,7 +70,7 @@ export function CartPreview() {
                 Your Cart ✨
               </h3>
               <span className="bg-accent/20 text-accent text-xs px-2 py-0.5 rounded-full font-semibold">
-                {itemCount} items
+                {totalItems} items
               </span>
             </div>
             <button
@@ -85,14 +83,14 @@ export function CartPreview() {
 
           {/* Cart Items */}
           <div className="max-h-80 overflow-y-auto px-4 py-3 space-y-3">
-            {cartItems.length === 0 ? (
+            {items.length === 0 ? (
               <div className="text-center py-8">
                 <ShoppingBag className="w-12 h-12 mx-auto text-muted-foreground/30 mb-3" />
                 <p className="text-muted-foreground text-sm">Your cart is empty 🛒</p>
                 <p className="text-muted-foreground/70 text-xs mt-1">Start adding some cute products!</p>
               </div>
             ) : (
-              cartItems.map((item) => (
+              items.map((item: CartItem) => (
                 <div
                   key={item.id}
                   className="group flex gap-3 p-2 rounded-xl hover:bg-secondary/30 transition-all duration-300"
@@ -112,9 +110,9 @@ export function CartPreview() {
                     <h4 className="font-semibold text-sm text-foreground truncate">
                       {item.name}
                     </h4>
-                    {item.shade && (
+                    {item.color && (
                       <p className="text-xs text-muted-foreground truncate">
-                        Shade: {item.shade}
+                        Color: <span className={`inline-block w-3 h-3 rounded-full bg-gradient-to-br ${item.color}`} />
                       </p>
                     )}
                     <p className="text-sm font-bold text-accent mt-1">
@@ -156,13 +154,13 @@ export function CartPreview() {
           </div>
 
           {/* Footer */}
-          {cartItems.length > 0 && (
+          {items.length > 0 && (
             <div className="border-t border-border/50 px-4 py-4 bg-secondary/20">
               {/* Total */}
               <div className="flex items-center justify-between mb-4">
                 <span className="text-sm text-muted-foreground">Subtotal:</span>
                 <span className="font-bold text-lg text-foreground">
-                  {getCartTotal()} EGP
+                  {totalPrice} EGP
                 </span>
               </div>
 
@@ -185,13 +183,13 @@ export function CartPreview() {
 
               {/* Free shipping notice */}
               <div className="mt-3 text-center">
-                {getCartTotal() >= 500 ? (
+                {totalPrice >= 500 ? (
                   <p className="text-xs text-green-600 font-medium">
                     🎉 You qualify for FREE shipping!
                   </p>
                 ) : (
                   <p className="text-xs text-muted-foreground">
-                    Add {500 - getCartTotal()} EGP more for FREE shipping 🚚
+                    Add {500 - totalPrice} EGP more for FREE shipping 🚚
                   </p>
                 )}
               </div>
