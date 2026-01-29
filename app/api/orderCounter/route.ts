@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server'
 import { Redis } from '@upstash/redis'
 
-// Initialize Upstash Redis client
+// Initialize Upstash Redis client (trim to handle whitespace/newlines in env vars)
 const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL || '',
-  token: process.env.UPSTASH_REDIS_REST_TOKEN || '',
+  url: (process.env.UPSTASH_REDIS_REST_URL || '').trim(),
+  token: (process.env.UPSTASH_REDIS_REST_TOKEN || '').trim(),
 })
 
 const COUNTER_KEY = 'luqitchy:order_counter'
