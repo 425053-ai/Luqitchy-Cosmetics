@@ -232,6 +232,41 @@ export async function POST(request) {
     console.log('📧 Admin email sent successfully! Message ID:', adminMailResult.messageId);
 
     console.log('📧 All emails sent successfully!');
+    
+    // Send to n8n webhook if configured
+    if (process.env.N8N_WEBHOOK_URL) {
+      try {
+        console.log('🔗 Sending order to n8n...');
+        await fetch(process.env.N8N_WEBHOOK_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            orderId: order_id,
+            orderDate: order_date,
+            customer: {
+              name: customer_name,
+              email: customer_email,
+              phone: phone,
+              whatsapp: whatsapp
+            },
+            shipping: {
+              governorate: governorate,
+              city: city,
+              street: street,
+              landmark: landmark,
+              notes: notes
+            },
+            products: products,
+            totalAmount: total_amount,
+            source: 'Luqitchy Website'
+          })
+        });
+        console.log('🔗 Order sent to n8n successfully!');
+      } catch (n8nError) {
+        console.error('🔗 n8n Error:', n8nError.message);
+      }
+    }
+    
     return Response.json({ 
       message: 'Email sent successfully',
       customerMessageId: customerMailResult.messageId,
