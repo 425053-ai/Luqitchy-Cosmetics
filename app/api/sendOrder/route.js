@@ -1,7 +1,7 @@
-import nodemailer from 'nodemailer';
+const brevo = require('@getbrevo/brevo');
 
 export async function POST(request) {
-  console.log('📧 Starting email send process...');
+  console.log('📧 Starting email send process with Brevo...');
   
   const {
     customer_name,
@@ -20,7 +20,6 @@ export async function POST(request) {
   } = await request.json();
 
   console.log('📧 Email will be sent to:', customer_email);
-  console.log('📧 Admin email:', process.env.GMAIL_USER);
 
   // Build products HTML for email
   const productsHtml = products.map(p => `
@@ -95,144 +94,42 @@ export async function POST(request) {
     </html>
   `;
 
-  // Admin Email - New Order Alert (different from customer email)
-  const adminEmailHtml = `
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-      <meta charset="UTF-8">
-      <title>🚨 NEW ORDER ALERT!</title>
-    </head>
-    <body style="font-family: Arial, sans-serif; background-color: #1a1a2e; margin: 0; padding: 0;">
-      <div style="max-width: 600px; margin: 20px auto; background-color: #16213e; padding: 20px; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); border: 2px solid #e94560;">
-        
-        <div style="background: linear-gradient(135deg, #e94560, #ff4d6d); padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-          <h1 style="color: #fff; text-align: center; margin: 0;">🚨 NEW ORDER RECEIVED!</h1>
-          <p style="color: #fff; text-align: center; font-size: 14px; margin: 10px 0 0 0;">A new order just came in - Action Required!</p>
-        </div>
-
-        <div style="background: #0f3460; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #e94560;">
-          <h2 style="color: #e94560; margin: 0 0 10px 0;">📋 Order Summary</h2>
-          <table style="width: 100%; color: #fff;">
-            <tr><td style="padding: 5px 0; color: #aaa;">Order ID:</td><td style="padding: 5px 0; font-weight: bold;">${order_id}</td></tr>
-            <tr><td style="padding: 5px 0; color: #aaa;">Order Date:</td><td style="padding: 5px 0;">${order_date}</td></tr>
-            <tr><td style="padding: 5px 0; color: #aaa;">Total Items:</td><td style="padding: 5px 0;">${products.length} products</td></tr>
-          </table>
-        </div>
-
-        <div style="background: #0f3460; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #00d9ff;">
-          <h2 style="color: #00d9ff; margin: 0 0 10px 0;">👤 Customer Details</h2>
-          <table style="width: 100%; color: #fff;">
-            <tr><td style="padding: 5px 0; color: #aaa;">Name:</td><td style="padding: 5px 0; font-weight: bold;">${customer_name}</td></tr>
-            <tr><td style="padding: 5px 0; color: #aaa;">Phone:</td><td style="padding: 5px 0;"><a href="tel:${phone}" style="color: #00d9ff;">${phone}</a></td></tr>
-            <tr><td style="padding: 5px 0; color: #aaa;">WhatsApp:</td><td style="padding: 5px 0;"><a href="https://wa.me/${whatsapp?.replace(/[^0-9]/g, '')}" style="color: #25d366;">${whatsapp}</a></td></tr>
-            <tr><td style="padding: 5px 0; color: #aaa;">Email:</td><td style="padding: 5px 0;"><a href="mailto:${customer_email}" style="color: #00d9ff;">${customer_email}</a></td></tr>
-          </table>
-        </div>
-
-        <div style="background: #0f3460; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #ffd700;">
-          <h2 style="color: #ffd700; margin: 0 0 10px 0;">📍 Shipping Address</h2>
-          <table style="width: 100%; color: #fff;">
-            <tr><td style="padding: 5px 0; color: #aaa;">Governorate:</td><td style="padding: 5px 0;">${governorate}</td></tr>
-            <tr><td style="padding: 5px 0; color: #aaa;">City:</td><td style="padding: 5px 0;">${city}</td></tr>
-            <tr><td style="padding: 5px 0; color: #aaa;">Street:</td><td style="padding: 5px 0;">${street}</td></tr>
-            <tr><td style="padding: 5px 0; color: #aaa;">Landmark:</td><td style="padding: 5px 0;">${landmark || 'Not provided'}</td></tr>
-            <tr><td style="padding: 5px 0; color: #aaa;">Notes:</td><td style="padding: 5px 0;">${notes || 'No notes'}</td></tr>
-          </table>
-        </div>
-
-        <div style="background: #0f3460; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #ff4d6d;">
-          <h2 style="color: #ff4d6d; margin: 0 0 15px 0;">📦 Ordered Products</h2>
-          ${products.map(p => `
-            <div style="background: #16213e; padding: 10px; border-radius: 5px; margin-bottom: 10px; border: 1px solid #333;">
-              <p style="color: #fff; margin: 0 0 5px 0; font-weight: bold;">🛍️ ${p.name}</p>
-              <p style="color: #aaa; margin: 0; font-size: 14px;">Quantity: ${p.quantity} × ${p.price} EGP = <span style="color: #00d9ff; font-weight: bold;">${p.total || (p.price * p.quantity)} EGP</span></p>
-            </div>
-          `).join('')}
-        </div>
-
-        <div style="background: linear-gradient(135deg, #00d9ff, #0f3460); padding: 20px; border-radius: 8px; text-align: center; margin-bottom: 20px;">
-          <p style="color: #fff; font-size: 14px; margin: 0;">TOTAL AMOUNT</p>
-          <p style="color: #fff; font-size: 32px; font-weight: bold; margin: 10px 0 0 0;">💰 ${total_amount} EGP</p>
-        </div>
-
-        <div style="text-align: center; padding: 15px;">
-          <a href="https://wa.me/${whatsapp?.replace(/[^0-9]/g, '')}" style="display: inline-block; padding: 12px 25px; margin: 5px; background-color: #25d366; color: #fff; text-decoration: none; border-radius: 25px; font-weight: bold;">💬 Contact on WhatsApp</a>
-          <a href="tel:${phone}" style="display: inline-block; padding: 12px 25px; margin: 5px; background-color: #e94560; color: #fff; text-decoration: none; border-radius: 25px; font-weight: bold;">📞 Call Customer</a>
-        </div>
-
-        <p style="text-align: center; color: #666; margin-top: 20px; font-size: 12px;">📊 Luqitchy Cosmetics Admin Dashboard</p>
-      </div>
-    </body>
-    </html>
-  `;
-
   try {
-    console.log('📧 Creating nodemailer transporter...');
-    console.log('📧 GMAIL_USER exists:', !!process.env.GMAIL_USER);
-    console.log('📧 GMAIL_APP_PASSWORD exists:', !!process.env.GMAIL_APP_PASSWORD);
-    
-    // Validate environment variables
-    if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
-      throw new Error('Email configuration missing: GMAIL_USER or GMAIL_APP_PASSWORD not set');
+    // Check if Brevo API key is configured
+    if (!process.env.BREVO_API_KEY) {
+      console.log('⚠️ BREVO_API_KEY not configured, skipping email send');
+      return Response.json({ 
+        message: 'Order placed successfully! Email not configured.',
+        warning: 'BREVO_API_KEY not set'
+      }, { status: 200 });
     }
-    
-    // Create transporter with Gmail SMTP
-    const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      host: 'smtp.gmail.com',
-      port: 587,
-      secure: false,
-      auth: {
-        user: process.env.GMAIL_USER,
-        pass: process.env.GMAIL_APP_PASSWORD
-      },
-      debug: true,
-      logger: true
-    });
 
-    // Verify transporter connection
-    console.log('📧 Verifying transporter connection...');
-    await transporter.verify();
-    console.log('📧 Transporter verified successfully!');
-
-    // Send email to customer
-    console.log('📧 Sending email to customer:', customer_email);
-    
     // Validate customer email
     if (!customer_email || !customer_email.includes('@')) {
       console.error('📧 Invalid customer email:', customer_email);
       throw new Error('Invalid customer email address');
     }
-    
-    const customerMailResult = await transporter.sendMail({
-      from: `"Luqitchy Cosmetics 💄" <${process.env.GMAIL_USER}>`,
-      to: customer_email,
-      replyTo: process.env.GMAIL_USER,
-      subject: `🎉 Order Confirmation - ${order_id} | Luqitchy Cosmetics`,
-      html: customerEmailHtml,
-      headers: {
-        'X-Priority': '1',
-        'X-MSMail-Priority': 'High',
-        'Importance': 'high'
-      }
-    });
-    console.log('📧 Customer email sent successfully! Message ID:', customerMailResult.messageId);
-    console.log('📧 Customer email accepted:', customerMailResult.accepted);
-    console.log('📧 Customer email rejected:', customerMailResult.rejected);
 
-    // Also send notification to admin (different email template)
-    console.log('📧 Sending email to admin:', process.env.GMAIL_USER);
-    const adminMailResult = await transporter.sendMail({
-      from: `"Luqitchy Orders 📦" <${process.env.GMAIL_USER}>`,
-      to: process.env.GMAIL_USER,
-      subject: `🚨 NEW ORDER - ${order_id} - ${customer_name} - ${total_amount} EGP`,
-      html: adminEmailHtml
-    });
-    console.log('📧 Admin email sent successfully! Message ID:', adminMailResult.messageId);
+    // Initialize Brevo API
+    const apiInstance = new brevo.TransactionalEmailsApi();
+    apiInstance.setApiKey(brevo.TransactionalEmailsApiApiKeys.apiKey, process.env.BREVO_API_KEY);
 
-    console.log('📧 All emails sent successfully!');
-    
+    const senderEmail = process.env.BREVO_SENDER_EMAIL || 'luqitchycosmetics@gmail.com';
+    const senderName = process.env.BREVO_SENDER_NAME || 'Luqitchy Cosmetics';
+
+    // Create email object
+    const sendSmtpEmail = new brevo.SendSmtpEmail();
+    sendSmtpEmail.subject = `🎉 Order Confirmation - ${order_id} | Luqitchy Cosmetics`;
+    sendSmtpEmail.htmlContent = customerEmailHtml;
+    sendSmtpEmail.sender = { name: senderName, email: senderEmail };
+    sendSmtpEmail.to = [{ email: customer_email, name: customer_name }];
+    sendSmtpEmail.replyTo = { email: senderEmail, name: senderName };
+
+    // Send email to customer
+    console.log('📧 Sending email to customer via Brevo...');
+    const result = await apiInstance.sendTransacEmail(sendSmtpEmail);
+    console.log('📧 Customer email sent successfully! Message ID:', result.body?.messageId);
+
     // Send to n8n webhook if configured
     if (process.env.N8N_WEBHOOK_URL) {
       try {
@@ -269,26 +166,18 @@ export async function POST(request) {
     
     return Response.json({ 
       message: 'Email sent successfully',
-      customerMessageId: customerMailResult.messageId,
-      adminMessageId: adminMailResult.messageId
+      messageId: result.body?.messageId
     });
     
   } catch (error) {
     console.error('📧 Email Error:', error);
-    console.error('📧 Error name:', error.name);
     console.error('📧 Error message:', error.message);
-    console.error('📧 Error stack:', error.stack);
     
-    // Return error details for debugging but still allow order to proceed
+    // Return success anyway so the order goes through
     return Response.json({ 
       message: 'Order placed successfully! Email notification may have failed.',
       warning: 'Email service encountered an issue',
-      error: error.message,
-      errorDetails: {
-        name: error.name,
-        code: error.code,
-        command: error.command
-      }
+      error: error.message
     }, { status: 200 });
   }
 }

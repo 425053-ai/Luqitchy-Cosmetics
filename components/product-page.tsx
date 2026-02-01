@@ -74,6 +74,10 @@ export function ProductPage({ product }: ProductPageProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    // Prevent double submission
+    if (isSubmitting) return
+    
     setIsSubmitting(true)
     const total_price = quantity * product.price
     
@@ -797,11 +801,18 @@ export function ProductPage({ product }: ProductPageProps) {
 
                 <Button
                   type="submit"
-                  className="w-full h-16 luxury-btn text-xl rounded-2xl transition-all duration-300 group"
+                  disabled={isSubmitting}
+                  className="w-full h-16 luxury-btn text-xl rounded-2xl transition-all duration-300 group disabled:opacity-70 disabled:cursor-not-allowed"
                 >
-                  <span className="mr-2">🛒</span>
-                  Place Order
-                  <span className="ml-2 group-hover:translate-x-1 transition-transform">→</span>
+                  {isSubmitting ? (
+                    <>Processing...</>
+                  ) : (
+                    <>
+                      <span className="mr-2">🛒</span>
+                      Place Order
+                      <span className="ml-2 group-hover:translate-x-1 transition-transform">→</span>
+                    </>
+                  )}
                 </Button>
                 
                 <p className="text-center text-xs text-muted-foreground">

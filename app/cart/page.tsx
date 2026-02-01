@@ -43,6 +43,10 @@ export default function CartPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    // Prevent double submission
+    if (isSubmitting) return
+    
     if (items.length === 0) {
       alert("Shopping cart is empty!")
       return
