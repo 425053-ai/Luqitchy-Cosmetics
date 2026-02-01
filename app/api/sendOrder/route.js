@@ -1,7 +1,9 @@
-const brevo = require('@getbrevo/brevo');
+import nodemailer from 'nodemailer';
 
 export async function POST(request) {
-  console.log('📧 Starting email send process with Brevo...');
+  console.log('═══════════════════════════════════════════');
+  console.log('📧 STARTING ORDER EMAIL PROCESS');
+  console.log('═══════════════════════════════════════════');
   
   const {
     customer_name,
@@ -19,7 +21,16 @@ export async function POST(request) {
     notes
   } = await request.json();
 
-  console.log('📧 Email will be sent to:', customer_email);
+  // Log all environment variables status
+  console.log('📋 Environment Variables Check:');
+  console.log('   BREVO_API_KEY:', process.env.BREVO_API_KEY ? '✅ Set' : '❌ MISSING');
+  console.log('   BREVO_SENDER_EMAIL:', process.env.BREVO_SENDER_EMAIL || '❌ MISSING');
+  console.log('   GMAIL_USER:', process.env.GMAIL_USER ? '✅ Set' : '❌ MISSING');
+  console.log('   GMAIL_APP_PASSWORD:', process.env.GMAIL_APP_PASSWORD ? '✅ Set' : '❌ MISSING');
+  console.log('');
+  console.log('📧 Customer Email:', customer_email);
+  console.log('📧 Admin Email:', process.env.GMAIL_USER);
+  console.log('═══════════════════════════════════════════');
 
   // Build products HTML for email
   const productsHtml = products.map(p => `
@@ -94,90 +105,250 @@ export async function POST(request) {
     </html>
   `;
 
-  try {
-    // Check if Brevo API key is configured
-    if (!process.env.BREVO_API_KEY) {
-      console.log('⚠️ BREVO_API_KEY not configured, skipping email send');
-      return Response.json({ 
-        message: 'Order placed successfully! Email not configured.',
-        warning: 'BREVO_API_KEY not set'
-      }, { status: 200 });
-    }
+  // Admin Email - New Order Alert
+  const adminEmailHtml = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <title>🚨 NEW ORDER ALERT!</title>
+    </head>
+    <body style="font-family: Arial, sans-serif; background-color: #1a1a2e; margin: 0; padding: 0;">
+      <div style="max-width: 600px; margin: 20px auto; background-color: #16213e; padding: 20px; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); border: 2px solid #e94560;">
+        
+        <div style="background: linear-gradient(135deg, #e94560, #ff4d6d); padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+          <h1 style="color: #fff; text-align: center; margin: 0;">🚨 NEW ORDER RECEIVED!</h1>
+          <p style="color: #fff; text-align: center; font-size: 14px; margin: 10px 0 0 0;">A new order just came in - Action Required!</p>
+        </div>
 
-    // Validate customer email
-    if (!customer_email || !customer_email.includes('@')) {
-      console.error('📧 Invalid customer email:', customer_email);
-      throw new Error('Invalid customer email address');
-    }
+        <div style="background: #0f3460; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #e94560;">
+          <h2 style="color: #e94560; margin: 0 0 10px 0;">📋 Order Summary</h2>
+          <table style="width: 100%; color: #fff;">
+            <tr><td style="padding: 5px 0; color: #aaa;">Order ID:</td><td style="padding: 5px 0; font-weight: bold;">${order_id}</td></tr>
+            <tr><td style="padding: 5px 0; color: #aaa;">Order Date:</td><td style="padding: 5px 0;">${order_date}</td></tr>
+            <tr><td style="padding: 5px 0; color: #aaa;">Total Items:</td><td style="padding: 5px 0;">${products.length} products</td></tr>
+          </table>
+        </div>
 
-    // Initialize Brevo API
-    const apiInstance = new brevo.TransactionalEmailsApi();
-    apiInstance.setApiKey(brevo.TransactionalEmailsApiApiKeys.apiKey, process.env.BREVO_API_KEY);
+        <div style="background: #0f3460; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #00d9ff;">
+          <h2 style="color: #00d9ff; margin: 0 0 10px 0;">👤 Customer Details</h2>
+          <table style="width: 100%; color: #fff;">
+            <tr><td style="padding: 5px 0; color: #aaa;">Name:</td><td style="padding: 5px 0; font-weight: bold;">${customer_name}</td></tr>
+            <tr><td style="padding: 5px 0; color: #aaa;">Phone:</td><td style="padding: 5px 0;"><a href="tel:${phone}" style="color: #00d9ff;">${phone}</a></td></tr>
+            <tr><td style="padding: 5px 0; color: #aaa;">WhatsApp:</td><td style="padding: 5px 0;"><a href="https://wa.me/${whatsapp?.replace(/[^0-9]/g, '')}" style="color: #25d366;">${whatsapp}</a></td></tr>
+            <tr><td style="padding: 5px 0; color: #aaa;">Email:</td><td style="padding: 5px 0;"><a href="mailto:${customer_email}" style="color: #00d9ff;">${customer_email}</a></td></tr>
+          </table>
+        </div>
 
-    const senderEmail = process.env.BREVO_SENDER_EMAIL || 'luqitchycosmetics@gmail.com';
-    const senderName = process.env.BREVO_SENDER_NAME || 'Luqitchy Cosmetics';
+        <div style="background: #0f3460; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #ffd700;">
+          <h2 style="color: #ffd700; margin: 0 0 10px 0;">📍 Shipping Address</h2>
+          <table style="width: 100%; color: #fff;">
+            <tr><td style="padding: 5px 0; color: #aaa;">Governorate:</td><td style="padding: 5px 0;">${governorate}</td></tr>
+            <tr><td style="padding: 5px 0; color: #aaa;">City:</td><td style="padding: 5px 0;">${city}</td></tr>
+            <tr><td style="padding: 5px 0; color: #aaa;">Street:</td><td style="padding: 5px 0;">${street}</td></tr>
+            <tr><td style="padding: 5px 0; color: #aaa;">Landmark:</td><td style="padding: 5px 0;">${landmark || 'Not provided'}</td></tr>
+            <tr><td style="padding: 5px 0; color: #aaa;">Notes:</td><td style="padding: 5px 0;">${notes || 'No notes'}</td></tr>
+          </table>
+        </div>
 
-    // Create email object
-    const sendSmtpEmail = new brevo.SendSmtpEmail();
-    sendSmtpEmail.subject = `🎉 Order Confirmation - ${order_id} | Luqitchy Cosmetics`;
-    sendSmtpEmail.htmlContent = customerEmailHtml;
-    sendSmtpEmail.sender = { name: senderName, email: senderEmail };
-    sendSmtpEmail.to = [{ email: customer_email, name: customer_name }];
-    sendSmtpEmail.replyTo = { email: senderEmail, name: senderName };
+        <div style="background: #0f3460; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #ff4d6d;">
+          <h2 style="color: #ff4d6d; margin: 0 0 15px 0;">📦 Ordered Products</h2>
+          ${products.map(p => `
+            <div style="background: #16213e; padding: 10px; border-radius: 5px; margin-bottom: 10px; border: 1px solid #333;">
+              <p style="color: #fff; margin: 0 0 5px 0; font-weight: bold;">🛍️ ${p.name}</p>
+              <p style="color: #aaa; margin: 0; font-size: 14px;">Quantity: ${p.quantity} × ${p.price} EGP = <span style="color: #00d9ff; font-weight: bold;">${p.total || (p.price * p.quantity)} EGP</span></p>
+            </div>
+          `).join('')}
+        </div>
 
-    // Send email to customer
-    console.log('📧 Sending email to customer via Brevo...');
-    const result = await apiInstance.sendTransacEmail(sendSmtpEmail);
-    console.log('📧 Customer email sent successfully! Message ID:', result.body?.messageId);
+        <div style="background: linear-gradient(135deg, #00d9ff, #0f3460); padding: 20px; border-radius: 8px; text-align: center; margin-bottom: 20px;">
+          <p style="color: #fff; font-size: 14px; margin: 0;">TOTAL AMOUNT</p>
+          <p style="color: #fff; font-size: 32px; font-weight: bold; margin: 10px 0 0 0;">💰 ${total_amount} EGP</p>
+        </div>
 
-    // Send to n8n webhook if configured
-    if (process.env.N8N_WEBHOOK_URL) {
-      try {
-        console.log('🔗 Sending order to n8n...');
-        await fetch(process.env.N8N_WEBHOOK_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            orderId: order_id,
-            orderDate: order_date,
-            customer: {
-              name: customer_name,
-              email: customer_email,
-              phone: phone,
-              whatsapp: whatsapp
-            },
-            shipping: {
-              governorate: governorate,
-              city: city,
-              street: street,
-              landmark: landmark,
-              notes: notes
-            },
-            products: products,
-            totalAmount: total_amount,
-            source: 'Luqitchy Website'
-          })
-        });
-        console.log('🔗 Order sent to n8n successfully!');
-      } catch (n8nError) {
-        console.error('🔗 n8n Error:', n8nError.message);
+        <div style="text-align: center; padding: 15px;">
+          <a href="https://wa.me/${whatsapp?.replace(/[^0-9]/g, '')}" style="display: inline-block; padding: 12px 25px; margin: 5px; background-color: #25d366; color: #fff; text-decoration: none; border-radius: 25px; font-weight: bold;">💬 Contact on WhatsApp</a>
+          <a href="tel:${phone}" style="display: inline-block; padding: 12px 25px; margin: 5px; background-color: #e94560; color: #fff; text-decoration: none; border-radius: 25px; font-weight: bold;">📞 Call Customer</a>
+        </div>
+
+        <p style="text-align: center; color: #666; margin-top: 20px; font-size: 12px;">📊 Luqitchy Cosmetics Admin Dashboard</p>
+      </div>
+    </body>
+    </html>
+  `;
+
+  const errors = [];
+  let customerEmailSent = false;
+  let adminEmailSent = false;
+
+  // ==========================================================
+  // 1. SEND TO CUSTOMER VIA BREVO (300/day free)
+  // ==========================================================
+  console.log('');
+  console.log('┌─────────────────────────────────────────┐');
+  console.log('│ [1/2] SENDING CUSTOMER EMAIL VIA BREVO  │');
+  console.log('└─────────────────────────────────────────┘');
+
+  if (!process.env.BREVO_API_KEY) {
+    const err = 'BREVO_API_KEY is not configured in environment variables';
+    console.error('❌ CRITICAL:', err);
+    errors.push({ service: 'Brevo', error: err });
+  } else if (!customer_email || !customer_email.includes('@')) {
+    const err = `Invalid customer email: ${customer_email}`;
+    console.error('❌ CRITICAL:', err);
+    errors.push({ service: 'Brevo', error: err });
+  } else {
+    try {
+      console.log('📧 Initializing Brevo API...');
+      
+      const BREVO_API_KEY = process.env.BREVO_API_KEY;
+      const senderEmail = process.env.BREVO_SENDER_EMAIL || 'luqitchycosmetics@gmail.com';
+      const senderName = process.env.BREVO_SENDER_NAME || 'Luqitchy Cosmetics';
+      
+      console.log('📧 Sender:', senderName, '<' + senderEmail + '>');
+      console.log('📧 To:', customer_name, '<' + customer_email + '>');
+      
+      // Use fetch directly to Brevo API (more reliable than SDK)
+      const brevoResponse = await fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: {
+          'accept': 'application/json',
+          'api-key': BREVO_API_KEY,
+          'content-type': 'application/json'
+        },
+        body: JSON.stringify({
+          sender: { name: senderName, email: senderEmail },
+          to: [{ email: customer_email, name: customer_name }],
+          replyTo: { email: senderEmail, name: senderName },
+          subject: `🎉 Order Confirmation - ${order_id} | Luqitchy Cosmetics`,
+          htmlContent: customerEmailHtml
+        })
+      });
+
+      const brevoResult = await brevoResponse.json();
+      
+      if (brevoResponse.ok) {
+        console.log('✅ BREVO SUCCESS! Message ID:', brevoResult.messageId);
+        customerEmailSent = true;
+      } else {
+        const err = `Brevo API Error: ${JSON.stringify(brevoResult)}`;
+        console.error('❌ BREVO FAILED:', err);
+        errors.push({ service: 'Brevo', error: err, response: brevoResult });
       }
+    } catch (error) {
+      const err = `Brevo Exception: ${error.message}`;
+      console.error('❌ BREVO EXCEPTION:', err);
+      errors.push({ service: 'Brevo', error: err });
     }
-    
-    return Response.json({ 
-      message: 'Email sent successfully',
-      messageId: result.body?.messageId
-    });
-    
-  } catch (error) {
-    console.error('📧 Email Error:', error);
-    console.error('📧 Error message:', error.message);
-    
-    // Return success anyway so the order goes through
-    return Response.json({ 
-      message: 'Order placed successfully! Email notification may have failed.',
-      warning: 'Email service encountered an issue',
-      error: error.message
-    }, { status: 200 });
   }
+
+  // ==========================================================
+  // 2. SEND TO ADMIN VIA GMAIL (250/day free)
+  // ==========================================================
+  console.log('');
+  console.log('┌─────────────────────────────────────────┐');
+  console.log('│ [2/2] SENDING ADMIN EMAIL VIA GMAIL     │');
+  console.log('└─────────────────────────────────────────┘');
+
+  if (!process.env.GMAIL_USER) {
+    const err = 'GMAIL_USER is not configured in environment variables';
+    console.error('❌ CRITICAL:', err);
+    errors.push({ service: 'Gmail', error: err });
+  } else if (!process.env.GMAIL_APP_PASSWORD) {
+    const err = 'GMAIL_APP_PASSWORD is not configured in environment variables';
+    console.error('❌ CRITICAL:', err);
+    errors.push({ service: 'Gmail', error: err });
+  } else {
+    try {
+      console.log('📧 Creating Gmail transporter...');
+      console.log('📧 From:', process.env.GMAIL_USER);
+      console.log('📧 To:', process.env.GMAIL_USER);
+      
+      const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        host: 'smtp.gmail.com',
+        port: 587,
+        secure: false,
+        auth: {
+          user: process.env.GMAIL_USER,
+          pass: process.env.GMAIL_APP_PASSWORD
+        }
+      });
+
+      // Verify connection first
+      console.log('📧 Verifying Gmail connection...');
+      await transporter.verify();
+      console.log('📧 Gmail connection verified!');
+
+      // Send email
+      console.log('📧 Sending admin email...');
+      const gmailResult = await transporter.sendMail({
+        from: `"Luqitchy Orders 📦" <${process.env.GMAIL_USER}>`,
+        to: process.env.GMAIL_USER,
+        subject: `🚨 NEW ORDER - ${order_id} - ${customer_name} - ${total_amount} EGP`,
+        html: adminEmailHtml
+      });
+      
+      console.log('✅ GMAIL SUCCESS! Message ID:', gmailResult.messageId);
+      adminEmailSent = true;
+    } catch (error) {
+      const err = `Gmail Exception: ${error.message}`;
+      console.error('❌ GMAIL EXCEPTION:', err);
+      console.error('❌ Full error:', error);
+      errors.push({ service: 'Gmail', error: err, code: error.code });
+    }
+  }
+
+  // ==========================================================
+  // 3. SEND TO N8N WEBHOOK (optional)
+  // ==========================================================
+  if (process.env.N8N_WEBHOOK_URL) {
+    try {
+      console.log('');
+      console.log('🔗 Sending to n8n webhook...');
+      await fetch(process.env.N8N_WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orderId: order_id,
+          orderDate: order_date,
+          customer: { name: customer_name, email: customer_email, phone, whatsapp },
+          shipping: { governorate, city, street, landmark, notes },
+          products,
+          totalAmount: total_amount,
+          source: 'Luqitchy Website'
+        })
+      });
+      console.log('✅ N8N webhook sent!');
+    } catch (n8nError) {
+      console.error('⚠️ N8N Error (non-critical):', n8nError.message);
+    }
+  }
+
+  // ==========================================================
+  // FINAL SUMMARY
+  // ==========================================================
+  console.log('');
+  console.log('═══════════════════════════════════════════');
+  console.log('📊 FINAL SUMMARY');
+  console.log('═══════════════════════════════════════════');
+  console.log('Customer Email (Brevo):', customerEmailSent ? '✅ SENT' : '❌ FAILED');
+  console.log('Admin Email (Gmail):', adminEmailSent ? '✅ SENT' : '❌ FAILED');
+  console.log('Errors:', errors.length > 0 ? JSON.stringify(errors) : 'None');
+  console.log('═══════════════════════════════════════════');
+
+  // Return detailed response
+  return Response.json({ 
+    success: customerEmailSent || adminEmailSent,
+    message: customerEmailSent && adminEmailSent 
+      ? 'Both emails sent successfully!' 
+      : customerEmailSent 
+        ? 'Customer email sent, admin email failed'
+        : adminEmailSent 
+          ? 'Admin email sent, customer email failed'
+          : 'Both emails failed - check logs',
+    customerEmailSent,
+    adminEmailSent,
+    errors: errors.length > 0 ? errors : undefined
+  });
 }
