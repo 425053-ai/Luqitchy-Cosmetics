@@ -246,6 +246,11 @@ export function ProductPage({ product }: ProductPageProps) {
 
       // Save order ID to localStorage for confirmation page
       localStorage.setItem('lastOrderId', order_id)
+      
+      // Save transfer image for confirmation page
+      if (imagePreview) {
+        localStorage.setItem('lastTransferImage', imagePreview)
+      }
 
       // Scroll to top of page
       window.scrollTo({ top: 0, left: 0, behavior: "instant" })

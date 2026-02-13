@@ -88,6 +88,7 @@ export default function ConfirmationPage() {
   const [orderData, setOrderData] = useState<OrderData | null>(null)
   const [billReference, setBillReference] = useState<string>("")
   const [paymentMethod, setPaymentMethod] = useState<string>("cash")
+  const [transferImage, setTransferImage] = useState<string | null>(null)
 
   useEffect(() => {
     // Get order ID from URL params
@@ -122,6 +123,12 @@ export default function ConfirmationPage() {
       } catch (e) {
         console.error('Failed to parse order data:', e)
       }
+    }
+    
+    // Get transfer image from localStorage
+    const savedImage = localStorage.getItem('lastTransferImage')
+    if (savedImage) {
+      setTransferImage(savedImage)
     }
     
     // Fallback to localStorage orderId
@@ -253,6 +260,29 @@ export default function ConfirmationPage() {
               )}
             </div>
           </div>
+
+          {/* Transfer Image Display */}
+          {transferImage && (
+            <div className="relative bg-secondary/30 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-6 mb-4 sm:mb-6 md:mb-8 border border-border overflow-hidden">
+              <h2 className="font-serif text-base sm:text-lg md:text-xl font-bold text-foreground mb-3 sm:mb-4 flex items-center gap-2">
+                <span className="animate-cute-wiggle">📸</span>
+                Payment Proof Screenshot
+              </h2>
+              
+              <div className="relative h-80 sm:h-96 md:h-[500px] rounded-lg overflow-hidden border-2 border-border bg-background/50">
+                <Image 
+                  src={transferImage} 
+                  alt="Vodafone Cash payment proof" 
+                  fill
+                  className="object-contain"
+                  quality={95}
+                />
+              </div>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-3 text-center">
+                ✓ Your payment screenshot has been received and saved with your order
+              </p>
+            </div>
+          )}
 
           {/* Customer Details (if available) */}
           {orderData?.customerData && (

@@ -58,66 +58,100 @@ function generateOrderHTML(data: SendOrderRequest): string {
       <meta charset="utf-8">
       <style>
         body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-        .container { max-width: 500px; margin: 0 auto; padding: 20px; }
-        .header { background-color: #f4a5c3; color: white; padding: 20px; border-radius: 8px 8px 0 0; text-align: center; }
-        .content { background-color: #f9f9f9; padding: 20px; border: 1px solid #ddd; }
-        .section { margin-bottom: 20px; }
-        .section-title { font-weight: bold; color: #c41e5c; margin-bottom: 10px; border-bottom: 2px solid #f4a5c3; padding-bottom: 5px; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #c41e5c 0%, #f4a5c3 100%); color: white; padding: 30px 20px; border-radius: 8px 8px 0 0; text-align: center; }
+        .content { background-color: #f9f9f9; padding: 30px 20px; border: 1px solid #ddd; }
+        .section { margin-bottom: 25px; }
+        .section-title { font-weight: bold; color: #c41e5c; margin-bottom: 10px; border-bottom: 2px solid #f4a5c3; padding-bottom: 8px; font-size: 14px; text-transform: uppercase; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        .total-row { background-color: #f4a5c3; color: white; font-weight: bold; padding: 10px; }
-        .success-badge { display: inline-block; background-color: #4CAF50; color: white; padding: 5px 10px; border-radius: 4px; margin-bottom: 10px; }
-        .bank-transfer { background-color: #e3f2fd; padding: 15px; border-left: 4px solid #2196F3; margin-top: 15px; }
+        .total-row { background-color: #f4a5c3; color: white; font-weight: bold; padding: 12px; }
+        .success-badge { display: inline-block; background-color: #4CAF50; color: white; padding: 8px 12px; border-radius: 4px; margin-bottom: 10px; font-weight: bold; }
+        .payment-info { background-color: #e3f2fd; padding: 15px; border-left: 4px solid #2196F3; margin-top: 15px; border-radius: 4px; }
         .footer { background-color: #f0f0f0; padding: 20px; text-align: center; font-size: 12px; color: #666; border-radius: 0 0 8px 8px; }
+        .info-row { display: flex; margin-bottom: 8px; }
+        .info-label { font-weight: bold; width: 120px; color: #555; }
+        .info-value { flex: 1; color: #333; }
       </style>
     </head>
     <body>
       <div class="container">
         <div class="header">
-          <h1>✨ شكراً لطلبك!</h1>
-          <p>تم استلام طلبك بنجاح</p>
+          <h1 style="margin: 0; font-size: 28px;">✨ Order Confirmed!</h1>
+          <p style="margin: 5px 0 0 0;">Thank you for your order</p>
         </div>
         
         <div class="content">
-          <div class="success-badge">✓ الطلب مؤكد #${data.order_id}</div>
+          <div class="success-badge">✓ Order Confirmed #${data.order_id}</div>
           
           <div class="section">
-            <div class="section-title">📋 معلومات الطلب</div>
-            <p><strong>رقم الطلب:</strong> ${data.order_id}</p>
-            <p><strong>التاريخ:</strong> ${data.order_date}</p>
-            <p><strong>طريقة الدفع:</strong> ${data.payment_method}</p>
+            <div class="section-title">📋 Order Information</div>
+            <div class="info-row">
+              <span class="info-label">Order ID:</span>
+              <span class="info-value">${data.order_id}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Date:</span>
+              <span class="info-value">${data.order_date}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Payment Method:</span>
+              <span class="info-value">Vodafone Cash Wallet</span>
+            </div>
           </div>
           
           <div class="section">
-            <div class="section-title">👤 بيانات العميل</div>
-            <p><strong>الاسم:</strong> ${data.customer_name}</p>
-            <p><strong>الهاتف:</strong> <span dir="ltr">${data.phone}</span></p>
-            <p><strong>واتساب:</strong> <span dir="ltr">${data.whatsapp}</span></p>
+            <div class="section-title">👤 Customer Details</div>
+            <div class="info-row">
+              <span class="info-label">Name:</span>
+              <span class="info-value">${data.customer_name}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Phone:</span>
+              <span class="info-value"><span dir="ltr">${data.phone}</span></span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">WhatsApp:</span>
+              <span class="info-value"><span dir="ltr">${data.whatsapp}</span></span>
+            </div>
           </div>
           
           <div class="section">
-            <div class="section-title">📍 عنوان التوصيل</div>
-            <p><strong>المحافظة:</strong> ${data.governorate}</p>
-            <p><strong>المدينة:</strong> ${data.city}</p>
-            <p><strong>الشارع:</strong> ${data.street}</p>
-            ${data.landmark ? `<p><strong>علامة مميزة:</strong> ${data.landmark}</p>` : ''}
+            <div class="section-title">📍 Delivery Address</div>
+            <div class="info-row">
+              <span class="info-label">Governorate:</span>
+              <span class="info-value">${data.governorate}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">City:</span>
+              <span class="info-value">${data.city}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Street:</span>
+              <span class="info-value">${data.street}</span>
+            </div>
+            ${data.landmark ? `
+            <div class="info-row">
+              <span class="info-label">Landmark:</span>
+              <span class="info-value">${data.landmark}</span>
+            </div>` : ''}
           </div>
           
           <div class="section">
-            <div class="section-title">📦 المنتجات</div>
+            <div class="section-title">📦 Products</div>
             <table>
               <thead>
-                <tr style="background-color: #f4a5c3; color: white;">
-                  <th style="padding: 10px; text-align: left;">المنتج</th>
-                  <th style="padding: 10px; text-align: center;">الكمية</th>
-                  <th style="padding: 10px; text-align: right;">السعر</th>
-                  <th style="padding: 10px; text-align: right;">الإجمالي</th>
+                <tr style="background-color: #c41e5c; color: white;">
+                  <th style="padding: 12px; text-align: left;">Product</th>
+                  <th style="padding: 12px; text-align: center;">Qty</th>
+                  <th style="padding: 12px; text-align: right;">Price</th>
+                  <th style="padding: 12px; text-align: right;">Total</th>
                 </tr>
               </thead>
               <tbody>
                 ${productsHTML}
                 <tr class="total-row">
-                  <td colspan="3" style="text-align: right; padding: 10px;">الإجمالي:</td>
-                  <td style="padding: 10px; text-align: right;">${data.total_amount} EGP</td>
+                  <td colspan="3" style="text-align: right; padding: 12px;">Total Amount:</td>
+                  <td style="padding: 12px; text-align: right;">${data.total_amount} EGP</td>
                 </tr>
               </tbody>
             </table>
@@ -125,30 +159,33 @@ function generateOrderHTML(data: SendOrderRequest): string {
           
           ${data.notes ? `
             <div class="section">
-              <div class="section-title">📝 ملاحظات</div>
+              <div class="section-title">📝 Special Instructions</div>
               <p>${data.notes}</p>
             </div>
           ` : ''}
           
-          ${data.payment_method.includes('تحويل') || data.payment_method.includes('bank') ? `
-            <div class="bank-transfer">
-              <p><strong>✅ تم استلام صورة التحويل</strong></p>
-              <p>سيتم التحقق من التحويل والتأكيد خلال 24 ساعة</p>
-              ${data.transferImage ? `<p style="margin-top: 10px; font-size: 12px; color: #666;">شاملة على صورة التحويل المرفقة</p>` : ''}
-            </div>
-          ` : ''}
+          <div class="payment-info">
+            <p style="margin-top: 0;"><strong>✅ Payment Screenshot Received</strong></p>
+            <p style="margin: 8px 0;">Your Vodafone Cash payment confirmation has been received and verified. We will process your order shortly.</p>
+            <p style="margin: 8px 0; font-size: 12px; color: #1976d2;"><strong>📦 Expected Delivery: Within 24-48 hours</strong></p>
+          </div>
           
-          <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee;">
-            <p style="text-align: center; font-size: 13px; color: #666;">
-              ستتلقى رسالة تأكيد أخرى عند بدء إجراءات التوصيل
+          <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+            <p style="text-align: center; font-size: 13px; color: #666; margin: 0;">
+              ✨ Thank you for shopping with Luqitchy Cosmetics! ✨
+            </p>
+            <p style="text-align: center; font-size: 12px; color: #999; margin: 5px 0 0 0;">
+              You will receive a shipping confirmation once your order is dispatched.
             </p>
           </div>
         </div>
         
         <div class="footer">
-          <p><strong>Luqitchy Cosmetics</strong></p>
-          <p>✨ Your Beauty Journey Starts Here</p>
-          <p>📧 luqitchycosmetics@gmail.com</p>
+          <p style="margin: 0; font-weight: bold; font-size: 14px;">Luqitchy Cosmetics</p>
+          <p style="margin: 5px 0;">✨ Premium Beauty Products</p>
+          <p style="margin: 5px 0; font-size: 11px;">Follow us on Instagram @luqitchyglossy</p>
+          <hr style="margin: 10px 0; border: none; border-top: 1px solid #ddd;">
+          <p style="margin: 5px 0; font-size: 11px;">If you have any questions, please reply to this email or contact us via WhatsApp</p>
         </div>
       </div>
     </body>
@@ -168,12 +205,26 @@ export async function POST(request: NextRequest) {
       transferImageMime,
     } = body;
 
+    // Validate required fields
     if (!customer_name || !customer_email || !order_id) {
+      console.error('Missing required fields:', { customer_name, customer_email, order_id });
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
       );
     }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(customer_email)) {
+      console.error('Invalid email format:', customer_email);
+      return NextResponse.json(
+        { error: 'Invalid email format' },
+        { status: 400 }
+      );
+    }
+
+    console.log(`Processing order #${order_id} for ${customer_name} (${customer_email})`);
 
     const htmlContent = generateOrderHTML(body);
 
@@ -190,40 +241,32 @@ export async function POST(request: NextRequest) {
 
     // Send to customer
     const customerMailOptions = {
-      from: process.env.BREVO_SENDER_EMAIL,
+      from: process.env.BREVO_SENDER_EMAIL || 'noreply@luqitchy.com',
       to: customer_email,
-      subject: `تأكيد طلبك #${order_id} | Luqitchy Cosmetics`,
+      subject: `Order Confirmation #${order_id} | Luqitchy Cosmetics`,
       html: htmlContent,
       attachments,
+      replyTo: process.env.BREVO_SENDER_EMAIL,
     };
 
-    await transporter.sendMail(customerMailOptions);
+    console.log(`Sending customer email to: ${customer_email}`);
+    const customerResult = await transporter.sendMail(customerMailOptions);
+    console.log(`✅ Customer email sent successfully:`, customerResult.messageId);
 
-    // Send to admin (store owner)
-    const adminHtmlContent = `
-      <h2>طلب جديد!</h2>
-      ${htmlContent}
-      <hr>
-      <p><strong>تفاصيل العميل:</strong></p>
-      <p>البريد: ${customer_email}</p>
-    `;
-
-    const adminMailOptions = {
-      from: process.env.BREVO_SENDER_EMAIL,
-      to: process.env.BREVO_SENDER_EMAIL, // Store owner email
-      subject: `[طلب جديد] #${order_id} - ${customer_name}`,
-      html: adminHtmlContent,
-      attachments,
-    };
-
-    await transporter.sendMail(adminMailOptions);
+    // Admin email removed - using Telegram notifications instead for cost optimization
+    // All 300 daily email quota is reserved for customer confirmations
 
     return NextResponse.json(
-      { success: true, message: 'Order sent successfully' },
+      { 
+        success: true, 
+        message: 'Order confirmation email sent to customer',
+        orderId: order_id,
+        customerEmail: customer_email,
+      },
       { status: 200 }
     );
   } catch (error: any) {
-    console.error('Email sending error:', error);
+    console.error('❌ Email sending error:', error);
     return NextResponse.json(
       { error: error.message || 'Failed to send order email' },
       { status: 500 }
