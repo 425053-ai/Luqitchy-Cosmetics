@@ -60,7 +60,7 @@ const faqs = [
   {
     question: "Are the products cruelty-free?",
     answer:
-      "Absolutely! All Luqitchy products are 100% cruelty-free. We never test on animals and use only ethically sourced, natural ingredients. Beauty should never come at the cost of our furry friends!",
+      "Absolutely! All Luqitchy Cosmetics products are certified 100% cruelty-free and vegan-friendly. None of our formulations or ingredients are tested on animals. Our entire collection—including all Lip Gloss shades, Lip Balm, and Body Lotion + Splash Bundles—is made with ethically sourced, natural ingredients. We believe that true beauty never comes at the expense of our animal friends. 🐰",
     emoji: "🐰",
     animation: "animate-kawaii-bounce",
   },

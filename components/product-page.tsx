@@ -718,6 +718,9 @@ export function ProductPage({ product }: ProductPageProps) {
                   <label className="text-sm font-semibold flex items-center gap-2">
                     <span>📧</span> Email <span className="text-accent">*</span>
                   </label>
+                  <p className="text-xs text-amber-600 dark:text-amber-500 bg-amber-50 dark:bg-amber-950/30 px-3 py-2 rounded-lg border border-amber-200 dark:border-amber-800/50 font-medium flex items-center gap-2">
+                    <span>⚠️</span> Please enter a correct email - Your order confirmation will be sent here
+                  </p>
                   <input
                     type="email"
                     name="email"
@@ -754,7 +757,7 @@ export function ProductPage({ product }: ProductPageProps) {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <label className="text-sm font-semibold flex items-center gap-2">
-                      <span>💬</span> WhatsApp <span className="text-accent">*</span>
+                      <span>�</span> WhatsApp <span className="text-accent">*</span>
                     </label>
                     <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer hover:text-accent transition-colors">
                       <input
