@@ -1,8 +1,15 @@
 // Telegram Bot Service for Luqitchy Cosmetics
 // Bot: @luqitchy_bot
 
-const TELEGRAM_BOT_TOKEN = '8001027503:AAFYe8uyZ9IageMf0TgmwAxFZ7qhE4NbxXg';
-const TELEGRAM_CHAT_ID = '1143952317';
+const TELEGRAM_BOT_TOKEN = process.env.NEXT_PUBLIC_TELEGRAM_BOT_TOKEN || '8001027503:AAFYe8uyZ9IageMf0TgmwAxFZ7qhE4NbxXg';
+const TELEGRAM_CHAT_ID = process.env.NEXT_PUBLIC_TELEGRAM_CHAT_ID || '1143952317';
+
+// Verify tokens on startup
+if (typeof window === 'undefined') {
+  console.log('🤖 Telegram Service Initialized:');
+  console.log('- Bot Token:', TELEGRAM_BOT_TOKEN ? '✓ Configured' : '✗ Missing');
+  console.log('- Chat ID:', TELEGRAM_CHAT_ID ? '✓ Configured' : '✗ Missing');
+}
 
 interface TelegramResponse {
   success: boolean;
@@ -15,6 +22,7 @@ export const sendTelegramMessage = async (message: string): Promise<TelegramResp
   const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
 
   try {
+    console.log('📤 Sending Telegram message...');
     const response = await fetch(url, {
       method: 'POST',
       headers: {
@@ -31,6 +39,19 @@ export const sendTelegramMessage = async (message: string): Promise<TelegramResp
 
     if (data.ok) {
       console.log('✅ تم إرسال الرسالة بنجاح');
+      return { success: true, data }
+    } else {
+      console.error('❌ Telegram Error:', data.description || 'Unknown error');
+      console.error('Error Code:', data.error_code);
+      console.error('Bot Token Status:', TELEGRAM_BOT_TOKEN ? '✓ Set' : '✗ Missing');
+      console.error('Chat ID Status:', TELEGRAM_CHAT_ID ? '✓ Set' : '✗ Missing');
+      return { success: false, error: data }
+    }
+  } catch (error: any) {
+    console.error('❌ Telegram Connection Error:', error.message);
+    return { success: false, error }
+  }
+};
       return { success: true, data };
     } else {
       console.error('❌ فشل الإرسال:', data);

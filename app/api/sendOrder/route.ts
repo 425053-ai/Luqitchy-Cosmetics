@@ -11,6 +11,18 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+// Verify configuration on startup
+transporter.verify((error, success) => {
+  if (error) {
+    console.error('❌ SMTP Configuration Error:', error);
+    console.error('BREVO_SENDER_EMAIL:', process.env.BREVO_SENDER_EMAIL ? '✓ Set' : '✗ Missing');
+    console.error('BREVO_SMTP_KEY:', process.env.BREVO_SMTP_KEY ? '✓ Set' : '✗ Missing');
+    console.error('BREVO_SMTP_HOST:', process.env.BREVO_SMTP_HOST ? '✓ Set' : '✗ Missing');
+  } else {
+    console.log('✅ SMTP Server is ready to send emails');
+  }
+});
+
 interface OrderProduct {
   name: string;
   quantity: number;
@@ -267,8 +279,23 @@ export async function POST(request: NextRequest) {
     );
   } catch (error: any) {
     console.error('❌ Email sending error:', error);
+    
+    // Log environment variables status
+    console.error('🔧 Environment Variables Check:');
+    console.error('- BREVO_SENDER_EMAIL:', process.env.BREVO_SENDER_EMAIL ? '✓ Set' : '✗ Missing');
+    console.error('- BREVO_SMTP_KEY:', process.env.BREVO_SMTP_KEY ? '✓ Set' : '✗ Missing');
+    console.error('- BREVO_SMTP_HOST:', process.env.BREVO_SMTP_HOST ? '✓ Set' : '✗ Missing');
+    
+    // Log error details
+    console.error('Error Code:', error.code);
+    console.error('Error Message:', error.message);
+    console.error('Error Details:', error.response?.text || error.toString());
+    
     return NextResponse.json(
-      { error: error.message || 'Failed to send order email' },
+      { 
+        error: error.message || 'Failed to send order email',
+        details: process.env.NODE_ENV === 'development' ? error.toString() : undefined
+      },
       { status: 500 }
     );
   }

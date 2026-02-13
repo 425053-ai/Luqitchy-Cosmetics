@@ -224,7 +224,8 @@ export function ProductPage({ product }: ProductPageProps) {
       localStorage.setItem('transfer-proofs', JSON.stringify(existingProofs))
 
       // Send email notification with image
-      await fetch('/api/sendOrder', {
+      console.log('📧 Sending email to:', formData.email);
+      const emailResponse = await fetch('/api/sendOrder', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -252,7 +253,16 @@ export function ProductPage({ product }: ProductPageProps) {
         }),
       })
 
+      if (!emailResponse.ok) {
+        const emailError = await emailResponse.json().catch(() => ({}))
+        console.warn('⚠️ Email sending failed:', emailError)
+      } else {
+        const emailResult = await emailResponse.json()
+        console.log('✅ Email sent successfully:', emailResult)
+      }
+
       // Send Telegram notification with image
+      console.log('🤖 Sending Telegram notification...');
       await sendBankTransferOrder({
         orderId: order_id,
         productName: product.name,
@@ -267,6 +277,7 @@ export function ProductPage({ product }: ProductPageProps) {
         transferProofBase64: bankTransferData.imageData,
         transferProofMime: bankTransferData.mimeType,
       })
+      console.log('✅ Telegram notification sent')
 
       // Save to order history
       const fullAddressForHistory = `${formData.streetAddress}${formData.landmark ? ` (${formData.landmark})` : ''}, ${formData.city}, ${formData.governorate}`;
