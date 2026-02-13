@@ -757,7 +757,7 @@ export function ProductPage({ product }: ProductPageProps) {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <label className="text-sm font-semibold flex items-center gap-2">
-                      <span>�</span> WhatsApp <span className="text-accent">*</span>
+                      <span>📱</span> WhatsApp <span className="text-accent">*</span>
                     </label>
                     <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer hover:text-accent transition-colors">
                       <input
