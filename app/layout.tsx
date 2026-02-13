@@ -167,14 +167,14 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={`${quicksand.variable} ${playfair.variable} font-sans antialiased`}>
+      <body className={`${quicksand.variable} ${playfair.variable} font-sans antialiased`} suppressHydrationWarning>
         <SkipLink />
         <ScrollToTop />
         <CartProvider>
           <WishlistProvider>
             <OrderHistoryProvider>
               <ToastProvider>
-                <main id="main-content" tabIndex={-1}>
+                <main id="main-content" tabIndex={-1} suppressHydrationWarning>
                   {children}
                 </main>
                 <Analytics />

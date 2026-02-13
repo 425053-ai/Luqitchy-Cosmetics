@@ -8,7 +8,7 @@ import { ArrowLeft, Star, ShoppingCart, Plus, Minus, Check } from "lucide-react"
 import { useCart } from "@/context/CartContext"
 import { useOrderHistory } from "@/context/OrderHistoryContext"
 import { Button } from "@/components/ui/button"
-import { sendSingleProductOrder } from "@/lib/telegram-service"
+import { sendBankTransferOrder } from "@/lib/telegram-service"
 
 interface ProductPageProps {
   product: {
@@ -42,6 +42,9 @@ export function ProductPage({ product }: ProductPageProps) {
   })
   const [submitted, setSubmitted] = useState(false)
   const [sameAsPhone, setSameAsPhone] = useState(true)
+  const [transferImage, setTransferImage] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string>("")
+  const [uploadingImage, setUploadingImage] = useState(false)
   
   // Save submitted order data
   const [submittedOrder, setSubmittedOrder] = useState<{
@@ -54,6 +57,20 @@ export function ProductPage({ product }: ProductPageProps) {
     customerData: typeof formData;
     orderTime: string;
   } | null>(null)
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setTransferImage(file)
+      
+      // Create preview
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
 
   const handleAddToCart = () => {
     addToCart({
@@ -77,6 +94,12 @@ export function ProductPage({ product }: ProductPageProps) {
     
     // Prevent double submission
     if (isSubmitting) return
+
+    // Validate transfer image
+    if (!transferImage) {
+      alert("❌ Please attach a Vodafone Cash payment confirmation screenshot")
+      return
+    }
     
     setIsSubmitting(true)
     const total_price = quantity * product.price
@@ -103,14 +126,51 @@ export function ProductPage({ product }: ProductPageProps) {
       hour: '2-digit',
       minute: '2-digit'
     })
-    
+
     try {
-      // Send email via Brevo API
-      const response = await fetch('/api/sendOrder', {
+      // Upload transfer image and get base64
+      setUploadingImage(true)
+      const imageFormData = new FormData()
+      imageFormData.append('transferImage', transferImage)
+      imageFormData.append('orderId', order_id)
+      imageFormData.append('customerName', formData.fullName)
+      imageFormData.append('customerEmail', formData.email)
+      imageFormData.append('phone', formData.phone)
+      imageFormData.append('amount', total_price.toString())
+      imageFormData.append('bankName', '01012622315')
+
+      const bankTransferResponse = await fetch('/api/bankTransfer', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        body: imageFormData,
+      })
+
+      if (!bankTransferResponse.ok) {
+        throw new Error('Failed to process image')
+      }
+
+      const bankTransferData = await bankTransferResponse.json()
+      setUploadingImage(false)
+
+      // Save to localStorage for admin dashboard
+      const existingProofs = JSON.parse(localStorage.getItem('transfer-proofs') || '[]')
+      const newProof = {
+        orderId: order_id,
+        customerName: formData.fullName,
+        customerEmail: formData.email,
+        phone: formData.phone,
+        amount: total_price.toString(),
+        uploadedAt: order_date,
+        imageData: bankTransferData.imageData,
+        imageMime: bankTransferData.mimeType,
+        verified: false,
+      }
+      existingProofs.push(newProof)
+      localStorage.setItem('transfer-proofs', JSON.stringify(existingProofs))
+
+      // Send email notification with image
+      await fetch('/api/sendOrder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           customer_name: formData.fullName,
           customer_email: formData.email,
@@ -129,23 +189,27 @@ export function ProductPage({ product }: ProductPageProps) {
           city: formData.city,
           street: formData.streetAddress,
           landmark: formData.landmark,
-          notes: formData.notes || "No additional notes"
+          notes: formData.notes || "بدون ملاحظات",
+          payment_method: "تحويل بنكي للرقم 01012622315",
+          transferImage: bankTransferData.imageData,
+          transferImageMime: bankTransferData.mimeType,
         }),
       })
 
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || 'Failed to send order')
-      }
-
-      // Send Telegram notification
-      await sendSingleProductOrder({
+      // Send Telegram notification with image
+      await sendBankTransferOrder({
         orderId: order_id,
         productName: product.name,
         quantity: quantity,
         productPrice: product.price,
         totalPrice: total_price,
-        customerData: { ...formData },
+        customerData: { 
+          ...formData,
+          paymentMethod: 'bank_transfer',
+          notes: formData.notes || 'بدون ملاحظات'
+        },
+        transferProofBase64: bankTransferData.imageData,
+        transferProofMime: bankTransferData.mimeType,
       })
 
       // Save to order history
@@ -188,9 +252,9 @@ export function ProductPage({ product }: ProductPageProps) {
       setSubmitted(true)
     } catch (err: any) {
       console.error("Order Error:", err)
-      const errorMessage = err?.message || "Unable to process order"
+      const errorMessage = err?.message || "Failed to process order"
       console.error("Detailed error:", errorMessage)
-      alert(`Error: ${errorMessage}`)
+      alert(`خطأ: ${errorMessage}`)
     } finally {
       setIsSubmitting(false)
     }
@@ -791,6 +855,101 @@ export function ProductPage({ product }: ProductPageProps) {
                   />
                 </div>
 
+                {/* Payment Method - Vodafone Cash Wallet Only */}
+                <div className="space-y-4 pt-4 border-t border-border/50">
+                  <div className="flex items-center gap-2 text-sm font-semibold">
+                    <span className="text-lg">📱</span> Payment Method <span className="text-accent">*</span>
+                  </div>
+                  
+                  <div className="premium-card rounded-xl sm:rounded-2xl p-4 sm:p-5 md:p-6 bg-gradient-to-br from-red-500/10 to-pink-500/10 border-2 border-red-500/30">
+                    <div className="flex items-start gap-4">
+                      <div className="text-4xl">📱</div>
+                      <div className="flex-1">
+                        <h3 className="font-bold text-lg mb-2">Vodafone Cash Wallet</h3>
+                        <p className="text-sm text-muted-foreground mb-3">Send payment to Vodafone Cash wallet and attach the payment confirmation screenshot</p>
+                        <div className="bg-white/30 dark:bg-black/30 rounded-lg p-3 mb-3 border border-red-500/20">
+                          <p className="text-sm text-muted-foreground mb-1">Vodafone Cash Wallet:</p>
+                          <p className="text-sm font-mono font-bold text-lg text-red-600 dark:text-red-400">📱 <span dir="ltr">01012622315</span></p>
+                        </div>
+                        <ul className="text-xs space-y-1 text-muted-foreground">
+                          <li>✅ Secure wallet payment</li>
+                          <li>✅ Instant confirmation</li>
+                          <li>✅ Protected transaction</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Transfer Image Upload */}
+                  <div className="space-y-3">
+                    <label className="text-sm font-semibold flex items-center gap-2">
+                      <span>📸</span> Attach Payment Confirmation <span className="text-accent">*</span>
+                    </label>
+                    
+                    <div className="relative">
+                      <input
+                        type="file"
+                        id="transferImage"
+                        onChange={handleImageChange}
+                        accept="image/*"
+                        required
+                        className="hidden"
+                      />
+                      
+                      <label 
+                        htmlFor="transferImage"
+                        className="block w-full p-4 rounded-xl border-2 border-dashed border-accent/50 hover:border-accent bg-accent/5 hover:bg-accent/10 cursor-pointer transition-all duration-300 text-center"
+                      >
+                        {imagePreview ? (
+                          <div className="space-y-2">
+                            <div className="relative w-24 h-24 mx-auto rounded-lg overflow-hidden border border-accent/30">
+                              <img src={imagePreview} alt="Payment confirmation" className="w-full h-full object-cover" />
+                            </div>
+                            <p className="text-sm font-medium text-accent">✅ Screenshot attached</p>
+                            <p className="text-xs text-muted-foreground">{transferImage?.name}</p>
+                          </div>
+                        ) : (
+                          <div className="space-y-2 py-6">
+                            <p className="text-3xl">📸</p>
+                            <p className="text-sm font-medium">Click to select payment confirmation screenshot</p>
+                            <p className="text-xs text-muted-foreground">or drag screenshot here</p>
+                          </div>
+                        )}
+                      </label>
+
+                      {transferImage && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setTransferImage(null)
+                            setImagePreview("")
+                          }}
+                          className="absolute top-2 right-2 bg-destructive text-white p-1 rounded-full hover:bg-destructive/90 transition-colors"
+                        >
+                          ✕
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3">
+                      <div className="text-xs text-amber-700 dark:text-amber-400 flex items-start gap-2">
+                        <span>ℹ️</span>
+                        <div>
+                          <p className="mb-2">Screenshot must be clear and show:</p>
+                          <ul className="list-disc list-inside space-y-0.5">
+                            <li>Your Vodafone Cash wallet transaction</li>
+                            <li>Amount paid</li>
+                            <li>Payment status (Completed/Success)</li>
+                            <li>Receiver number (01012622315)</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* REMOVED - Only Vodafone Cash Now */}
+
                 {/* Order Summary */}
                 <div className="bg-accent/5 rounded-2xl p-4 border border-accent/20">
                   <div className="flex justify-between items-center">
@@ -801,15 +960,17 @@ export function ProductPage({ product }: ProductPageProps) {
 
                 <Button
                   type="submit"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || uploadingImage || !transferImage}
                   className="w-full h-16 luxury-btn text-xl rounded-2xl transition-all duration-300 group disabled:opacity-70 disabled:cursor-not-allowed"
                 >
                   {isSubmitting ? (
                     <>Processing...</>
+                  ) : uploadingImage ? (
+                    <>Uploading Image...</>
                   ) : (
                     <>
-                      <span className="mr-2">🛒</span>
-                      Place Order
+                      <span className="mr-2">🏦</span>
+                      Submit Order
                       <span className="ml-2 group-hover:translate-x-1 transition-transform">→</span>
                     </>
                   )}

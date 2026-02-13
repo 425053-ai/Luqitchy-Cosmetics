@@ -3,27 +3,132 @@
 import { useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
-import { CheckCircle, Mail, MessageCircle, ArrowRight, Sparkles } from "lucide-react"
+import { CheckCircle, Mail, MessageCircle, ArrowRight, Sparkles, CreditCard, Smartphone, Wallet, Building2, Ticket } from "lucide-react"
 import { ConfettiEffect } from "@/components/confetti-effect"
+
+interface OrderItem {
+  id: string
+  name: string
+  price: number
+  quantity: number
+  image?: string
+}
+
+interface OrderData {
+  orderId: string
+  items: OrderItem[]
+  amount: number
+  customerData: {
+    fullName: string
+    email: string
+    phone: string
+    whatsapp?: string
+    governorate: string
+    city: string
+    streetAddress: string
+    landmark?: string
+    notes?: string
+  }
+  paymentMethod: string
+  billReference?: string
+}
+
+// Payment method display info
+const paymentMethodInfo: Record<string, { icon: React.ReactNode; label: string; color: string; bgColor: string; description: string }> = {
+  cash: {
+    icon: <Wallet className="w-6 h-6" />,
+    label: "💵 Cash on Delivery",
+    color: "text-green-600",
+    bgColor: "bg-green-50 dark:bg-green-950/30 border-green-200/50 dark:border-green-800/30",
+    description: "Pay when your order arrives at your doorstep"
+  },
+  visa: {
+    icon: <CreditCard className="w-6 h-6" />,
+    label: "💳 Visa/MasterCard",
+    color: "text-blue-600",
+    bgColor: "bg-blue-50 dark:bg-blue-950/30 border-blue-200/50 dark:border-blue-800/30",
+    description: "Payment completed securely via card"
+  },
+  vodafone: {
+    icon: <Smartphone className="w-6 h-6" />,
+    label: "📱 Vodafone Cash",
+    color: "text-red-600",
+    bgColor: "bg-red-50 dark:bg-red-950/30 border-red-200/50 dark:border-red-800/30",
+    description: "Check your phone for payment confirmation"
+  },
+  paypal: {
+    icon: <CreditCard className="w-6 h-6" />,
+    label: "🅿️ PayPal",
+    color: "text-indigo-600",
+    bgColor: "bg-indigo-50 dark:bg-indigo-950/30 border-indigo-200/50 dark:border-indigo-800/30",
+    description: "Payment completed via PayPal"
+  },
+  cashcollection: {
+    icon: <Building2 className="w-6 h-6" />,
+    label: "🏪 Aman/Masary",
+    color: "text-orange-600",
+    bgColor: "bg-orange-50 dark:bg-orange-950/30 border-orange-200/50 dark:border-orange-800/30",
+    description: "Pay at any Aman or Masary outlet using your bill reference"
+  },
+  kiosk: {
+    icon: <Ticket className="w-6 h-6" />,
+    label: "🎫 Fawry/Kiosk",
+    color: "text-yellow-600",
+    bgColor: "bg-yellow-50 dark:bg-yellow-950/30 border-yellow-200/50 dark:border-yellow-800/30",
+    description: "Pay at any Fawry outlet using your reference number"
+  },
+}
 
 export default function ConfirmationPage() {
   const [showConfetti, setShowConfetti] = useState(true)
   const searchParams = useSearchParams()
   const [orderId, setOrderId] = useState<string>("")
+  const [orderData, setOrderData] = useState<OrderData | null>(null)
+  const [billReference, setBillReference] = useState<string>("")
+  const [paymentMethod, setPaymentMethod] = useState<string>("cash")
 
   useEffect(() => {
-    // Get order ID from URL params or localStorage
+    // Get order ID from URL params
     const urlOrderId = searchParams.get('orderId')
+    const urlBillRef = searchParams.get('billRef')
+    const urlPayment = searchParams.get('payment')
+    
     if (urlOrderId) {
       setOrderId(urlOrderId)
-    } else {
-      // Try to get from localStorage (last order)
+    }
+    
+    if (urlBillRef) {
+      setBillReference(urlBillRef)
+    }
+    
+    if (urlPayment) {
+      setPaymentMethod(urlPayment)
+    }
+    
+    // Try to get full order data from localStorage
+    const pendingData = localStorage.getItem('pendingOrderData')
+    if (pendingData) {
+      try {
+        const parsed = JSON.parse(pendingData)
+        setOrderData(parsed)
+        if (!urlOrderId && parsed.orderId) {
+          setOrderId(parsed.orderId)
+        }
+        if (parsed.paymentMethod) {
+          setPaymentMethod(parsed.paymentMethod)
+        }
+      } catch (e) {
+        console.error('Failed to parse order data:', e)
+      }
+    }
+    
+    // Fallback to localStorage orderId
+    if (!urlOrderId) {
       const lastOrder = localStorage.getItem('lastOrderId')
       if (lastOrder) {
         setOrderId(lastOrder)
-      } else {
-        setOrderId('Processing...')
       }
     }
     
@@ -31,6 +136,8 @@ export default function ConfirmationPage() {
     const timer = setTimeout(() => setShowConfetti(false), 5000)
     return () => clearTimeout(timer)
   }, [searchParams])
+
+  const paymentInfo = paymentMethodInfo[paymentMethod] || paymentMethodInfo.cash
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-background via-secondary/30 to-background flex items-center justify-center px-3 sm:px-4 py-6 sm:py-8 overflow-hidden relative">
@@ -90,7 +197,7 @@ export default function ConfirmationPage() {
             <div className="relative space-y-2 sm:space-y-3 md:space-y-4">
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center pb-2 sm:pb-3 md:pb-4 border-b border-border/50 gap-1 sm:gap-0">
                 <span className="text-xs sm:text-sm text-muted-foreground">Order ID:</span>
-                <span className="font-mono font-bold text-accent text-xs sm:text-sm md:text-base break-all">{orderId}</span>
+                <span className="font-mono font-bold text-accent text-xs sm:text-sm md:text-base break-all">{orderId || 'Processing...'}</span>
               </div>
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center pb-2 sm:pb-3 md:pb-4 border-b border-border/50 gap-1 sm:gap-0">
                 <span className="text-xs sm:text-sm text-muted-foreground">Status:</span>
@@ -105,6 +212,105 @@ export default function ConfirmationPage() {
               </div>
             </div>
           </div>
+
+          {/* Payment Method Section */}
+          <div className={`relative rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-6 mb-4 sm:mb-6 md:mb-8 border ${paymentInfo.bgColor} overflow-hidden`}>
+            <h2 className="relative font-serif text-base sm:text-lg md:text-xl font-bold text-foreground mb-3 sm:mb-4 flex items-center gap-2">
+              <span className={paymentInfo.color}>{paymentInfo.icon}</span>
+              Payment Method
+            </h2>
+            
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <span className="text-lg sm:text-xl">{paymentInfo.label}</span>
+              </div>
+              <p className="text-xs sm:text-sm text-muted-foreground">{paymentInfo.description}</p>
+              
+              {/* Bill Reference for Kiosk/Cash Collection */}
+              {(paymentMethod === 'kiosk' || paymentMethod === 'cashcollection') && billReference && (
+                <div className="mt-4 p-4 bg-white/80 dark:bg-gray-900/80 rounded-xl border-2 border-dashed border-current">
+                  <p className="text-xs text-muted-foreground mb-2">Your Reference Number:</p>
+                  <p className="font-mono text-2xl sm:text-3xl font-bold text-center tracking-wider">
+                    {billReference}
+                  </p>
+                  <p className="text-xs text-center text-muted-foreground mt-2">
+                    {paymentMethod === 'kiosk' 
+                      ? '📍 Present this at any Fawry outlet to complete payment'
+                      : '📍 Present this at any Aman or Masary branch to complete payment'}
+                  </p>
+                </div>
+              )}
+              
+              {/* Vodafone Cash Instructions */}
+              {paymentMethod === 'vodafone' && (
+                <div className="mt-4 p-4 bg-red-50/80 dark:bg-red-950/30 rounded-xl border border-red-200/50">
+                  <p className="text-sm font-medium mb-2">📱 Vodafone Cash Payment</p>
+                  <p className="text-xs text-muted-foreground">
+                    You should have received a push notification on your phone. 
+                    Please confirm the payment from your Vodafone Cash app.
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Customer Details (if available) */}
+          {orderData?.customerData && (
+            <div className="relative bg-secondary/30 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-6 mb-4 sm:mb-6 md:mb-8 border border-border overflow-hidden">
+              <h2 className="font-serif text-base sm:text-lg font-bold text-foreground mb-3 sm:mb-4 flex items-center gap-2">
+                <span className="animate-cute-wiggle">👤</span>
+                Delivery Information
+              </h2>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                <div>
+                  <p className="text-xs text-muted-foreground">Name</p>
+                  <p className="font-medium">{orderData.customerData.fullName}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Phone</p>
+                  <p className="font-medium">{orderData.customerData.phone}</p>
+                </div>
+                <div className="sm:col-span-2">
+                  <p className="text-xs text-muted-foreground">Address</p>
+                  <p className="font-medium">
+                    {orderData.customerData.streetAddress}, {orderData.customerData.city}, {orderData.customerData.governorate}
+                    {orderData.customerData.landmark && ` (${orderData.customerData.landmark})`}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Order Items (if available) */}
+          {orderData?.items && orderData.items.length > 0 && (
+            <div className="relative bg-secondary/30 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-6 mb-4 sm:mb-6 md:mb-8 border border-border overflow-hidden">
+              <h2 className="font-serif text-base sm:text-lg font-bold text-foreground mb-3 sm:mb-4 flex items-center gap-2">
+                <span className="animate-cute-wiggle">🛍️</span>
+                Order Items
+              </h2>
+              
+              <div className="space-y-3">
+                {orderData.items.map((item, index) => (
+                  <div key={index} className="flex items-center gap-3 p-2 bg-background/50 rounded-lg">
+                    {item.image && (
+                      <Image src={item.image} alt={item.name} width={50} height={50} className="rounded-lg object-cover" />
+                    )}
+                    <div className="flex-1">
+                      <p className="font-medium text-sm">{item.name}</p>
+                      <p className="text-xs text-muted-foreground">Qty: {item.quantity}</p>
+                    </div>
+                    <p className="font-semibold text-accent">{(item.price * item.quantity).toLocaleString()} EGP</p>
+                  </div>
+                ))}
+                
+                <div className="pt-3 border-t border-border flex justify-between items-center">
+                  <span className="font-semibold">Total:</span>
+                  <span className="text-lg font-bold text-accent">{orderData.amount?.toLocaleString()} EGP</span>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Communication channels */}
           <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6 md:mb-8">

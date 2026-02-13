@@ -1,5 +1,26 @@
 import nodemailer from 'nodemailer';
 
+// Format payment method for display
+const formatPaymentMethod = (method, billReference) => {
+  const methods = {
+    'cash': { label: '💵 Cash on Delivery', labelAr: 'الدفع عند الاستلام' },
+    'visa': { label: '💳 Visa/MasterCard', labelAr: 'بطاقة ائتمان' },
+    'vodafone': { label: '📱 Vodafone Cash', labelAr: 'فودافون كاش' },
+    'paypal': { label: '🅿️ PayPal', labelAr: 'باي بال' },
+    'cashcollection': { label: '🏪 Aman/Masary', labelAr: 'أمان/مصاري' },
+    'kiosk': { label: '🎫 Fawry/Kiosk', labelAr: 'فوري' },
+  };
+  
+  const info = methods[method] || methods['cash'];
+  let result = `${info.label} (${info.labelAr})`;
+  
+  if (billReference && (method === 'cashcollection' || method === 'kiosk')) {
+    result += `<br/>📄 Bill Reference: <strong>${billReference}</strong>`;
+  }
+  
+  return result;
+};
+
 export async function POST(request) {
   console.log('═══════════════════════════════════════════');
   console.log('📧 STARTING ORDER EMAIL PROCESS');
@@ -18,7 +39,9 @@ export async function POST(request) {
     city,
     street,
     landmark,
-    notes
+    notes,
+    payment_method,
+    bill_reference
   } = await request.json();
 
   // Log all environment variables status
@@ -27,6 +50,7 @@ export async function POST(request) {
   console.log('   BREVO_SENDER_EMAIL:', process.env.BREVO_SENDER_EMAIL || '❌ MISSING');
   console.log('   GMAIL_USER:', process.env.GMAIL_USER ? '✅ Set' : '❌ MISSING');
   console.log('   GMAIL_APP_PASSWORD:', process.env.GMAIL_APP_PASSWORD ? '✅ Set' : '❌ MISSING');
+  console.log('   Payment Method:', payment_method || 'cash');
   console.log('');
   console.log('📧 Customer Email:', customer_email);
   console.log('📧 Admin Email:', process.env.GMAIL_USER);
@@ -79,6 +103,11 @@ export async function POST(request) {
           <p style="color: #555;"><strong>Street:</strong> ${street}</p>
           <p style="color: #555;"><strong>Landmark:</strong> ${landmark || '-'}</p>
           <p style="color: #555;"><strong>Notes:</strong> ${notes || '-'}</p>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+          <h2 style="color: #333; border-bottom: 2px solid #ff4d6d; padding-bottom: 5px;">💳 Payment Method</h2>
+          <p style="color: #555;">${formatPaymentMethod(payment_method, bill_reference)}</p>
         </div>
 
         <div style="margin-bottom: 20px;">
@@ -149,6 +178,11 @@ export async function POST(request) {
             <tr><td style="padding: 5px 0; color: #aaa;">Landmark:</td><td style="padding: 5px 0;">${landmark || 'Not provided'}</td></tr>
             <tr><td style="padding: 5px 0; color: #aaa;">Notes:</td><td style="padding: 5px 0;">${notes || 'No notes'}</td></tr>
           </table>
+        </div>
+
+        <div style="background: #0f3460; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #9b59b6;">
+          <h2 style="color: #9b59b6; margin: 0 0 10px 0;">💳 Payment Method</h2>
+          <p style="color: #fff; font-size: 16px;">${formatPaymentMethod(payment_method, bill_reference)}</p>
         </div>
 
         <div style="background: #0f3460; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #ff4d6d;">

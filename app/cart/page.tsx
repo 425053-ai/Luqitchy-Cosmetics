@@ -6,12 +6,14 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { ArrowLeft, ShoppingCart, Plus, Minus, Trash2, X } from "lucide-react"
 import { useCart } from "@/context/CartContext"
+import { useOrderHistory } from "@/context/OrderHistoryContext"
 import { Button } from "@/components/ui/button"
 import { sendCartOrderToTelegram } from "@/lib/telegram-service"
 
 export default function CartPage() {
   const router = useRouter()
   const { items, removeFromCart, updateQuantity, clearCart, totalPrice } = useCart()
+  const { addOrder } = useOrderHistory()
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -22,10 +24,27 @@ export default function CartPage() {
     streetAddress: "",
     landmark: "",
     notes: "",
+    paymentMethod: "cash",
   })
   const [submitted, setSubmitted] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [sameAsPhone, setSameAsPhone] = useState(true)
+  
+  // Payment states
+  const [showPaymentModal, setShowPaymentModal] = useState(false)
+  const [paymentIframeUrl, setPaymentIframeUrl] = useState("")
+  const [billReferenceData, setBillReferenceData] = useState<{
+    orderId: string;
+    billReference: string;
+    message: string;
+    paymentType: string;
+    isRealBillRef?: boolean;
+  } | null>(null)
+  const [walletPaymentPending, setWalletPaymentPending] = useState<{
+    orderId: string;
+    phone: string;
+    amount: number;
+  } | null>(null)
   
   // Save submitted order data
   const [submittedOrder, setSubmittedOrder] = useState<{
@@ -76,7 +95,212 @@ export default function CartPage() {
       hour: '2-digit',
       minute: '2-digit'
     })
-    
+
+    // Handle online payment (Visa, Vodafone Cash, PayPal, Cash Collection, or Kiosk)
+    if (formData.paymentMethod === 'visa' || formData.paymentMethod === 'vodafone' || formData.paymentMethod === 'paypal' || formData.paymentMethod === 'cashcollection' || formData.paymentMethod === 'kiosk') {
+      try {
+        // Store order data for after payment
+        const orderData = {
+          orderId: order_id,
+          items: items.map(item => ({
+            id: item.id,
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity,
+            image: item.image,
+          })),
+          amount: totalPrice,
+          customerData: {
+            ...formData,
+            whatsapp: sameAsPhone ? formData.phone : formData.whatsapp,
+          },
+          paymentMethod: formData.paymentMethod,
+        }
+        localStorage.setItem('pendingOrderData', JSON.stringify(orderData))
+
+        // Initiate payment
+        const paymentResponse = await fetch('/api/payment/initiate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            paymentMethod: formData.paymentMethod,
+            amount: totalPrice,
+            orderId: order_id,
+            items: items.map(item => ({
+              name: item.name,
+              price: item.price,
+              quantity: item.quantity,
+            })),
+            customerData: {
+              fullName: formData.fullName,
+              email: formData.email,
+              phone: formData.phone,
+              governorate: formData.governorate,
+              city: formData.city,
+              streetAddress: formData.streetAddress,
+            },
+          }),
+        })
+
+        if (!paymentResponse.ok) {
+          const error = await paymentResponse.json()
+          throw new Error(error.error || 'Failed to initiate payment')
+        }
+
+        const responseData = await paymentResponse.json()
+        
+        // Handle Cash Collection and Kiosk payments (show bill reference)
+        if (responseData.paymentType === 'cashcollection' || responseData.paymentType === 'kiosk') {
+          // For bill-based payments, process the order and show bill reference
+          const paymentMethodName = responseData.paymentType === 'cashcollection' ? 'أمان/مصاري (Cash Collection)' : 'فوري/كشك (Kiosk)'
+          
+          // Send email notification
+          await fetch('/api/sendOrder', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              customer_name: formData.fullName,
+              customer_email: formData.email,
+              phone: formData.phone,
+              whatsapp: sameAsPhone ? formData.phone : formData.whatsapp,
+              order_id: order_id,
+              order_date: order_date,
+              products: items.map(item => ({
+                name: item.name,
+                quantity: item.quantity,
+                price: item.price,
+                total: item.price * item.quantity
+              })),
+              total_amount: totalPrice,
+              governorate: formData.governorate,
+              city: formData.city,
+              street: formData.streetAddress,
+              landmark: formData.landmark,
+              notes: formData.notes || "",
+              payment_method: paymentMethodName,
+              bill_reference: responseData.billReference
+            }),
+          })
+
+          // Add to order history
+          if (addOrder) {
+            const fullAddress = `${formData.streetAddress}${formData.landmark ? ` (${formData.landmark})` : ''}, ${formData.city}, ${formData.governorate}`
+            addOrder({
+              orderId: order_id,
+              items: items.map(item => ({
+                id: item.id,
+                name: item.name,
+                price: item.price,
+                quantity: item.quantity,
+                image: item.image,
+              })),
+              totalPrice: totalPrice,
+              customerName: formData.fullName,
+              customerEmail: formData.email,
+              customerPhone: formData.phone,
+              deliveryAddress: fullAddress,
+              orderDate: new Date().toISOString(),
+              status: 'pending_payment',
+              paymentMethod: formData.paymentMethod,
+              billReference: responseData.billReference,
+            })
+          }
+          
+          localStorage.removeItem('pendingOrderData')
+          clearCart()
+          
+          // Show bill reference inline instead of alert
+          setBillReferenceData({
+            orderId: order_id,
+            billReference: responseData.billReference,
+            message: responseData.message,
+            paymentType: responseData.paymentType,
+            isRealBillRef: responseData.isRealBillRef,
+          })
+          setIsSubmitting(false)
+          return
+        }
+        
+        // For wallet payments (Vodafone Cash), show waiting modal - user gets push notification
+        if (responseData.paymentType === 'wallet') {
+          // Send email notification
+          await fetch('/api/sendOrder', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              customer_name: formData.fullName,
+              customer_email: formData.email,
+              phone: formData.phone,
+              whatsapp: sameAsPhone ? formData.phone : formData.whatsapp,
+              order_id: order_id,
+              order_date: order_date,
+              products: items.map(item => ({
+                name: item.name,
+                quantity: item.quantity,
+                price: item.price,
+                total: item.price * item.quantity
+              })),
+              total_amount: totalPrice,
+              governorate: formData.governorate,
+              city: formData.city,
+              street: formData.streetAddress,
+              landmark: formData.landmark,
+              notes: `${formData.notes || ""}\n\n📱 Vodafone Cash Payment - Awaiting confirmation`,
+              payment_method: 'Vodafone Cash'
+            }),
+          })
+
+          // Add to order history
+          if (addOrder) {
+            const fullAddress = `${formData.streetAddress}${formData.landmark ? ` (${formData.landmark})` : ''}, ${formData.city}, ${formData.governorate}`
+            addOrder({
+              orderId: order_id,
+              items: items.map(item => ({
+                id: item.id,
+                name: item.name,
+                price: item.price,
+                quantity: item.quantity,
+                image: item.image,
+              })),
+              totalPrice: totalPrice,
+              customerName: formData.fullName,
+              customerEmail: formData.email,
+              customerPhone: formData.phone,
+              deliveryAddress: fullAddress,
+              orderDate: new Date().toISOString(),
+              status: 'pending_payment',
+              paymentMethod: 'vodafone',
+            })
+          }
+          
+          localStorage.removeItem('pendingOrderData')
+          clearCart()
+          
+          // Show wallet payment pending modal
+          setWalletPaymentPending({
+            orderId: order_id,
+            phone: formData.phone,
+            amount: totalPrice,
+          })
+          setIsSubmitting(false)
+          return
+        }
+        
+        // For other payment types (card, paypal), show iframe inline
+        setPaymentIframeUrl(responseData.paymentUrl)
+        setShowPaymentModal(true)
+        setIsSubmitting(false)
+        return
+        
+      } catch (err: any) {
+        console.error("Payment Error:", err)
+        alert(`❌ Payment Error: ${err?.message || 'An error occurred during payment setup'}`)
+        setIsSubmitting(false)
+        return
+      }
+    }
+
+    // Handle Cash on Delivery
     try {
       // Send email via Brevo API
       const response = await fetch('/api/sendOrder', {
@@ -102,7 +326,8 @@ export default function CartPage() {
           city: formData.city,
           street: formData.streetAddress,
           landmark: formData.landmark,
-          notes: formData.notes || "No additional notes"
+          notes: formData.notes || "No additional notes",
+          payment_method: formData.paymentMethod
         }),
       })
 
@@ -331,6 +556,200 @@ export default function CartPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-secondary/20 to-background p-3 sm:p-4 md:p-6">
+      {/* Payment Modal for Visa/PayPal */}
+      {showPaymentModal && paymentIframeUrl && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-card rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden animate-in zoom-in-95 duration-300">
+            <div className="flex items-center justify-between p-4 border-b border-border/50 bg-gradient-to-r from-accent/10 to-primary/10">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">
+                  {formData.paymentMethod === 'visa' ? '💳' : '🅿️'}
+                </span>
+                <div>
+                  <h3 className="font-semibold text-lg">
+                    {formData.paymentMethod === 'visa' ? 'Secure Card Payment' : 'PayPal Payment'}
+                  </h3>
+                  <p className="text-xs text-muted-foreground">Complete your payment securely</p>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  setShowPaymentModal(false)
+                  setPaymentIframeUrl("")
+                }}
+                className="p-2 hover:bg-destructive/10 rounded-full transition-colors text-muted-foreground hover:text-destructive"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-4">
+              <iframe
+                src={paymentIframeUrl}
+                className="w-full h-[500px] rounded-xl border border-border/30"
+                title="Payment"
+                allow="payment"
+              />
+            </div>
+            <div className="p-4 border-t border-border/50 bg-muted/30">
+              <p className="text-xs text-center text-muted-foreground flex items-center justify-center gap-2">
+                <span>🔒</span> Secured by Paymob - Your payment details are encrypted
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bill Reference Display for Aman/Masary and Fawry/Kiosk */}
+      {billReferenceData && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-card rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-300">
+            <div className={`p-6 text-center ${billReferenceData.paymentType === 'cashcollection' ? 'bg-gradient-to-br from-orange-500/20 to-orange-600/10' : 'bg-gradient-to-br from-yellow-500/20 to-yellow-600/10'}`}>
+              <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-white/80 dark:bg-black/20 flex items-center justify-center text-5xl shadow-lg">
+                {billReferenceData.paymentType === 'cashcollection' ? '🏪' : '🎫'}
+              </div>
+              <h3 className="font-bold text-2xl mb-2">Order Confirmed!</h3>
+              <p className="text-muted-foreground">Your order has been placed successfully</p>
+            </div>
+            
+            <div className="p-6 space-y-4">
+              <div className="bg-muted/30 rounded-xl p-4 space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">📋 Order ID</span>
+                  <span className="font-mono font-semibold">{billReferenceData.orderId}</span>
+                </div>
+                <div className="border-t border-border/50 pt-3">
+                  <div className="text-center">
+                    <p className="text-sm text-muted-foreground mb-1">
+                      {billReferenceData.isRealBillRef ? '💳 Bill Reference Number' : '🧪 Transaction ID (Test Mode)'}
+                    </p>
+                    <p className="text-3xl font-bold font-mono tracking-wider text-accent">{billReferenceData.billReference}</p>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Warning for sandbox/test mode */}
+              {!billReferenceData.isRealBillRef && (
+                <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3">
+                  <p className="text-xs text-amber-700 dark:text-amber-400 flex items-start gap-2">
+                    <span>⚠️</span>
+                    <span><strong>Test Mode:</strong> This is a transaction ID, not a real bill reference. In production, you'll receive a valid bill reference that customers can use to pay at outlets.</span>
+                  </p>
+                </div>
+              )}
+              
+              <div className={`rounded-xl p-4 ${billReferenceData.paymentType === 'cashcollection' ? 'bg-orange-500/10 border border-orange-500/20' : 'bg-yellow-500/10 border border-yellow-500/20'}`}>
+                <p className="text-sm font-medium mb-2 flex items-center gap-2">
+                  {billReferenceData.paymentType === 'cashcollection' ? '🏪 How to Pay:' : '🎫 How to Pay:'}
+                </p>
+                <ul className="text-sm text-muted-foreground space-y-1">
+                  {billReferenceData.paymentType === 'cashcollection' ? (
+                    <>
+                      <li>• Visit any <strong>Aman</strong> or <strong>Masary</strong> outlet</li>
+                      <li>• Tell the cashier you want to pay a bill</li>
+                      <li>• Provide the Bill Reference Number above</li>
+                      <li>• Pay the amount and keep your receipt</li>
+                    </>
+                  ) : (
+                    <>
+                      <li>• Visit any <strong>Fawry</strong> outlet or use Fawry app</li>
+                      <li>• Select "Pay Bills" or "Payments"</li>
+                      <li>• Enter the Bill Reference Number above</li>
+                      <li>• Pay the amount and keep your receipt</li>
+                    </>
+                  )}
+                </ul>
+              </div>
+              
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(billReferenceData.billReference)
+                    alert('✅ Bill Reference copied to clipboard!')
+                  }}
+                  className="flex-1 py-3 px-4 bg-muted hover:bg-muted/80 rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
+                >
+                  📋 Copy Reference
+                </button>
+                <button
+                  onClick={() => {
+                    setBillReferenceData(null)
+                    router.push(`/order/confirmation?orderId=${billReferenceData.orderId}&billRef=${billReferenceData.billReference}`)
+                  }}
+                  className="flex-1 py-3 px-4 bg-accent hover:bg-accent/90 text-accent-foreground rounded-xl font-medium transition-colors"
+                >
+                  Done ✓
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Vodafone Cash Payment Pending Modal */}
+      {walletPaymentPending && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-card rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-300">
+            <div className="p-6 text-center bg-gradient-to-br from-red-500/20 to-red-600/10">
+              <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-white/80 dark:bg-black/20 flex items-center justify-center shadow-lg">
+                <div className="animate-pulse text-5xl">📱</div>
+              </div>
+              <h3 className="font-bold text-2xl mb-2 text-red-600 dark:text-red-400">Check Your Phone!</h3>
+              <p className="text-muted-foreground">Vodafone Cash payment request sent</p>
+            </div>
+            
+            <div className="p-6 space-y-4">
+              <div className="bg-muted/30 rounded-xl p-4 space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">📋 Order ID</span>
+                  <span className="font-mono font-semibold">{walletPaymentPending.orderId}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">📱 Phone Number</span>
+                  <span className="font-mono font-semibold">{walletPaymentPending.phone}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">💰 Amount</span>
+                  <span className="font-bold text-accent">{walletPaymentPending.amount} EGP</span>
+                </div>
+              </div>
+              
+              <div className="rounded-xl p-4 bg-red-500/10 border border-red-500/20">
+                <p className="text-sm font-medium mb-2 flex items-center gap-2">
+                  📱 Complete Your Payment:
+                </p>
+                <ol className="text-sm text-muted-foreground space-y-2 list-decimal list-inside">
+                  <li>Open your <strong className="text-red-600 dark:text-red-400">Vodafone Cash</strong> app or dial <strong>*9*</strong></li>
+                  <li>You should receive a <strong>payment request notification</strong></li>
+                  <li>Enter your <strong>PIN code</strong> to confirm the payment</li>
+                  <li>Wait for the confirmation SMS</li>
+                </ol>
+              </div>
+              
+              <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3">
+                <p className="text-xs text-amber-700 dark:text-amber-400 flex items-start gap-2">
+                  <span>⚠️</span>
+                  <span>Make sure you have sufficient balance in your Vodafone Cash wallet. The payment request expires in 15 minutes.</span>
+                </p>
+              </div>
+              
+              <button
+                onClick={() => {
+                  setWalletPaymentPending(null)
+                  router.push(`/order/confirmation?orderId=${walletPaymentPending.orderId}&payment=vodafone`)
+                }}
+                className="w-full py-3 px-4 bg-red-600 hover:bg-red-700 text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
+              >
+                ✅ I've Completed the Payment
+              </button>
+              
+              <p className="text-xs text-center text-muted-foreground">
+                Didn't receive a notification? Make sure your phone number ({walletPaymentPending.phone}) is registered with Vodafone Cash.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-6xl mx-auto">
         <Link
           href="/"
@@ -590,6 +1009,282 @@ export default function CartPage() {
                     rows={2}
                     className="w-full p-2 border rounded-lg bg-background/50 focus:ring-2 focus:ring-accent transition-all resize-none text-sm"
                   />
+                </div>
+
+                {/* Payment Method */}
+                <div className="space-y-3 pt-3 border-t border-border">
+                  <h4 className="font-medium text-xs pt-2">💳 Payment Method *</h4>
+                  
+                  <div className="space-y-2">
+                    {/* Cash on Delivery */}
+                    <label 
+                      className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all duration-300 ${
+                        formData.paymentMethod === 'cash' 
+                          ? 'border-accent bg-accent/10' 
+                          : 'border-border/50 hover:border-accent/50 bg-background/50'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        value="cash"
+                        checked={formData.paymentMethod === 'cash'}
+                        onChange={handleChange}
+                        className="w-4 h-4 text-accent focus:ring-accent"
+                      />
+                      <span className="text-lg">💵</span>
+                      <div className="flex-1">
+                        <span className="font-medium text-sm block">Cash on Delivery</span>
+                        <span className="text-[10px] text-muted-foreground">Pay when you receive</span>
+                      </div>
+                    </label>
+
+                    {/* Vodafone Cash */}
+                    <label 
+                      className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all duration-300 ${
+                        formData.paymentMethod === 'vodafone' 
+                          ? 'border-red-500 bg-red-500/10' 
+                          : 'border-border/50 hover:border-red-500/50 bg-background/50'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        value="vodafone"
+                        checked={formData.paymentMethod === 'vodafone'}
+                        onChange={handleChange}
+                        className="w-4 h-4 text-red-500 focus:ring-red-500"
+                      />
+                      <span className="text-lg">📱</span>
+                      <div className="flex-1">
+                        <span className="font-medium text-sm block text-red-600 dark:text-red-400">Vodafone Cash</span>
+                        <span className="text-[10px] text-muted-foreground">Vodafone Cash wallet</span>
+                      </div>
+                    </label>
+
+                    {/* Visa / MasterCard */}
+                    <label 
+                      className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all duration-300 ${
+                        formData.paymentMethod === 'visa' 
+                          ? 'border-blue-500 bg-blue-500/10' 
+                          : 'border-border/50 hover:border-blue-500/50 bg-background/50'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        value="visa"
+                        checked={formData.paymentMethod === 'visa'}
+                        onChange={handleChange}
+                        className="w-4 h-4 text-blue-500 focus:ring-blue-500"
+                      />
+                      <span className="text-lg">💳</span>
+                      <div className="flex-1">
+                        <span className="font-medium text-sm block text-blue-600 dark:text-blue-400">Visa / MasterCard</span>
+                        <span className="text-[10px] text-muted-foreground">Credit or debit card</span>
+                      </div>
+                    </label>
+
+                    {/* PayPal */}
+                    <label 
+                      className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all duration-300 ${
+                        formData.paymentMethod === 'paypal' 
+                          ? 'border-[#0070ba] bg-[#0070ba]/10' 
+                          : 'border-border/50 hover:border-[#0070ba]/50 bg-background/50'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        value="paypal"
+                        checked={formData.paymentMethod === 'paypal'}
+                        onChange={handleChange}
+                        className="w-4 h-4 text-[#0070ba] focus:ring-[#0070ba]"
+                      />
+                      <span className="text-lg">🅿️</span>
+                      <div className="flex-1">
+                        <span className="font-medium text-sm block text-[#0070ba]">PayPal</span>
+                        <span className="text-[10px] text-muted-foreground">PayPal account</span>
+                      </div>
+                    </label>
+
+                    {/* Cash Collection (Aman, Masary) */}
+                    <label 
+                      className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all duration-300 ${
+                        formData.paymentMethod === 'cashcollection' 
+                          ? 'border-orange-500 bg-orange-500/10' 
+                          : 'border-border/50 hover:border-orange-500/50 bg-background/50'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        value="cashcollection"
+                        checked={formData.paymentMethod === 'cashcollection'}
+                        onChange={handleChange}
+                        className="w-4 h-4 text-orange-500 focus:ring-orange-500"
+                      />
+                      <span className="text-lg">🏪</span>
+                      <div className="flex-1">
+                        <span className="font-medium text-sm block text-orange-600 dark:text-orange-400">Aman / Masary</span>
+                        <span className="text-[10px] text-muted-foreground">Pay at outlets</span>
+                      </div>
+                    </label>
+
+                    {/* Kiosk (Fawry) */}
+                    <label 
+                      className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all duration-300 ${
+                        formData.paymentMethod === 'kiosk' 
+                          ? 'border-yellow-500 bg-yellow-500/10' 
+                          : 'border-border/50 hover:border-yellow-500/50 bg-background/50'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        value="kiosk"
+                        checked={formData.paymentMethod === 'kiosk'}
+                        onChange={handleChange}
+                        className="w-4 h-4 text-yellow-500 focus:ring-yellow-500"
+                      />
+                      <span className="text-lg">🎫</span>
+                      <div className="flex-1">
+                        <span className="font-medium text-sm block text-yellow-600 dark:text-yellow-400">Fawry / Kiosk</span>
+                        <span className="text-[10px] text-muted-foreground">Pay via Fawry</span>
+                      </div>
+                    </label>
+                  </div>
+
+                  {/* Cash on Delivery Info */}
+                  {formData.paymentMethod === 'cash' && (
+                    <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-3 space-y-2 animate-in slide-in-from-top-2 duration-300">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xl">💵</span>
+                        <div>
+                          <p className="font-semibold text-sm text-green-700 dark:text-green-400">Cash on Delivery</p>
+                          <p className="text-[10px] text-muted-foreground">Pay when your order arrives</p>
+                        </div>
+                      </div>
+                      <p className="text-[10px] text-muted-foreground bg-white/50 dark:bg-black/20 rounded p-2">
+                        ✅ No payment now • 🚚 Pay the delivery agent • 💰 Cash only
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Vodafone Cash Instructions */}
+                  {formData.paymentMethod === 'vodafone' && (
+                    <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 space-y-2 animate-in slide-in-from-top-2 duration-300">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xl">📱</span>
+                        <div>
+                          <p className="font-semibold text-sm text-red-600 dark:text-red-400">Vodafone Cash Wallet</p>
+                          <p className="text-[10px] text-muted-foreground">Instant mobile payment</p>
+                        </div>
+                      </div>
+                      <div className="bg-white/50 dark:bg-black/20 rounded p-2">
+                        <p className="text-[10px] font-medium mb-1">How it works:</p>
+                        <ol className="text-[10px] text-muted-foreground space-y-0.5 list-decimal list-inside">
+                          <li>Click "Complete Order"</li>
+                          <li>Secure payment form appears</li>
+                          <li>Enter your wallet number</li>
+                          <li>Confirm with PIN</li>
+                        </ol>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Visa Instructions */}
+                  {formData.paymentMethod === 'visa' && (
+                    <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3 space-y-2 animate-in slide-in-from-top-2 duration-300">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xl">💳</span>
+                        <div>
+                          <p className="font-semibold text-sm text-blue-600 dark:text-blue-400">Credit/Debit Card</p>
+                          <p className="text-[10px] text-muted-foreground">Visa, MasterCard, Meeza</p>
+                        </div>
+                      </div>
+                      <div className="bg-white/50 dark:bg-black/20 rounded p-2">
+                        <p className="text-[10px] font-medium mb-1">How it works:</p>
+                        <ol className="text-[10px] text-muted-foreground space-y-0.5 list-decimal list-inside">
+                          <li>Click "Complete Order"</li>
+                          <li>Secure payment form appears</li>
+                          <li>Enter card details</li>
+                          <li>Payment processed instantly</li>
+                        </ol>
+                        <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1">
+                          🔒 256-bit SSL encryption
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* PayPal Instructions */}
+                  {formData.paymentMethod === 'paypal' && (
+                    <div className="bg-[#0070ba]/10 border border-[#0070ba]/30 rounded-lg p-3 space-y-2 animate-in slide-in-from-top-2 duration-300">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xl">🅿️</span>
+                        <div>
+                          <p className="font-semibold text-sm text-[#0070ba]">PayPal Checkout</p>
+                          <p className="text-[10px] text-muted-foreground">Fast & secure payment</p>
+                        </div>
+                      </div>
+                      <div className="bg-white/50 dark:bg-black/20 rounded p-2">
+                        <p className="text-[10px] font-medium mb-1">How it works:</p>
+                        <ol className="text-[10px] text-muted-foreground space-y-0.5 list-decimal list-inside">
+                          <li>Click "Complete Order"</li>
+                          <li>PayPal login window appears</li>
+                          <li>Log in to your account</li>
+                          <li>Confirm the payment</li>
+                        </ol>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Cash Collection Instructions */}
+                  {formData.paymentMethod === 'cashcollection' && (
+                    <div className="bg-orange-500/10 border border-orange-500/30 rounded-lg p-3 space-y-2 animate-in slide-in-from-top-2 duration-300">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xl">🏪</span>
+                        <div>
+                          <p className="font-semibold text-sm text-orange-600 dark:text-orange-400">Aman / Masary</p>
+                          <p className="text-[10px] text-muted-foreground">15,000+ outlets in Egypt</p>
+                        </div>
+                      </div>
+                      <div className="bg-white/50 dark:bg-black/20 rounded p-2">
+                        <p className="text-[10px] font-medium mb-1">How it works:</p>
+                        <ol className="text-[10px] text-muted-foreground space-y-0.5 list-decimal list-inside">
+                          <li>Click "Complete Order" for reference</li>
+                          <li>Note down the number</li>
+                          <li>Visit Aman or Masary outlet</li>
+                          <li>Pay and keep receipt</li>
+                        </ol>
+                        <p className="text-[10px] text-orange-600 dark:text-orange-400 mt-1">⏱️ Pay within 24 hours</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Kiosk Instructions */}
+                  {formData.paymentMethod === 'kiosk' && (
+                    <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 space-y-2 animate-in slide-in-from-top-2 duration-300">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xl">🎫</span>
+                        <div>
+                          <p className="font-semibold text-sm text-yellow-600 dark:text-yellow-400">Fawry / Kiosk</p>
+                          <p className="text-[10px] text-muted-foreground">Pay at any Fawry outlet</p>
+                        </div>
+                      </div>
+                      <div className="bg-white/50 dark:bg-black/20 rounded p-2">
+                        <p className="text-[10px] font-medium mb-1">How it works:</p>
+                        <ol className="text-[10px] text-muted-foreground space-y-0.5 list-decimal list-inside">
+                          <li>Click "Complete Order" for reference</li>
+                          <li>Note down the number</li>
+                          <li>Visit Fawry outlet or use app</li>
+                          <li>Pay and keep receipt</li>
+                        </ol>
+                        <p className="text-[10px] text-yellow-600 dark:text-yellow-400 mt-1">⏱️ Pay within 24 hours</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <Button

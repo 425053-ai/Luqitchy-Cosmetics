@@ -29,17 +29,16 @@ export function KawaiiMascot({
     wave: "( ´ ▽ ` )ﾉ"
   }
 
-  const messages: Record<string, string[]> = {
-    default: ["Welcome to Luqitchy! 💖", "Need help? Just ask! ✨", "Have a beautiful day! 🌸"],
-    happy: ["Yay! Great choice! 🎉", "So excited! ✨", "You're amazing! 💖"],
-    excited: ["OMG! So pretty! ✨", "Can't wait! 🎊", "This is so cute! 💕"],
-    love: ["Love this! 💗", "Perfect for you! 💝", "So beautiful! 💖"],
-    thinking: ["Hmm, let me think... 🤔", "Good question! 💭", "Interesting! 💡"],
-    wave: ["Hi there! 👋", "Hello beautiful! 🌸", "Welcome back! 💖"]
-  }
-
   useEffect(() => {
     if (!message) {
+      const messages: Record<string, string[]> = {
+        default: ["Welcome to Luqitchy! 💖", "Need help? Just ask! ✨", "Have a beautiful day! 🌸"],
+        happy: ["Yay! Great choice! 🎉", "So excited! ✨", "You're amazing! 💖"],
+        excited: ["OMG! So pretty! ✨", "Can't wait! 🎊", "This is so cute! 💕"],
+        love: ["Love this! 💗", "Perfect for you! 💝", "So beautiful! 💖"],
+        thinking: ["Hmm, let me think... 🤔", "Good question! 💭", "Interesting! 💡"],
+        wave: ["Hi there! 👋", "Hello beautiful! 🌸", "Welcome back! 💖"]
+      }
       const variantMessages = messages[variant]
       setCurrentMessage(variantMessages[Math.floor(Math.random() * variantMessages.length)])
     }

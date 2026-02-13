@@ -19,7 +19,9 @@ export interface Order {
   customerPhone: string
   deliveryAddress: string
   orderDate: string
-  status: "pending" | "confirmed" | "shipped" | "delivered"
+  status: "pending" | "confirmed" | "shipped" | "delivered" | "pending_payment"
+  paymentMethod?: string
+  billReference?: string
 }
 
 interface OrderHistoryContextType {

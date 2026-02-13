@@ -284,7 +284,7 @@ export function FloatingProduct({
     <div 
       className="animate-float"
       style={{
-        // @ts-ignore
+        // @ts-expect-error CSS custom property
         '--float-distance': `${floatPixels[intensity]}px`
       }}
     >
