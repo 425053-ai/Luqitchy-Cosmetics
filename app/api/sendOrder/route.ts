@@ -6,7 +6,7 @@ const transporter = nodemailer.createTransport({
   host: process.env.BREVO_SMTP_HOST || 'smtp-relay.brevo.com',
   port: 587,
   auth: {
-    user: process.env.BREVO_SENDER_EMAIL,
+    user: process.env.BREVO_SMTP_USER || process.env.BREVO_SENDER_EMAIL,
     pass: process.env.BREVO_SMTP_KEY,
   },
 });
@@ -15,6 +15,7 @@ const transporter = nodemailer.createTransport({
 transporter.verify((error, success) => {
   if (error) {
     console.error('❌ SMTP Configuration Error:', error);
+    console.error('BREVO_SMTP_USER:', process.env.BREVO_SMTP_USER ? '✓ Set' : '✗ Missing');
     console.error('BREVO_SENDER_EMAIL:', process.env.BREVO_SENDER_EMAIL ? '✓ Set' : '✗ Missing');
     console.error('BREVO_SMTP_KEY:', process.env.BREVO_SMTP_KEY ? '✓ Set' : '✗ Missing');
     console.error('BREVO_SMTP_HOST:', process.env.BREVO_SMTP_HOST ? '✓ Set' : '✗ Missing');
@@ -282,6 +283,7 @@ export async function POST(request: NextRequest) {
     
     // Log environment variables status
     console.error('🔧 Environment Variables Check:');
+    console.error('- BREVO_SMTP_USER:', process.env.BREVO_SMTP_USER ? '✓ Set' : '✗ Missing');
     console.error('- BREVO_SENDER_EMAIL:', process.env.BREVO_SENDER_EMAIL ? '✓ Set' : '✗ Missing');
     console.error('- BREVO_SMTP_KEY:', process.env.BREVO_SMTP_KEY ? '✓ Set' : '✗ Missing');
     console.error('- BREVO_SMTP_HOST:', process.env.BREVO_SMTP_HOST ? '✓ Set' : '✗ Missing');
