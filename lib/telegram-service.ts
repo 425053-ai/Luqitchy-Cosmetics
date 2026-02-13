@@ -52,16 +52,6 @@ export const sendTelegramMessage = async (message: string): Promise<TelegramResp
     return { success: false, error }
   }
 };
-      return { success: true, data };
-    } else {
-      console.error('❌ فشل الإرسال:', data);
-      return { success: false, error: data };
-    }
-  } catch (error) {
-    console.error('❌ خطأ في الاتصال:', error);
-    return { success: false, error };
-  }
-};
 
 // دالة إرسال صورة مع الطلب
 export const sendPhotoToTelegram = async (photoUrl: string, caption: string): Promise<TelegramResponse> => {
