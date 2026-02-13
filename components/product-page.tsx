@@ -263,21 +263,29 @@ export function ProductPage({ product }: ProductPageProps) {
 
       // Send Telegram notification with image
       console.log('🤖 Sending Telegram notification...');
-      await sendBankTransferOrder({
-        orderId: order_id,
-        productName: product.name,
-        quantity: quantity,
-        productPrice: product.price,
-        totalPrice: total_price,
-        customerData: { 
-          ...formData,
-          paymentMethod: 'bank_transfer',
-          notes: formData.notes || 'بدون ملاحظات'
-        },
-        transferProofBase64: bankTransferData.imageData,
-        transferProofMime: bankTransferData.mimeType,
-      })
-      console.log('✅ Telegram notification sent')
+      try {
+        const telegramResult = await sendBankTransferOrder({
+          orderId: order_id,
+          productName: product.name,
+          quantity: quantity,
+          productPrice: product.price,
+          totalPrice: total_price,
+          customerData: { 
+            ...formData,
+            paymentMethod: 'bank_transfer',
+            notes: formData.notes || 'بدون ملاحظات'
+          },
+          transferProofBase64: bankTransferData.imageData,
+          transferProofMime: bankTransferData.mimeType,
+        })
+        if (telegramResult.success) {
+          console.log('✅ Telegram notification sent successfully');
+        } else {
+          console.warn('⚠️ Telegram failed but order was processed:', telegramResult.error);
+        }
+      } catch (telegramError) {
+        console.warn('⚠️ Telegram error (non-blocking):', telegramError);
+      }
 
       // Save to order history
       const fullAddressForHistory = `${formData.streetAddress}${formData.landmark ? ` (${formData.landmark})` : ''}, ${formData.city}, ${formData.governorate}`;

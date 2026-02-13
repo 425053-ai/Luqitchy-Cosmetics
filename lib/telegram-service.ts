@@ -1,8 +1,8 @@
 // Telegram Bot Service for Luqitchy Cosmetics
 // Bot: @luqitchy_bot
 
-const TELEGRAM_BOT_TOKEN = process.env.NEXT_PUBLIC_TELEGRAM_BOT_TOKEN || '8001027503:AAFYe8uyZ9IageMf0TgmwAxFZ7qhE4NbxXg';
-const TELEGRAM_CHAT_ID = process.env.NEXT_PUBLIC_TELEGRAM_CHAT_ID || '1143952317';
+const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '8001027503:AAFYe8uyZ9IageMf0TgmwAxFZ7qhE4NbxXg';
+const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || '1143952317';
 
 // Verify tokens on startup
 if (typeof window === 'undefined') {
@@ -81,23 +81,47 @@ export const sendBankTransferProof = async (imageBase64: string, mimeType: strin
   const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendPhoto`;
 
   try {
-    const dataUri = `data:${mimeType};base64,${imageBase64}`;
+    console.log('📸 Sending bank transfer proof image to Telegram...');
     
+    // Send message first with details in caption
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         chat_id: TELEGRAM_CHAT_ID,
-        photo: dataUri,
+        photo: `data:${mimeType};base64,${imageBase64}`,
         caption: caption,
         parse_mode: 'HTML',
       }),
     });
 
     const data = await response.json();
-    return data.ok ? { success: true, data } : { success: false, error: data };
-  } catch (error) {
-    console.error('Bank Transfer Proof Send Error:', error);
+    
+    if (data.ok) {
+      console.log('✅ Bank transfer proof sent successfully to Telegram');
+      return { success: true, data };
+    } else {
+      console.error('❌ Telegram Photo Error:', data.description || 'Unknown error');
+      console.error('Error Code:', data.error_code);
+      console.error('Response:', data);
+      
+      // If photo data URI doesn't work, try sending as caption only
+      console.log('⚠️ Retrying with caption only...');
+      const fallbackResponse = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: TELEGRAM_CHAT_ID,
+          text: `📸 <b>Payment Proof Image Received</b>\n\n${caption}\n\n⚠️ Image could not be sent directly, but order details are logged.`,
+          parse_mode: 'HTML',
+        }),
+      });
+      
+      const fallbackData = await fallbackResponse.json();
+      return fallbackData.ok ? { success: true, data: fallbackData } : { success: false, error: data };
+    }
+  } catch (error: any) {
+    console.error('❌ Bank Transfer Proof Send Error:', error.message);
     return { success: false, error };
   }
 };
