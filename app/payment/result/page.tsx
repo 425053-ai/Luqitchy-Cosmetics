@@ -7,7 +7,6 @@ import { CheckCircle, XCircle, Home, ShoppingBag, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useCart } from "@/context/CartContext"
 import { useOrderHistory } from "@/context/OrderHistoryContext"
-import { sendTelegramMessage } from "@/lib/telegram-service"
 
 function PaymentResultContent() {
   const searchParams = useSearchParams()
@@ -33,33 +32,27 @@ function PaymentResultContent() {
           if (pendingOrderData) {
             const orderData = JSON.parse(pendingOrderData)
             
-            // Send Telegram notification
-            await sendTelegramMessage(`
-💳 <b>دفع ناجح - طلب #${orderId}</b>
-
-━━━━━━━━━━━━━━━━━━━━
-
-✅ <b>تم الدفع بنجاح!</b>
-• رقم المعاملة: ${transactionId}
-• المبلغ: ${amount} جنيه
-• طريقة الدفع: ${orderData.paymentMethod === 'visa' ? 'فيزا/ماستركارد' : 'فودافون كاش'}
-
-👤 <b>بيانات العميل:</b>
-• الاسم: ${orderData.customerData.fullName}
-• الإيميل: ${orderData.customerData.email}
-• تليفون: ${orderData.customerData.phone}
-
-📍 <b>العنوان:</b>
-• ${orderData.customerData.streetAddress}
-• ${orderData.customerData.city}, ${orderData.customerData.governorate}
-
-📦 <b>المنتجات:</b>
-${orderData.items.map((item: any) => `• ${item.name} × ${item.quantity}`).join('\n')}
-
-━━━━━━━━━━━━━━━━━━━━
-
-📅 <b>التاريخ:</b> ${new Date().toLocaleString('ar-EG')}
-            `.trim())
+            // Send Telegram notification via server API
+            try {
+              await fetch('/api/sendTelegram', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  type: 'payment_success',
+                  orderData: {
+                    transactionId: transactionId,
+                    amount: amount,
+                    customerName: orderData.customerData.fullName,
+                    customerEmail: orderData.customerData.email,
+                    phone: orderData.customerData.phone,
+                    address: `${orderData.customerData.streetAddress}, ${orderData.customerData.city}, ${orderData.customerData.governorate}`,
+                    items: orderData.items,
+                  },
+                }),
+              })
+            } catch (error) {
+              console.error('Telegram notification failed:', error)
+            }
 
             // Add to order history
             addOrder({

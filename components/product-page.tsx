@@ -9,7 +9,6 @@ import { useCart } from "@/context/CartContext"
 import { useOrderHistory } from "@/context/OrderHistoryContext"
 import { Button } from "@/components/ui/button"
 import { Footer } from "@/components/footer"
-import { sendBankTransferOrder } from "@/lib/telegram-service"
 
 interface ProductPageProps {
   product: {
@@ -261,27 +260,39 @@ export function ProductPage({ product }: ProductPageProps) {
         console.log('✅ Email sent successfully:', emailResult)
       }
 
-      // Send Telegram notification with image
+      // Send Telegram notification with image via server API
       console.log('🤖 Sending Telegram notification...');
       try {
-        const telegramResult = await sendBankTransferOrder({
-          orderId: order_id,
-          productName: product.name,
-          quantity: quantity,
-          productPrice: product.price,
-          totalPrice: total_price,
-          customerData: { 
-            ...formData,
-            paymentMethod: 'bank_transfer',
-            notes: formData.notes || 'بدون ملاحظات'
-          },
-          transferProofBase64: bankTransferData.imageData,
-          transferProofMime: bankTransferData.mimeType,
+        const telegramResponse = await fetch('/api/sendTelegram', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            orderData: {
+              order_id: order_id,
+              product_name: product.name,
+              quantity: quantity,
+              price: product.price,
+              total_amount: total_price,
+              customer_name: formData.fullName,
+              phone: formData.phone,
+              customer_email: formData.email,
+              governorate: formData.governorate,
+              city: formData.city,
+              street: formData.streetAddress,
+              landmark: formData.landmark,
+              notes: formData.notes || 'بدون ملاحظات',
+              payment_method: 'تحويل بنكي للرقم 01012622315',
+              order_date: order_date,
+            },
+            imageData: bankTransferData.imageData,
+          }),
         })
-        if (telegramResult.success) {
+
+        const telegramData = await telegramResponse.json()
+        if (telegramData.success) {
           console.log('✅ Telegram notification sent successfully');
         } else {
-          console.warn('⚠️ Telegram failed but order was processed:', telegramResult.error);
+          console.warn('⚠️ Telegram failed but order was processed:', telegramData.error);
         }
       } catch (telegramError) {
         console.warn('⚠️ Telegram error (non-blocking):', telegramError);

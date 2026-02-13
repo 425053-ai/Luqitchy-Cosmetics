@@ -9,7 +9,6 @@ import { useCart } from "@/context/CartContext"
 import { useOrderHistory } from "@/context/OrderHistoryContext"
 import { Button } from "@/components/ui/button"
 import { Footer } from "@/components/footer"
-import { sendCartOrderToTelegram } from "@/lib/telegram-service"
 
 export default function CartPage() {
   const router = useRouter()
@@ -337,17 +336,34 @@ export default function CartPage() {
         throw new Error(errorData.message || 'Failed to send order')
       }
 
-      // Send Telegram notification
-      await sendCartOrderToTelegram({
-        customerData: { ...formData },
-        products: items.map(item => ({
-          name: item.name,
-          quantity: item.quantity,
-          price: item.price,
-        })),
-        totalPrice: totalPrice,
-        orderNumber: order_id,
-      })
+      // Send Telegram notification via server API
+      try {
+        await fetch('/api/sendTelegram', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'cart_order',
+            orderData: {
+              customer_name: formData.fullName,
+              customer_email: formData.email,
+              phone: formData.phone,
+              products: items.map(item => ({
+                name: item.name,
+                quantity: item.quantity,
+                price: item.price,
+              })),
+              total_price: totalPrice,
+              governorate: formData.governorate,
+              city: formData.city,
+              street: formData.streetAddress,
+              landmark: formData.landmark,
+              notes: formData.notes,
+            },
+          }),
+        })
+      } catch (telegramError) {
+        console.warn('⚠️ Telegram notification failed:', telegramError)
+      }
       
       // Save order data before clearing cart
       setSubmittedOrder({
