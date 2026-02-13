@@ -61,12 +61,66 @@ export function ProductPage({ product }: ProductPageProps) {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
-      setTransferImage(file)
-      
-      // Create preview
+      // Check file size (max 2MB)
+      if (file.size > 2 * 1024 * 1024) {
+        alert("❌ Image is too large. Please select an image smaller than 2MB")
+        return
+      }
+
+      // Check file type
+      if (!file.type.startsWith('image/')) {
+        alert("❌ Please select a valid image file")
+        return
+      }
+
       const reader = new FileReader()
       reader.onloadend = () => {
-        setImagePreview(reader.result as string)
+        const img = new window.Image()
+        img.onload = () => {
+          // Compress image
+          const canvas = document.createElement('canvas')
+          const ctx = canvas.getContext('2d')
+          if (!ctx) return
+
+          // Set canvas size with max dimensions
+          const maxWidth = 1200
+          const maxHeight = 1200
+          let width = img.width
+          let height = img.height
+
+          if (width > height) {
+            if (width > maxWidth) {
+              height *= maxWidth / width
+              width = maxWidth
+            }
+          } else {
+            if (height > maxHeight) {
+              width *= maxHeight / height
+              height = maxHeight
+            }
+          }
+
+          canvas.width = width
+          canvas.height = height
+          ctx.drawImage(img, 0, 0, width, height)
+
+          // Convert compressed image to blob and create new file
+          canvas.toBlob(
+            (blob) => {
+              if (blob) {
+                const compressedFile = new File([blob], file.name, {
+                  type: 'image/jpeg',
+                  lastModified: Date.now(),
+                })
+                setTransferImage(compressedFile)
+                setImagePreview(canvas.toDataURL('image/jpeg', 0.85))
+              }
+            },
+            'image/jpeg',
+            0.85
+          )
+        }
+        img.src = reader.result as string
       }
       reader.readAsDataURL(file)
     }
@@ -145,7 +199,8 @@ export function ProductPage({ product }: ProductPageProps) {
       })
 
       if (!bankTransferResponse.ok) {
-        throw new Error('Failed to process image')
+        const errorData = await bankTransferResponse.json().catch(() => ({}))
+        throw new Error(errorData.error || 'Failed to process image. Please try again.')
       }
 
       const bankTransferData = await bankTransferResponse.json()
@@ -259,9 +314,10 @@ export function ProductPage({ product }: ProductPageProps) {
       console.error("Order Error:", err)
       const errorMessage = err?.message || "Failed to process order"
       console.error("Detailed error:", errorMessage)
-      alert(`خطأ: ${errorMessage}`)
+      alert(`❌ Error: ${errorMessage}\n\nTip: Make sure the image is compressed and smaller than 2MB`)
     } finally {
       setIsSubmitting(false)
+      setUploadingImage(false)
     }
   }
 

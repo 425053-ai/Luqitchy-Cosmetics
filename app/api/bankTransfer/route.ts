@@ -20,6 +20,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Check file size
+    if (transferImage.size > 2 * 1024 * 1024) {
+      return NextResponse.json(
+        { error: 'Image is too large. Please use an image smaller than 2MB.' },
+        { status: 413 }
+      );
+    }
+
     // Convert image to base64 for storage and transmission
     const buffer = await transferImage.arrayBuffer();
     const base64Image = Buffer.from(buffer).toString('base64');
@@ -49,8 +57,9 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Bank Transfer Error:', error);
     return NextResponse.json(
-      { error: 'Failed to process bank transfer' },
+      { error: 'Failed to process bank transfer. Please try again or contact support.' },
       { status: 500 }
     );
   }
 }
+
