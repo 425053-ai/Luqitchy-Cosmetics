@@ -2,6 +2,7 @@ import { notFound } from "next/navigation"
 import Image from "next/image"
 import Link from "next/link"
 import { OrderForm } from "@/components/order-form"
+import { Footer } from "@/components/footer"
 import { ArrowLeft, Sparkles, Star, Shield, Truck, Heart } from "lucide-react"
 
 const products = [
@@ -211,6 +212,7 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
           </div>
         </div>
       </div>
+      <Footer />
     </main>
   )
 }

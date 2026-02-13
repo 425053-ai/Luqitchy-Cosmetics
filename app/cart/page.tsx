@@ -8,6 +8,7 @@ import { ArrowLeft, ShoppingCart, Plus, Minus, Trash2, X } from "lucide-react"
 import { useCart } from "@/context/CartContext"
 import { useOrderHistory } from "@/context/OrderHistoryContext"
 import { Button } from "@/components/ui/button"
+import { Footer } from "@/components/footer"
 import { sendCartOrderToTelegram } from "@/lib/telegram-service"
 
 export default function CartPage() {
@@ -1306,6 +1307,7 @@ export default function CartPage() {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   )
 }

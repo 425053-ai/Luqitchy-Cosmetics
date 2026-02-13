@@ -419,8 +419,8 @@ export default function ConfirmationPage() {
         </div>
 
         {/* Footer message */}
-        <p className="text-center text-xs sm:text-sm text-muted-foreground mt-4 sm:mt-6 md:mt-8">
-          Made with <span className="text-red-500 animate-heartbeat inline-block">❤️</span> by Lingo for Luqitchy
+        <p className="text-center text-xs sm:text-sm text-muted-foreground mt-4 sm:mt-6 md:mt-8 flex items-center justify-center gap-2">
+          Made with <span className="text-red-500 animate-heart-pop inline-block">❤️</span> by Lingo for Luqitchy <span className="animate-sparkle">✨</span>
         </p>
       </div>
     </main>

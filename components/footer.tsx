@@ -232,6 +232,16 @@ export function Footer() {
             </a>
           </div>
         </div>
+
+        {/* Made with love section */}
+        <div className="border-t border-background/20 pt-6 sm:pt-8 md:pt-10 mt-8 sm:mt-10 md:mt-12 text-center">
+          <p className="text-background/70 text-xs sm:text-sm font-medium flex items-center justify-center gap-2">
+            Made with
+            <span className="text-primary animate-heart-pop">❤️</span>
+            by Lingo for Luqitchy
+            <span className="animate-sparkle">✨</span>
+          </p>
+        </div>
       </div>
     </footer>
   )

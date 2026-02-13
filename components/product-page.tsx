@@ -8,6 +8,7 @@ import { ArrowLeft, Star, ShoppingCart, Plus, Minus, Check } from "lucide-react"
 import { useCart } from "@/context/CartContext"
 import { useOrderHistory } from "@/context/OrderHistoryContext"
 import { Button } from "@/components/ui/button"
+import { Footer } from "@/components/footer"
 import { sendBankTransferOrder } from "@/lib/telegram-service"
 
 interface ProductPageProps {
@@ -1047,6 +1048,7 @@ export function ProductPage({ product }: ProductPageProps) {
             </div>
           </div>
         </div>
+        <Footer />
       </div>
     </div>
   )
