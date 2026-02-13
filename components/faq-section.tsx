@@ -40,7 +40,7 @@ const faqs = [
     question: "What are the prices?",
     answer:
       "Lip Gloss shades are 100 EGP each, Lip Balm is 100 EGP, and Body Lotion + Splash Bundles are 300 EGP each. We offer premium quality at affordable prices!",
-    emoji: "🏷️",
+    emoji: "💰",
     animation: "animate-sparkle-burst",
   },
   {
