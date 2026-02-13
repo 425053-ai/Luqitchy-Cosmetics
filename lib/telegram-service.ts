@@ -1,5 +1,8 @@
+'use server';
+
 // Telegram Bot Service for Luqitchy Cosmetics
 // Bot: @luqitchy_bot
+// NOTE: This file is now server-only. Client-side Telegram calls should use /api/sendTelegram instead.
 
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '8001027503:AAFYe8uyZ9IageMf0TgmwAxFZ7qhE4NbxXg';
 const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || '1143952317';
