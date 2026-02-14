@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// Verify Brevo API key on startup
-console.log('🔧 [Email] Brevo Configuration Check:');
-console.log('  - BREVO_API_KEY:', process.env.BREVO_API_KEY ? '✓ Set (' + process.env.BREVO_API_KEY.length + ' chars)' : '✗ Missing');
-console.log('  - BREVO_SENDER_EMAIL:', process.env.BREVO_SENDER_EMAIL ? '✓ Set (' + process.env.BREVO_SENDER_EMAIL + ')' : '✗ Missing');
+// Verify EmailJS configuration on startup
+console.log('🔧 [Email] EmailJS Configuration Check:');
+console.log('  - SERVICE_ID:', process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID ? '✓ Set' : '✗ Missing');
+console.log('  - TEMPLATE_ID:', process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID ? '✓ Set' : '✗ Missing');
+console.log('  - PUBLIC_KEY:', process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY ? '✓ Set' : '✗ Missing');
+console.log('  - SENDER_EMAIL:', process.env.BREVO_SENDER_EMAIL ? '✓ Set (' + process.env.BREVO_SENDER_EMAIL + ')' : '✗ Missing');
 
 interface OrderProduct {
   name: string;
@@ -222,67 +224,56 @@ export async function POST(request: NextRequest) {
 
     const htmlContent = generateOrderHTML(body);
 
-    // Prepare Brevo API request
-    const brevoPayload: any = {
-      sender: {
-        name: 'Luqitchy Cosmetics',
-        email: process.env.BREVO_SENDER_EMAIL || 'noreply@luqitchy.com',
-      },
-      to: [
-        {
-          email: customer_email,
-          name: customer_name,
-        },
-      ],
-      subject: `Order Confirmation #${order_id} | Luqitchy Cosmetics`,
-      htmlContent,
-      replyTo: {
-        email: process.env.BREVO_SENDER_EMAIL,
-        name: 'Luqitchy Cosmetics',
-      },
+    // Prepare base64 image for EmailJS if available
+    let imageBase64 = null;
+    if (transferImage) {
+      console.log('📎 [Email] Including transfer proof image');
+      imageBase64 = transferImage;
+    }
+
+    // EmailJS template parameters
+    const templateParams = {
+      service_id: process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID,
+      template_id: process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID,
+      user_id: process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY,
+      template_params: {
+        to_email: customer_email,
+        to_name: customer_name,
+        from_name: 'Luqitchy Cosmetics',
+        from_email: process.env.BREVO_SENDER_EMAIL || 'noreply@luqitchy.com',
+        order_id: order_id,
+        customer_name: customer_name,
+        html_content: htmlContent,
+      }
     };
 
-    // Add attachment if provided
-    if (transferImage && transferImageMime) {
-      console.log('📎 [Email] Adding transfer proof image as attachment');
-      brevoPayload.attachment = [
-        {
-          content: transferImage,
-          name: `transfer-proof-${order_id}.jpg`,
-        },
-      ];
-    }
-
-    console.log('📬 [Email] Sending email via Brevo REST API:');
-    console.log('   - From:', brevoPayload.sender.email);
+    console.log('📬 [Email] Sending email via EmailJS:');
     console.log('   - To:', customer_email);
-    console.log('   - Subject:', brevoPayload.subject);
-    console.log('   - Attachments:', brevoPayload.attachment ? 1 : 0);
+    console.log('   - Order ID:', order_id);
+    console.log('   - Service:', process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID?.substring(0, 10) + '...');
 
-    // Send via Brevo REST API
-    const brevoResponse = await fetch('https://api.brevo.com/v3/smtp/email', {
+    // Send via EmailJS API
+    const emailJSResponse = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
       method: 'POST',
       headers: {
-        'accept': 'application/json',
-        'api-key': process.env.BREVO_API_KEY || '',
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(brevoPayload),
+      body: JSON.stringify(templateParams),
     });
 
-    const brevoResult = await brevoResponse.json();
+    const emailJSResult = await emailJSResponse.json();
 
-    if (!brevoResponse.ok) {
-      console.error('❌ [Email] Brevo API Error:', brevoResponse.status);
-      console.error('   Response:', JSON.stringify(brevoResult, null, 2));
-      throw new Error(`Brevo API Error: ${brevoResult.message || brevoResponse.statusText}`);
+    if (!emailJSResponse.ok) {
+      console.error('❌ [Email] EmailJS API Error:', emailJSResponse.status);
+      console.error('   Response:', JSON.stringify(emailJSResult, null, 2));
+      throw new Error(`EmailJS Error: ${emailJSResult.message || emailJSResponse.statusText}`);
     }
 
-    console.log('✅ [Email] Customer email sent successfully via Brevo!');
-    console.log('   - Message ID:', brevoResult.messageId);
+    console.log('✅ [Email] Customer email sent successfully via EmailJS!');
+    console.log('   - Status:', emailJSResult.status);
+    console.log('   - Message:', emailJSResult.text);
 
     // Admin email removed - using Telegram notifications instead for cost optimization
-    // All 300 daily email quota is reserved for customer confirmations
 
     return NextResponse.json(
       { 
@@ -297,10 +288,11 @@ export async function POST(request: NextRequest) {
     console.error('❌ [Email] Exception thrown:', error.name);
     console.error('   Message:', error.message);
     
-    // Log API key status
+    // Log configuration debug
     console.error('🔧 [Email] Configuration Debug:');
-    console.error('  - BREVO_API_KEY provided:', !!process.env.BREVO_API_KEY);
-    console.error('  - BREVO_SENDER_EMAIL:', process.env.BREVO_SENDER_EMAIL ? '✓ Set' : '✗ Missing');
+    console.error('  - SERVICE_ID:', process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID ? '✓ Set' : '✗ Missing');
+    console.error('  - TEMPLATE_ID:', process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID ? '✓ Set' : '✗ Missing');
+    console.error('  - PUBLIC_KEY:', process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY ? '✓ Set' : '✗ Missing');
     
     // Log full error trace
     console.error('   Full error:', error);
