@@ -223,7 +223,12 @@ export function ProductPage({ product }: ProductPageProps) {
       localStorage.setItem('transfer-proofs', JSON.stringify(existingProofs))
 
       // Send email notification with image
-      console.log('📧 Sending email to:', formData.email);
+      console.log('═══════════════════════════════════════════════════');
+      console.log('📧 [Order Flow] STEP 1: Sending email notification');
+      console.log('   To:', formData.email);
+      console.log('   Order ID:', order_id);
+      console.log('═══════════════════════════════════════════════════');
+      
       const emailResponse = await fetch('/api/sendOrder', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -254,19 +259,28 @@ export function ProductPage({ product }: ProductPageProps) {
 
       if (!emailResponse.ok) {
         const emailError = await emailResponse.json().catch(() => ({}))
-        console.warn('⚠️ Email sending failed:', emailError)
+        console.error('❌ [Order Flow] STEP 1 FAILED - Email sending error:');
+        console.error('   Status:', emailResponse.status);
+        console.error('   Response:', emailError);
       } else {
         const emailResult = await emailResponse.json()
-        console.log('✅ Email sent successfully:', emailResult)
+        console.log('✅ [Order Flow] STEP 1 SUCCESS - Email sent successfully');
+        console.log('   Response:', emailResult);
       }
 
       // Send Telegram notification with image via server API
-      console.log('🤖 Sending Telegram notification...');
+      console.log('────────────────────────────────────────────────────');
+      console.log('🤖 [Order Flow] STEP 2: Sending Telegram notification');
+      console.log('   Order ID:', order_id);
+      console.log('   Message Type:', 'bank_transfer');
+      console.log('────────────────────────────────────────────────────');
+      
       try {
         const telegramResponse = await fetch('/api/sendTelegram', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
+            type: 'bank_transfer',
             orderData: {
               order_id: order_id,
               product_name: product.name,
@@ -290,12 +304,20 @@ export function ProductPage({ product }: ProductPageProps) {
 
         const telegramData = await telegramResponse.json()
         if (telegramData.success) {
-          console.log('✅ Telegram notification sent successfully');
+          console.log('✅ [Order Flow] STEP 2 SUCCESS - Telegram notification sent');
+          console.log('   Response:', telegramData);
         } else {
-          console.warn('⚠️ Telegram failed but order was processed:', telegramData.error);
+          console.warn('❌ [Order Flow] STEP 2 FAILED - Telegram error:');
+          console.warn('   Status:', telegramResponse.status);
+          console.warn('   Error:', telegramData.error);
+          console.warn('   Details:', telegramData.details);
+
         }
-      } catch (telegramError) {
-        console.warn('⚠️ Telegram error (non-blocking):', telegramError);
+      } catch (telegramError: any) {
+        console.error('❌ [Order Flow] STEP 2 EXCEPTION - Telegram error:');
+        console.error('   Error Name:', telegramError.name);
+        console.error('   Error Message:', telegramError.message);
+        console.error('   Error Stack:', telegramError.stack);
       }
 
       // Save to order history

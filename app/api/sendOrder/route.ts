@@ -12,15 +12,18 @@ const transporter = nodemailer.createTransport({
 });
 
 // Verify configuration on startup
+console.log('🔧 [Email] SMTP Configuration Check:');
+console.log('  - BREVO_SMTP_HOST:', process.env.BREVO_SMTP_HOST ? '✓ Set' : '✗ Missing');
+console.log('  - BREVO_SMTP_USER:', process.env.BREVO_SMTP_USER ? '✓ Set' : '✗ Missing');
+console.log('  - BREVO_SENDER_EMAIL:', process.env.BREVO_SENDER_EMAIL ? '✓ Set' : '✗ Missing');
+console.log('  - BREVO_SMTP_KEY:', process.env.BREVO_SMTP_KEY ? '✓ Set' : '✗ Missing');
+console.log('  - BREVO_API_KEY:', process.env.BREVO_API_KEY ? '✓ Set' : '✗ Missing');
+
 transporter.verify((error, success) => {
   if (error) {
-    console.error('❌ SMTP Configuration Error:', error);
-    console.error('BREVO_SMTP_USER:', process.env.BREVO_SMTP_USER ? '✓ Set' : '✗ Missing');
-    console.error('BREVO_SENDER_EMAIL:', process.env.BREVO_SENDER_EMAIL ? '✓ Set' : '✗ Missing');
-    console.error('BREVO_SMTP_KEY:', process.env.BREVO_SMTP_KEY ? '✓ Set' : '✗ Missing');
-    console.error('BREVO_SMTP_HOST:', process.env.BREVO_SMTP_HOST ? '✓ Set' : '✗ Missing');
+    console.error('❌ [Email] SMTP Connection Error:', error.message);
   } else {
-    console.log('✅ SMTP Server is ready to send emails');
+    console.log('✅ [Email] SMTP Server is ready to send emails');
   }
 });
 
@@ -220,7 +223,7 @@ export async function POST(request: NextRequest) {
 
     // Validate required fields
     if (!customer_name || !customer_email || !order_id) {
-      console.error('Missing required fields:', { customer_name, customer_email, order_id });
+      console.error('❌ [Email] Missing required fields:', { customer_name, customer_email, order_id });
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -230,14 +233,14 @@ export async function POST(request: NextRequest) {
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(customer_email)) {
-      console.error('Invalid email format:', customer_email);
+      console.error('❌ [Email] Invalid email format:', customer_email);
       return NextResponse.json(
         { error: 'Invalid email format' },
         { status: 400 }
       );
     }
 
-    console.log(`Processing order #${order_id} for ${customer_name} (${customer_email})`);
+    console.log(`📧 [Email] Processing order #${order_id} for ${customer_name} (${customer_email})`);
 
     const htmlContent = generateOrderHTML(body);
 
@@ -245,6 +248,7 @@ export async function POST(request: NextRequest) {
     const attachments: any[] = [];
 
     if (transferImage && transferImageMime) {
+      console.log('📎 [Email] Adding transfer proof image as attachment');
       attachments.push({
         filename: `transfer-proof-${order_id}.jpg`,
         content: Buffer.from(transferImage, 'base64'),
@@ -262,9 +266,16 @@ export async function POST(request: NextRequest) {
       replyTo: process.env.BREVO_SENDER_EMAIL,
     };
 
-    console.log(`Sending customer email to: ${customer_email}`);
+    console.log('📬 [Email] Sending email with these options:');
+    console.log('   - From:', customerMailOptions.from);
+    console.log('   - To:', customerMailOptions.to);
+    console.log('   - Subject:', customerMailOptions.subject);
+    console.log('   - Attachments:', attachments.length);
+
     const customerResult = await transporter.sendMail(customerMailOptions);
-    console.log(`✅ Customer email sent successfully:`, customerResult.messageId);
+    console.log('✅ [Email] Customer email sent successfully!');
+    console.log('   - Message ID:', customerResult.messageId);
+    console.log('   - Response:', customerResult.response);
 
     // Admin email removed - using Telegram notifications instead for cost optimization
     // All 300 daily email quota is reserved for customer confirmations
@@ -279,19 +290,21 @@ export async function POST(request: NextRequest) {
       { status: 200 }
     );
   } catch (error: any) {
-    console.error('❌ Email sending error:', error);
+    console.error('❌ [Email] Exception thrown:', error.name);
+    console.error('   Message:', error.message);
+    console.error('   Code:', error.code);
     
     // Log environment variables status
-    console.error('🔧 Environment Variables Check:');
-    console.error('- BREVO_SMTP_USER:', process.env.BREVO_SMTP_USER ? '✓ Set' : '✗ Missing');
-    console.error('- BREVO_SENDER_EMAIL:', process.env.BREVO_SENDER_EMAIL ? '✓ Set' : '✗ Missing');
-    console.error('- BREVO_SMTP_KEY:', process.env.BREVO_SMTP_KEY ? '✓ Set' : '✗ Missing');
-    console.error('- BREVO_SMTP_HOST:', process.env.BREVO_SMTP_HOST ? '✓ Set' : '✗ Missing');
+    console.error('🔧 [Email] Environment Variables Check:');
+    console.error('  - BREVO_SMTP_USER:', process.env.BREVO_SMTP_USER ? '✓ Set (' + process.env.BREVO_SMTP_USER.substring(0, 10) + '...)' : '✗ Missing');
+    console.error('  - BREVO_SENDER_EMAIL:', process.env.BREVO_SENDER_EMAIL ? '✓ Set (' + process.env.BREVO_SENDER_EMAIL + ')' : '✗ Missing');
+    console.error('  - BREVO_SMTP_KEY:', process.env.BREVO_SMTP_KEY ? '✓ Set (' + process.env.BREVO_SMTP_KEY.substring(0, 10) + '...)' : '✗ Missing');
+    console.error('  - BREVO_SMTP_HOST:', process.env.BREVO_SMTP_HOST ? '✓ Set (' + process.env.BREVO_SMTP_HOST + ')' : '✗ Missing');
     
     // Log error details
-    console.error('Error Code:', error.code);
-    console.error('Error Message:', error.message);
-    console.error('Error Details:', error.response?.text || error.toString());
+    if (error.response) {
+      console.error('   SMTP Response:', error.response.toString());
+    }
     
     return NextResponse.json(
       { 

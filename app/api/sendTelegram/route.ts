@@ -14,13 +14,22 @@ export async function POST(request: NextRequest) {
   try {
     const body: TelegramPayload = await request.json();
 
+    // ✅ LOG 1: Check environment variables
+    console.log('🔧 [Telegram] Environment Variables Check:');
+    console.log('  - TELEGRAM_BOT_TOKEN:', TELEGRAM_BOT_TOKEN ? '✓ Set (' + TELEGRAM_BOT_TOKEN.substring(0, 15) + '...)' : '✗ MISSING');
+    console.log('  - TELEGRAM_CHAT_ID:', TELEGRAM_CHAT_ID ? '✓ Set (' + TELEGRAM_CHAT_ID + ')' : '✗ MISSING');
+
     if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) {
-      console.error('❌ Missing Telegram credentials');
+      console.error('❌ [Telegram] Missing Telegram credentials - cannot send notification');
       return NextResponse.json(
         { success: false, error: 'Missing Telegram configuration' },
         { status: 500 }
       );
     }
+
+    // ✅ LOG 2: Log incoming request
+    console.log('📥 [Telegram] Received request with type:', body.type || 'text_message');
+    console.log('📥 [Telegram] Request body keys:', Object.keys(body));
 
     const messageType = body.type || 'text_message';
 
@@ -107,44 +116,57 @@ ${orderData.items.map((item: any) => `• ${item.name} × ${item.quantity}`).joi
     }
 
     if (!orderText) {
+      console.warn('⚠️ [Telegram] Invalid message type or missing data - type:', messageType);
       return NextResponse.json(
         { success: false, error: 'Invalid message type or missing data' },
         { status: 400 }
       );
     }
 
+    // ✅ LOG 3: Log the message to be sent
+    console.log('📝 [Telegram] Message preview (first 200 chars):');
+    console.log('  ' + orderText.substring(0, 200) + '...');
+
     // Step 1: Send text message
-    console.log('🤖 Sending Telegram message...');
-    const messageResponse = await fetch(
-      `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          chat_id: TELEGRAM_CHAT_ID,
-          text: orderText,
-          parse_mode: 'HTML',
-        }),
-      }
-    );
+    console.log('🤖 [Telegram] Sending message to Telegram API...');
+    const telegramUrl = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+    console.log('   URL:', telegramUrl.substring(0, 50) + '...');
+
+    const messageResponse = await fetch(telegramUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        chat_id: TELEGRAM_CHAT_ID,
+        text: orderText,
+        parse_mode: 'HTML',
+      }),
+    });
 
     const messageData = await messageResponse.json();
 
+    // ✅ LOG 4: Log Telegram API response
+    console.log('📬 [Telegram] API Response received:');
+    console.log('  - HTTP Status:', messageResponse.status);
+    console.log('  - ok flag:', messageData.ok);
+    console.log('  - Error Code:', messageData.error_code || 'None');
+    console.log('  - Description:', messageData.description || messageData.error_description || 'None');
+
     if (!messageData.ok) {
-      console.error('❌ Telegram message failed:', messageData);
+      console.error('❌ [Telegram] Message failed to send');
+      console.error('  - Full response:', JSON.stringify(messageData, null, 2));
       return NextResponse.json(
-        { success: false, error: messageData.description || 'Failed to send message' },
+        { success: false, error: messageData.description || 'Failed to send message', details: messageData },
         { status: 400 }
       );
     }
 
-    console.log('✅ Telegram message sent successfully');
+    console.log('✅ [Telegram] Message sent successfully! Message ID:', messageData.result?.message_id);
 
     // Step 2: Send image if provided (for bank transfers)
     if (body.imageData && messageType === 'bank_transfer') {
-      console.log('📸 Sending payment proof image...');
+      console.log('📸 [Telegram] Sending payment proof image...');
 
       const photoResponse = await fetch(
         `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendPhoto`,
@@ -164,10 +186,15 @@ ${orderData.items.map((item: any) => `• ${item.name} × ${item.quantity}`).joi
 
       const photoData = await photoResponse.json();
 
+      // ✅ LOG 5: Log photo response
+      console.log('📷 [Telegram] Photo Response:');
+      console.log('  - ok flag:', photoData.ok);
+      console.log('  - Message ID:', photoData.result?.message_id || 'N/A');
+
       if (!photoData.ok) {
-        console.warn('⚠️ Photo send failed, but message was sent:', photoData.description);
+        console.warn('⚠️ [Telegram] Photo send failed, but message was sent. Error:', photoData.description);
       } else {
-        console.log('✅ Payment proof image sent to Telegram');
+        console.log('✅ [Telegram] Payment proof image sent successfully');
       }
     }
 
@@ -176,7 +203,9 @@ ${orderData.items.map((item: any) => `• ${item.name} × ${item.quantity}`).joi
       { status: 200 }
     );
   } catch (error: any) {
-    console.error('❌ Telegram API error:', error);
+    console.error('❌ [Telegram] Exception thrown:', error.name);
+    console.error('   Message:', error.message);
+    console.error('   Stack:', error.stack);
     return NextResponse.json(
       { success: false, error: error.message },
       { status: 500 }

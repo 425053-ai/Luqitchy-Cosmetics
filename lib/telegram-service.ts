@@ -4,7 +4,7 @@
 // Bot: @luqitchy_bot
 // NOTE: This file is now server-only. Client-side Telegram calls should use /api/sendTelegram instead.
 
-const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '8001027503:AAGwJMmML6qJTrFnGud56pA2aeaSWcdp59M';
+const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '8001027503:AAFINaeu8OolPc5KDeMb4743U_VD9Z-unsE';
 const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || '1143952317';
 
 // Verify tokens on startup
