@@ -1,38 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import nodemailer from 'nodemailer';
 
-// Configure Brevo SMTP
-const smtpConfig = {
-  host: process.env.BREVO_SMTP_HOST || 'smtp-relay.brevo.com',
-  port: 587,
-  secure: false, // TLS
-  auth: {
-    user: process.env.BREVO_SMTP_USER || process.env.BREVO_SENDER_EMAIL,
-    pass: process.env.BREVO_SMTP_KEY,
-  },
-  connectionTimeout: 10000,
-  socketTimeout: 10000,
-};
-
-const transporter = nodemailer.createTransport(smtpConfig);
-
-// Verify configuration on startup
-console.log('🔧 [Email] SMTP Configuration Check:');
-console.log('  - BREVO_SMTP_HOST:', process.env.BREVO_SMTP_HOST ? '✓ Set' : '✗ Missing');
-console.log('  - BREVO_SMTP_USER:', process.env.BREVO_SMTP_USER ? '✓ Set (' + process.env.BREVO_SMTP_USER + ')' : '✗ Missing');
-console.log('  - BREVO_SENDER_EMAIL:', process.env.BREVO_SENDER_EMAIL ? '✓ Set (' + process.env.BREVO_SENDER_EMAIL + ')' : '✗ Missing');
-console.log('  - BREVO_SMTP_KEY length:', process.env.BREVO_SMTP_KEY ? process.env.BREVO_SMTP_KEY.length + ' characters' : '✗ Missing');
-console.log('  - BREVO_SMTP_KEY starts with:', process.env.BREVO_SMTP_KEY ? process.env.BREVO_SMTP_KEY.substring(0, 20) + '...' : '✗ Missing');
-console.log('  - BREVO_SMTP_KEY ends with:', process.env.BREVO_SMTP_KEY ? '...' + process.env.BREVO_SMTP_KEY.substring(process.env.BREVO_SMTP_KEY.length - 20) : '✗ Missing');
+// Verify Brevo API key on startup
+console.log('🔧 [Email] Brevo Configuration Check:');
 console.log('  - BREVO_API_KEY:', process.env.BREVO_API_KEY ? '✓ Set (' + process.env.BREVO_API_KEY.length + ' chars)' : '✗ Missing');
-
-transporter.verify((error, success) => {
-  if (error) {
-    console.error('❌ [Email] SMTP Connection Error on startup:', error.message);
-  } else {
-    console.log('✅ [Email] SMTP Server is ready to send emails');
-  }
-});
+console.log('  - BREVO_SENDER_EMAIL:', process.env.BREVO_SENDER_EMAIL ? '✓ Set (' + process.env.BREVO_SENDER_EMAIL + ')' : '✗ Missing');
 
 interface OrderProduct {
   name: string;
@@ -251,38 +222,64 @@ export async function POST(request: NextRequest) {
 
     const htmlContent = generateOrderHTML(body);
 
-    // Prepare attachments
-    const attachments: any[] = [];
-
-    if (transferImage && transferImageMime) {
-      console.log('📎 [Email] Adding transfer proof image as attachment');
-      attachments.push({
-        filename: `transfer-proof-${order_id}.jpg`,
-        content: Buffer.from(transferImage, 'base64'),
-        contentType: transferImageMime,
-      });
-    }
-
-    // Send to customer
-    const customerMailOptions = {
-      from: process.env.BREVO_SENDER_EMAIL || 'noreply@luqitchy.com',
-      to: customer_email,
+    // Prepare Brevo API request
+    const brevoPayload: any = {
+      sender: {
+        name: 'Luqitchy Cosmetics',
+        email: process.env.BREVO_SENDER_EMAIL || 'noreply@luqitchy.com',
+      },
+      to: [
+        {
+          email: customer_email,
+          name: customer_name,
+        },
+      ],
       subject: `Order Confirmation #${order_id} | Luqitchy Cosmetics`,
-      html: htmlContent,
-      attachments,
-      replyTo: process.env.BREVO_SENDER_EMAIL,
+      htmlContent,
+      replyTo: {
+        email: process.env.BREVO_SENDER_EMAIL,
+        name: 'Luqitchy Cosmetics',
+      },
     };
 
-    console.log('📬 [Email] Sending email with these options:');
-    console.log('   - From:', customerMailOptions.from);
-    console.log('   - To:', customerMailOptions.to);
-    console.log('   - Subject:', customerMailOptions.subject);
-    console.log('   - Attachments:', attachments.length);
+    // Add attachment if provided
+    if (transferImage && transferImageMime) {
+      console.log('📎 [Email] Adding transfer proof image as attachment');
+      brevoPayload.attachment = [
+        {
+          content: transferImage,
+          name: `transfer-proof-${order_id}.jpg`,
+        },
+      ];
+    }
 
-    const customerResult = await transporter.sendMail(customerMailOptions);
-    console.log('✅ [Email] Customer email sent successfully!');
-    console.log('   - Message ID:', customerResult.messageId);
-    console.log('   - Response:', customerResult.response);
+    console.log('📬 [Email] Sending email via Brevo REST API:');
+    console.log('   - From:', brevoPayload.sender.email);
+    console.log('   - To:', customer_email);
+    console.log('   - Subject:', brevoPayload.subject);
+    console.log('   - Attachments:', brevoPayload.attachment ? 1 : 0);
+
+    // Send via Brevo REST API
+    const brevoResponse = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: {
+        'accept': 'application/json',
+        'api-key': process.env.BREVO_API_KEY || '',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(brevoPayload),
+    });
+
+    const brevoResult = await brevoResponse.json();
+
+    if (!brevoResponse.ok) {
+      console.error('❌ [Email] Brevo API Error:', brevoResponse.status);
+      console.error('   Response:', JSON.stringify(brevoResult, null, 2));
+      throw new Error(`Brevo API Error: ${brevoResult.message || brevoResponse.statusText}`);
+    }
+
+    console.log('✅ [Email] Customer email sent successfully via Brevo!');
+    console.log('   - Message ID:', brevoResult.messageId);
 
     // Admin email removed - using Telegram notifications instead for cost optimization
     // All 300 daily email quota is reserved for customer confirmations
@@ -299,34 +296,14 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     console.error('❌ [Email] Exception thrown:', error.name);
     console.error('   Message:', error.message);
-    console.error('   Code:', error.code);
     
-    // Log SMTP credentials for debugging
-    console.error('🔧 [Email] SMTP Credentials Debug:');
-    console.error('  - BREVO_SMTP_USER provided:', !!process.env.BREVO_SMTP_USER);
-    console.error('  - BREVO_SMTP_KEY provided:', !!process.env.BREVO_SMTP_KEY);
-    console.error('  - BREVO_SMTP_KEY length:', process.env.BREVO_SMTP_KEY?.length || 0);
-    console.error('  - Using auth user:', process.env.BREVO_SMTP_USER || process.env.BREVO_SENDER_EMAIL);
-    console.error('  - Host:', process.env.BREVO_SMTP_HOST);
-    console.error('  - Port: 587');
+    // Log API key status
+    console.error('🔧 [Email] Configuration Debug:');
+    console.error('  - BREVO_API_KEY provided:', !!process.env.BREVO_API_KEY);
+    console.error('  - BREVO_SENDER_EMAIL:', process.env.BREVO_SENDER_EMAIL ? '✓ Set' : '✗ Missing');
     
     // Log full error trace
     console.error('   Full error:', error);
-    
-    // Log environment variables status
-    console.error('🔧 [Email] Environment Variables Check:');
-    console.error('  - BREVO_SMTP_USER:', process.env.BREVO_SMTP_USER ? '✓ Set (' + process.env.BREVO_SMTP_USER + ')' : '✗ Missing');
-    console.error('  - BREVO_SENDER_EMAIL:', process.env.BREVO_SENDER_EMAIL ? '✓ Set (' + process.env.BREVO_SENDER_EMAIL + ')' : '✗ Missing');
-    console.error('  - BREVO_SMTP_KEY:', process.env.BREVO_SMTP_KEY ? '✓ Set (' + process.env.BREVO_SMTP_KEY.substring(0, 10) + '...' + process.env.BREVO_SMTP_KEY.substring(process.env.BREVO_SMTP_KEY.length - 10) + ')' : '✗ Missing');
-    console.error('  - BREVO_SMTP_HOST:', process.env.BREVO_SMTP_HOST ? '✓ Set (' + process.env.BREVO_SMTP_HOST + ')' : '✗ Missing');
-    
-    // Log error details
-    if (error.response) {
-      console.error('   SMTP Response:', error.response.toString());
-    }
-    if (error.responseCode) {
-      console.error('   SMTP Code:', error.responseCode);
-    }
     
     return NextResponse.json(
       { 
