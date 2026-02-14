@@ -235,29 +235,18 @@ export function ProductPage({ product }: ProductPageProps) {
       console.log('   Order ID:', order_id);
       console.log('═══════════════════════════════════════════════════');
       
-      const emailResponse = await fetch('/api/sendOrder', {
+      const emailResponse = await fetch('/api/send-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          customer_name: formData.fullName,
-          customer_email: formData.email,
-          phone: formData.phone,
-          whatsapp: sameAsPhone ? formData.phone : formData.whatsapp,
-          order_id: order_id,
-          order_date: order_date,
-          products: [{
+          email: formData.email,
+          orderId: order_id,
+          cart: [{
             name: product.name,
             quantity: quantity,
             price: product.price,
-            total: total_price
           }],
-          total_amount: total_price,
-          governorate: formData.governorate,
-          city: formData.city,
-          street: formData.streetAddress,
-          landmark: formData.landmark || '',
-          notes: formData.notes || '',
-          payment_method: "تحويل بنكي للرقم 01012622315",
+          total: quantity * product.price,
         }),
       })
 

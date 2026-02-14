@@ -155,29 +155,18 @@ export default function CartPage() {
           const paymentMethodName = responseData.paymentType === 'cashcollection' ? 'أمان/مصاري (Cash Collection)' : 'فوري/كشك (Kiosk)'
           
           // Send email notification
-          await fetch('/api/sendOrder', {
+          await fetch('/api/send-order', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              customer_name: formData.fullName,
-              customer_email: formData.email,
-              phone: formData.phone,
-              whatsapp: sameAsPhone ? formData.phone : formData.whatsapp,
-              order_id: order_id,
-              order_date: order_date,
-              products: items.map(item => ({
+              email: formData.email,
+              orderId: order_id,
+              cart: items.map(item => ({
                 name: item.name,
                 quantity: item.quantity,
                 price: item.price,
-                total: item.price * item.quantity
               })),
-              total_amount: totalPrice,
-              governorate: formData.governorate,
-              city: formData.city,
-              street: formData.streetAddress,
-              landmark: formData.landmark || '',
-              notes: formData.notes || '',
-              payment_method: paymentMethodName,
+              total: totalPrice,
             }),
           })
 
@@ -223,29 +212,18 @@ export default function CartPage() {
         // For wallet payments (Vodafone Cash), show waiting modal - user gets push notification
         if (responseData.paymentType === 'wallet') {
           // Send email notification
-          await fetch('/api/sendOrder', {
+          await fetch('/api/send-order', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              customer_name: formData.fullName,
-              customer_email: formData.email,
-              phone: formData.phone,
-              whatsapp: sameAsPhone ? formData.phone : formData.whatsapp,
-              order_id: order_id,
-              order_date: order_date,
-              products: items.map(item => ({
+              email: formData.email,
+              orderId: order_id,
+              cart: items.map(item => ({
                 name: item.name,
                 quantity: item.quantity,
                 price: item.price,
-                total: item.price * item.quantity
               })),
-              total_amount: totalPrice,
-              governorate: formData.governorate,
-              city: formData.city,
-              street: formData.streetAddress,
-              landmark: formData.landmark || '',
-              notes: formData.notes || '',
-              payment_method: 'Vodafone Cash'
+              total: totalPrice,
             }),
           })
 
@@ -302,31 +280,20 @@ export default function CartPage() {
     // Handle Cash on Delivery
     try {
       // Send email via Brevo API
-      const response = await fetch('/api/sendOrder', {
+      const response = await fetch('/api/send-order', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          customer_name: formData.fullName,
-          customer_email: formData.email,
-          phone: formData.phone,
-          whatsapp: sameAsPhone ? formData.phone : formData.whatsapp,
-          order_id: order_id,
-          order_date: order_date,
-          products: items.map(item => ({
+          email: formData.email,
+          orderId: order_id,
+          cart: items.map(item => ({
             name: item.name,
             quantity: item.quantity,
             price: item.price,
-            total: item.price * item.quantity
           })),
-          total_amount: totalPrice,
-          governorate: formData.governorate,
-          city: formData.city,
-          street: formData.streetAddress,
-          landmark: formData.landmark || '',
-          notes: formData.notes || '',
-          payment_method: formData.paymentMethod
+          total: totalPrice,
         }),
       })
 
