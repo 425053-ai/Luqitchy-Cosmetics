@@ -20,22 +20,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Accept images of any reasonable size
-    const maxSize = 50 * 1024 * 1024; // 50MB limit
+    // Accept images up to 10MB (Vercel limit is ~4.5MB for request, but we only need to store metadata)
+    const maxSize = 10 * 1024 * 1024; // 10MB limit
     if (transferImage.size > maxSize) {
       return NextResponse.json(
-        { error: 'Image is too large. Please use an image smaller than 50MB.' },
+        { error: 'Image is too large. Please use an image smaller than 10MB.' },
         { status: 413 }
       );
     }
 
-    // Convert image to base64 for storage and transmission
+    // Convert image to base64 ONLY if size is reasonable (< 2MB for safe transmission)
     const buffer = await transferImage.arrayBuffer();
-    const base64Image = Buffer.from(buffer).toString('base64');
     const mimeType = transferImage.type || 'image/jpeg';
-
-    // Create data URI for email
-    const imageDataUri = `data:${mimeType};base64,${base64Image}`;
+    
+    let base64Image = '';
+    // Only convert to base64 if under 2MB (to avoid Vercel payload limits)
+    if (buffer.byteLength < 2 * 1024 * 1024) {
+      base64Image = Buffer.from(buffer).toString('base64');
+    }
 
     // Return success with image data
     return NextResponse.json({
@@ -43,6 +45,7 @@ export async function POST(request: NextRequest) {
       orderId,
       message: 'Transfer proof received successfully',
       imageData: base64Image,
+      imageSize: buffer.byteLength,
       mimeType,
       transferData: {
         orderId,

@@ -61,10 +61,15 @@ export function ProductPage({ product }: ProductPageProps) {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
-      // Check file size (max 2MB)
-      if (file.size > 2 * 1024 * 1024) {
-        alert("❌ Image is too large. Please select an image smaller than 2MB")
+      // Check file size (max 10MB - will be compressed automatically)
+      if (file.size > 10 * 1024 * 1024) {
+        alert("❌ Image is too large. Please select an image smaller than 10MB")
         return
+      }
+
+      // Warn if image is larger than 5MB
+      if (file.size > 5 * 1024 * 1024) {
+        alert("⚠️ Large image detected. Compressing... This may take a moment.")
       }
 
       // Check file type
@@ -77,14 +82,14 @@ export function ProductPage({ product }: ProductPageProps) {
       reader.onloadend = () => {
         const img = new window.Image()
         img.onload = () => {
-          // Compress image
+          // Compress image for Vercel payload limits
           const canvas = document.createElement('canvas')
           const ctx = canvas.getContext('2d')
           if (!ctx) return
 
-          // Set canvas size with max dimensions
-          const maxWidth = 1200
-          const maxHeight = 1200
+          // Set canvas size with reduced dimensions for better compression
+          const maxWidth = 900  // Reduced from 1200
+          const maxHeight = 900  // Reduced from 1200
           let width = img.width
           let height = img.height
 
@@ -112,12 +117,13 @@ export function ProductPage({ product }: ProductPageProps) {
                   type: 'image/jpeg',
                   lastModified: Date.now(),
                 })
+                console.log(`📷 Image compressed: ${(file.size / 1024).toFixed(1)}KB → ${(blob.size / 1024).toFixed(1)}KB`)
                 setTransferImage(compressedFile)
-                setImagePreview(canvas.toDataURL('image/jpeg', 0.85))
+                setImagePreview(canvas.toDataURL('image/jpeg', 0.65))
               }
             },
             'image/jpeg',
-            0.85
+            0.65  // Reduced from 0.85 for better compression
           )
         }
         img.src = reader.result as string

@@ -1,0 +1,19 @@
+{
+  "functions": {
+    "app/api/**/*.ts": {
+      "maxDuration": 60,
+      "memory": 1024
+    }
+  },
+  "headers": [
+    {
+      "source": "/api/bankTransfer",
+      "headers": [
+        {
+          "key": "X-Upload-Size-Limit",
+          "value": "10485760"
+        }
+      ]
+    }
+  ]
+}
