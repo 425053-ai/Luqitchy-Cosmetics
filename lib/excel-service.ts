@@ -125,17 +125,23 @@ export async function saveOrderToExcel(orderData: OrderData) {
       workbook.Sheets['Orders'] = worksheet;
     }
 
-    // Save workbook
+    // Save workbook using fs.writeFileSync for better Windows/OneDrive compatibility
     console.log('💾 [Excel] Saving file...');
-    XLSX.writeFile(workbook, excelPath);
-
-    // Verify file was written
-    if (fs.existsSync(excelPath)) {
-      const stats = fs.statSync(excelPath);
-      console.log(`✅ [Excel] File saved successfully! Size: ${stats.size} bytes`);
-    } else {
-      console.error('❌ [Excel] File was not saved!');
-      throw new Error('File save verification failed');
+    try {
+      const wbout = XLSX.write(workbook, { bookType: 'xlsx', type: 'buffer' });
+      fs.writeFileSync(excelPath, wbout);
+      
+      // Verify file was written
+      if (fs.existsSync(excelPath)) {
+        const stats = fs.statSync(excelPath);
+        console.log(`✅ [Excel] File saved successfully! Size: ${stats.size} bytes`);
+      } else {
+        console.error('❌ [Excel] File was not saved!');
+        throw new Error('File save verification failed');
+      }
+    } catch (writeError) {
+      console.error('❌ [Excel] File write error:', writeError);
+      throw writeError;
     }
 
     console.log(`✅ Order ${orderData.order_id} saved to Excel successfully`);

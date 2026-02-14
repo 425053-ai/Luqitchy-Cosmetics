@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
+import nodemailer from 'nodemailer';
 
-// Verify EmailJS configuration on startup
-console.log('🔧 [Email] EmailJS Configuration Check:');
-console.log('  - SERVICE_ID:', process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID ? '✓ Set' : '✗ Missing');
-console.log('  - TEMPLATE_ID:', process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID ? '✓ Set' : '✗ Missing');
-console.log('  - PUBLIC_KEY:', process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY ? '✓ Set' : '✗ Missing');
+// Verify Brevo SMTP configuration on startup
+console.log('🔧 [Email] Brevo SMTP Configuration Check:');
+console.log('  - BREVO_SMTP_KEY:', process.env.BREVO_SMTP_KEY ? '✓ Set' : '✗ Missing');
+console.log('  - BREVO_SENDER_EMAIL:', process.env.BREVO_SENDER_EMAIL ? '✓ Set' : '✗ Missing');
 
 interface OrderProduct {
   name: string;
@@ -291,8 +291,6 @@ export async function POST(request: NextRequest) {
       customer_name,
       customer_email,
       order_id,
-      transferImage,
-      transferImageMime,
     } = body;
 
     // Validate required fields
@@ -316,111 +314,136 @@ export async function POST(request: NextRequest) {
 
     console.log(`📧 [Email] Processing order #${order_id} for ${customer_name} (${customer_email})`);
 
-    // Generate products table HTML for EmailJS template
+    // Generate products table HTML
     console.log('📋 [Email] Generating products table...');
     const productsTable = generateProductsTable(body.products);
     console.log('✓ [Email] Products table generated successfully');
 
-    // EmailJS template parameters - mapped to new "Order Confirmation" template
-    const templateParams = {
-      service_id: process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID,
-      template_id: process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID,
-      user_id: process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY,
-      template_params: {
-        // Email fields
-        to_email: customer_email,
-        to_name: customer_name,
-        
-        // Order Receipt
-        order_id: order_id,
-        order_date: body.order_date,
-        
-        // Customer Information
-        full_name: customer_name,
-        phone: body.phone || '',
-        whatsapp: body.whatsapp || body.phone || '',
-        email: customer_email,
-        
-        // Delivery Address
-        governorate: body.governorate || '',
-        city: body.city || '',
-        street: body.street || '',
-        landmark: body.landmark || '',
-        notes: body.notes || '',
-        
-        // Products table (HTML)
-        products_table: productsTable,
-        
-        // Total amount
-        total: body.total_amount || 0,
-      }
-    };
-
-    console.log('📬 [Email] Sending email via EmailJS:');
-    console.log('   - To:', customer_email);
-    console.log('   - Order ID:', order_id);
-    console.log('   - Service:', process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID?.substring(0, 10) + '...');
-    console.log('   - Template Params Keys:', Object.keys(templateParams.template_params));
-
-    // Send via EmailJS API
-    const emailJSResponse = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    // Create Nodemailer transporter for Brevo SMTP
+    const transporter = nodemailer.createTransport({
+      host: 'smtp-relay.brevo.com',
+      port: 587,
+      secure: false,
+      auth: {
+        user: process.env.BREVO_SENDER_EMAIL,
+        pass: process.env.BREVO_SMTP_KEY,
       },
-      body: JSON.stringify(templateParams),
     });
 
-    let emailJSResult;
-    let responseText = '';
-    
-    try {
-      responseText = await emailJSResponse.text();
-      emailJSResult = JSON.parse(responseText);
-    } catch (parseError) {
-      console.error('❌ [Email] Failed to parse EmailJS response');
-      console.error('   Raw response:', responseText);
-      throw new Error('Failed to parse EmailJS response');
-    }
+    // Generate HTML email content
+    const emailHTML = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <style>
+          body { font-family: Arial, Helvetica, sans-serif; background-color: #fff0f6; margin: 0; padding: 20px; }
+          .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 10px; overflow: hidden; }
+          .header { background: linear-gradient(135deg, #ffb6c9, #f78fb3); color: white; padding: 30px 20px; text-align: center; }
+          .header h1 { margin: 0; font-size: 28px; font-weight: 600; }
+          .header p { margin: 10px 0 0 0; font-size: 16px; opacity: 0.95; }
+          .content { padding: 30px 20px; }
+          .section { margin-bottom: 25px; }
+          .section-title { font-weight: bold; color: #e84393; margin-bottom: 15px; font-size: 16px; }
+          .info-row { margin-bottom: 8px; line-height: 1.6; }
+          .info-label { font-weight: bold; color: #333; }
+          table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+          th { background-color: #e84393; color: white; padding: 12px; text-align: left; font-weight: bold; }
+          td { padding: 10px; border-bottom: 1px solid #e0e0e0; }
+          .total-row { background-color: #fff5f9; font-weight: bold; padding: 15px; text-align: right; color: #e84393; font-size: 18px; }
+          .footer { background-color: #f5f5f5; padding: 20px; text-align: center; font-size: 12px; color: #666; border-top: 1px solid #eee; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>🎀 طلب جديد تم استلامه</h1>
+            <p>شكراً لطلبك! تم استلام طلبك بنجاح</p>
+          </div>
+          
+          <div class="content">
+            <div class="section">
+              <div class="section-title">👤 بيانات العميل</div>
+              <div class="info-row"><span class="info-label">الاسم:</span> ${body.customer_name}</div>
+              <div class="info-row"><span class="info-label">الهاتف:</span> ${body.phone}</div>
+              <div class="info-row"><span class="info-label">البريد:</span> ${body.customer_email}</div>
+              <div class="info-row"><span class="info-label">WhatsApp:</span> ${body.whatsapp}</div>
+            </div>
 
-    console.log('📥 [Email] EmailJS Response Received:');
-    console.log('   - HTTP Status:', emailJSResponse.status);
-    console.log('   - Response OK:', emailJSResponse.ok);
-    console.log('   - Response Text:', JSON.stringify(emailJSResult, null, 2));
+            <div class="section">
+              <div class="section-title">🎁 تفاصيل الطلب</div>
+              <div class="info-row"><span class="info-label">رقم الطلب:</span> <code>${body.order_id}</code></div>
+              <div class="info-row"><span class="info-label">التاريخ:</span> ${body.order_date}</div>
+              <div class="info-row"><span class="info-label">المحافظة:</span> ${body.governorate}</div>
+              <div class="info-row"><span class="info-label">المدينة:</span> ${body.city}</div>
+              <div class="info-row"><span class="info-label">الشارع:</span> ${body.street}</div>
+              ${body.landmark ? `<div class="info-row"><span class="info-label">العلامة المميزة:</span> ${body.landmark}</div>` : ''}
+            </div>
 
-    if (!emailJSResponse.ok) {
-      console.error('❌ [Email] EmailJS API Error:', emailJSResponse.status);
-      console.error('   Response:', JSON.stringify(emailJSResult, null, 2));
-      throw new Error(`EmailJS Error: ${emailJSResult?.message || emailJSResponse.statusText || 'Unknown error'}`);
-    }
+            <div class="section">
+              <div class="section-title">📦 المنتجات</div>
+              <table>
+                <thead>
+                  <tr>
+                    <th>المنتج</th>
+                    <th>الكمية</th>
+                    <th>السعر</th>
+                    <th>الإجمالي</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${productsTable}
+                </tbody>
+              </table>
+              <div class="total-row">الإجمالي: ${body.total_amount} EGP</div>
+            </div>
 
-    console.log('✅ [Email] Customer email sent successfully via EmailJS!');
-    console.log('   - Status:', emailJSResult.status);
-    console.log('   - Message:', emailJSResult.text);
+            <div class="section">
+              <div class="section-title">💳 طريقة الدفع</div>
+              <div class="info-row">${body.payment_method}</div>
+              ${body.notes ? `<div class="info-row"><span class="info-label">ملاحظات:</span> ${body.notes}</div>` : ''}
+            </div>
+          </div>
 
-    // Admin email removed - using Telegram notifications instead for cost optimization
+          <div class="footer">
+            <p><strong>✨ Luqitchy Cosmetics — For Your Beauty</strong></p>
+            <p>شكراً لشرائك منا!</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    console.log('📬 [Email] Sending email via Brevo SMTP:');
+    console.log('   - To:', body.customer_email);
+    console.log('   - From:', process.env.BREVO_SENDER_EMAIL);
+    console.log('   - Order ID:', body.order_id);
+
+    // Send email via Nodemailer + Brevo SMTP
+    const info = await transporter.sendMail({
+      from: process.env.BREVO_SENDER_EMAIL,
+      to: body.customer_email,
+      subject: `تأكيد الطلب #${body.order_id} - Luqitchy Cosmetics`,
+      html: emailHTML,
+    });
+
+    console.log('✅ [Email] Email sent successfully via Brevo SMTP!');
+    console.log('   - Message ID:', info.messageId);
+    console.log('   - Response:', info.response);
 
     return NextResponse.json(
       { 
         success: true, 
         message: 'Order confirmation email sent to customer',
-        orderId: order_id,
-        customerEmail: customer_email,
+        orderId: body.order_id,
+        customerEmail: body.customer_email,
       },
       { status: 200 }
     );
   } catch (error: any) {
-    console.error('❌ [Email] Exception thrown:', error.name);
+    console.error('❌ [Email] Error sending email:');
     console.error('   Message:', error.message);
-    
-    // Log configuration debug
-    console.error('🔧 [Email] Configuration Debug:');
-    console.error('  - SERVICE_ID:', process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID ? '✓ Set' : '✗ Missing');
-    console.error('  - TEMPLATE_ID:', process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID ? '✓ Set' : '✗ Missing');
-    console.error('  - PUBLIC_KEY:', process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY ? '✓ Set' : '✗ Missing');
-    console.error('  - EmailJS API: Reach https://api.emailjs.com/api/v1.0/email/send');
-    
-    // Log full error trace
+    console.error('   Code:', error.code);
     console.error('   Full error:', error);
     
     return NextResponse.json(
