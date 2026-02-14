@@ -54,42 +54,56 @@ export async function saveOrderToExcel(orderData: OrderData) {
 
     let workbook: XLSX.WorkBook;
     let worksheet: XLSX.WorkSheet;
+    let allData: any[] = [];
 
     // Check if file exists
     if (fs.existsSync(excelPath)) {
+      console.log('📂 [Excel] File exists, loading existing data...');
       // Load existing workbook
       const buffer = fs.readFileSync(excelPath);
       workbook = XLSX.read(buffer, { type: 'buffer' });
       worksheet = workbook.Sheets['Orders'];
 
-      // Get current row count
-      const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1');
-      const nextRow = range.e.r + 2; // +2 because rows are 0-indexed
+      // Read all existing data
+      if (worksheet['!ref']) {
+        allData = XLSX.utils.sheet_to_json(worksheet);
+        console.log(`📊 [Excel] Found ${allData.length} existing orders`);
+      }
 
-      // Add new row
-      XLSX.utils.sheet_add_json(worksheet, [rowData], {
-        origin: `A${nextRow}`,
-        header: 'A',
-      });
+      // Add new row to data
+      allData.push(rowData);
+      console.log(`➕ [Excel] Adding new order, total will be ${allData.length} orders`);
+
+      // Recreate the worksheet with all data including new row
+      worksheet = XLSX.utils.json_to_sheet(allData);
+      
+      // Apply column width formatting
+      const headers = Object.keys(rowData);
+      worksheet['!cols'] = headers.map(() => ({ wch: 20 }));
     } else {
+      console.log('📝 [Excel] Creating new file...');
       // Create new workbook with headers
-      const newWorksheet = XLSX.utils.json_to_sheet([rowData], {
-        header: 1,
-      });
+      worksheet = XLSX.utils.json_to_sheet([rowData]);
 
       // Apply better formatting
       const headers = Object.keys(rowData);
-      newWorksheet['!cols'] = headers.map(() => ({ wch: 20 }));
+      worksheet['!cols'] = headers.map(() => ({ wch: 20 }));
 
       // Create workbook
       workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, newWorksheet, 'Orders');
+    }
+
+    // Ensure sheet is in workbook
+    if (!workbook.Sheets['Orders']) {
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Orders');
+    } else {
+      workbook.Sheets['Orders'] = worksheet;
     }
 
     // Save workbook
     XLSX.writeFile(workbook, excelPath);
 
-    console.log(`✅ Order ${orderData.order_id} saved to Excel`);
+    console.log(`✅ Order ${orderData.order_id} saved to Excel successfully`);
     return {
       success: true,
       message: 'Order saved to Excel successfully',
