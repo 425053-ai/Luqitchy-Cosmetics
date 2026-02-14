@@ -36,13 +36,12 @@ function generateOrderHTML(data: SendOrderRequest): string {
   const productsHTML = data.products
     .map(
       (p) => `
-    <tr>
-      <td style="padding: 10px; border-bottom: 1px solid #e0e0e0;">${p.name}</td>
-      <td style="padding: 10px; border-bottom: 1px solid #e0e0e0; text-align: center;">${p.quantity}</td>
-      <td style="padding: 10px; border-bottom: 1px solid #e0e0e0; text-align: right;">${p.price} EGP</td>
-      <td style="padding: 10px; border-bottom: 1px solid #e0e0e0; text-align: right; font-weight: bold;">${p.total} EGP</td>
-    </tr>
-  `
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #e0e0e0;">${p.name}</td>
+        <td style="padding: 10px; border-bottom: 1px solid #e0e0e0; text-align: center;">${p.quantity}</td>
+        <td style="padding: 10px; border-bottom: 1px solid #e0e0e0; text-align: right;">${p.price} EGP</td>
+      </tr>
+    `
     )
     .join('');
 
@@ -52,135 +51,216 @@ function generateOrderHTML(data: SendOrderRequest): string {
     <head>
       <meta charset="utf-8">
       <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background: linear-gradient(135deg, #c41e5c 0%, #f4a5c3 100%); color: white; padding: 30px 20px; border-radius: 8px 8px 0 0; text-align: center; }
-        .content { background-color: #f9f9f9; padding: 30px 20px; border: 1px solid #ddd; }
-        .section { margin-bottom: 25px; }
-        .section-title { font-weight: bold; color: #c41e5c; margin-bottom: 10px; border-bottom: 2px solid #f4a5c3; padding-bottom: 8px; font-size: 14px; text-transform: uppercase; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        .total-row { background-color: #f4a5c3; color: white; font-weight: bold; padding: 12px; }
-        .success-badge { display: inline-block; background-color: #4CAF50; color: white; padding: 8px 12px; border-radius: 4px; margin-bottom: 10px; font-weight: bold; }
-        .payment-info { background-color: #e3f2fd; padding: 15px; border-left: 4px solid #2196F3; margin-top: 15px; border-radius: 4px; }
-        .footer { background-color: #f0f0f0; padding: 20px; text-align: center; font-size: 12px; color: #666; border-radius: 0 0 8px 8px; }
-        .info-row { display: flex; margin-bottom: 8px; }
-        .info-label { font-weight: bold; width: 120px; color: #555; }
-        .info-value { flex: 1; color: #333; }
+        body { 
+          font-family: Arial, Helvetica, sans-serif;
+          background-color: #fff0f6;
+          margin: 0;
+          padding: 20px;
+        }
+        .container { 
+          max-width: 600px;
+          margin: 0 auto;
+          background-color: #ffffff;
+          border-radius: 10px;
+          overflow: hidden;
+          box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+          background: linear-gradient(135deg, #ffb6c9, #f78fb3);
+          color: white;
+          padding: 30px 20px;
+          text-align: center;
+        }
+        .header h1 {
+          margin: 0;
+          font-size: 28px;
+          font-weight: 600;
+        }
+        .header p {
+          margin: 10px 0 0 0;
+          font-size: 16px;
+          opacity: 0.95;
+        }
+        .content {
+          padding: 30px 20px;
+        }
+        .section {
+          margin-bottom: 25px;
+        }
+        .section-title {
+          font-weight: bold;
+          color: #e84393;
+          margin-bottom: 15px;
+          font-size: 16px;
+        }
+        .info-row {
+          margin-bottom: 8px;
+          line-height: 1.6;
+        }
+        .info-label {
+          font-weight: bold;
+          color: #333;
+        }
+        .note {
+          background-color: #fff5f9;
+          border-left: 4px solid #e84393;
+          padding: 15px;
+          margin: 15px 0;
+          border-radius: 4px;
+        }
+        table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-top: 10px;
+        }
+        th {
+          background-color: #e84393;
+          color: white;
+          padding: 12px;
+          text-align: left;
+          font-weight: bold;
+        }
+        td {
+          padding: 10px;
+          border-bottom: 1px solid #e0e0e0;
+        }
+        .total-row {
+          background-color: #fff5f9;
+          font-weight: bold;
+          padding: 15px;
+          text-align: right;
+          color: #e84393;
+          font-size: 18px;
+        }
+        .footer {
+          background-color: #f5f5f5;
+          padding: 20px;
+          text-align: center;
+          font-size: 12px;
+          color: #666;
+          border-top: 1px solid #eee;
+        }
+        .footer p {
+          margin: 8px 0;
+        }
+        .button-group {
+          text-align: center;
+          margin: 20px 0;
+        }
+        .button {
+          display: inline-block;
+          padding: 12px 25px;
+          margin: 0 8px;
+          background-color: #e84393;
+          color: white;
+          text-decoration: none;
+          border-radius: 5px;
+          font-weight: bold;
+        }
       </style>
     </head>
     <body>
       <div class="container">
+        <!-- Header -->
         <div class="header">
-          <h1 style="margin: 0; font-size: 28px;">✨ Order Confirmed!</h1>
-          <p style="margin: 5px 0 0 0;">Thank you for your order</p>
+          <h1>🎉 Thank You For Your Order!</h1>
+          <p>Your order has been received successfully. We will contact you soon!</p>
         </div>
-        
+
+        <!-- Content -->
         <div class="content">
-          <div class="success-badge">✓ Order Confirmed #${data.order_id}</div>
-          
+          <!-- Save Email Notice -->
+          <div class="note">
+            <strong>📸 Save this email!</strong> Take a screenshot of your order.
+          </div>
+
+          <!-- Order Receipt Section -->
           <div class="section">
-            <div class="section-title">📋 Order Information</div>
+            <div class="section-title">🧾 Order Receipt</div>
             <div class="info-row">
-              <span class="info-label">Order ID:</span>
-              <span class="info-value">${data.order_id}</span>
+              <span class="info-label">Order ID:</span> ${data.order_id}
             </div>
             <div class="info-row">
-              <span class="info-label">Date:</span>
-              <span class="info-value">${data.order_date}</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">Payment Method:</span>
-              <span class="info-value">Vodafone Cash Wallet</span>
+              <span class="info-label">Order Date:</span> ${data.order_date}
             </div>
           </div>
-          
+
+          <!-- Customer Information -->
           <div class="section">
-            <div class="section-title">👤 Customer Details</div>
+            <div class="section-title">👤 Customer Information</div>
             <div class="info-row">
-              <span class="info-label">Name:</span>
-              <span class="info-value">${data.customer_name}</span>
+              <span class="info-label">Full Name:</span> ${data.customer_name}
             </div>
             <div class="info-row">
-              <span class="info-label">Phone:</span>
-              <span class="info-value"><span dir="ltr">${data.phone}</span></span>
+              <span class="info-label">Phone:</span> ${data.phone}
             </div>
             <div class="info-row">
-              <span class="info-label">WhatsApp:</span>
-              <span class="info-value"><span dir="ltr">${data.whatsapp}</span></span>
+              <span class="info-label">WhatsApp:</span> ${data.whatsapp}
+            </div>
+            <div class="info-row">
+              <span class="info-label">Email:</span> ${data.customer_email}
             </div>
           </div>
-          
+
+          <!-- Delivery Address -->
           <div class="section">
             <div class="section-title">📍 Delivery Address</div>
             <div class="info-row">
-              <span class="info-label">Governorate:</span>
-              <span class="info-value">${data.governorate}</span>
+              <span class="info-label">Governorate:</span> ${data.governorate}
             </div>
             <div class="info-row">
-              <span class="info-label">City:</span>
-              <span class="info-value">${data.city}</span>
+              <span class="info-label">City:</span> ${data.city}
             </div>
             <div class="info-row">
-              <span class="info-label">Street:</span>
-              <span class="info-value">${data.street}</span>
+              <span class="info-label">Street:</span> ${data.street}
             </div>
-            ${data.landmark ? `
-            <div class="info-row">
-              <span class="info-label">Landmark:</span>
-              <span class="info-value">${data.landmark}</span>
-            </div>` : ''}
+            ${data.landmark ? `<div class="info-row"><span class="info-label">Landmark:</span> ${data.landmark}</div>` : ''}
+            ${data.notes ? `<div class="info-row"><span class="info-label">Notes:</span> ${data.notes}</div>` : ''}
           </div>
-          
+
+          <!-- Products -->
           <div class="section">
-            <div class="section-title">📦 Products</div>
+            <div class="section-title">📦 Products (${data.products.length} items)</div>
             <table>
               <thead>
-                <tr style="background-color: #c41e5c; color: white;">
-                  <th style="padding: 12px; text-align: left;">Product</th>
-                  <th style="padding: 12px; text-align: center;">Qty</th>
-                  <th style="padding: 12px; text-align: right;">Price</th>
-                  <th style="padding: 12px; text-align: right;">Total</th>
+                <tr>
+                  <th>Product</th>
+                  <th>Qty</th>
+                  <th>Price</th>
                 </tr>
               </thead>
               <tbody>
                 ${productsHTML}
-                <tr class="total-row">
-                  <td colspan="3" style="text-align: right; padding: 12px;">Total Amount:</td>
-                  <td style="padding: 12px; text-align: right;">${data.total_amount} EGP</td>
-                </tr>
               </tbody>
             </table>
-          </div>
-          
-          ${data.notes ? `
-            <div class="section">
-              <div class="section-title">📝 Special Instructions</div>
-              <p>${data.notes}</p>
+            <div class="total-row">
+              💰 Total: ${data.total_amount} EGP
             </div>
-          ` : ''}
-          
-          <div class="payment-info">
-            <p style="margin-top: 0;"><strong>✅ Payment Screenshot Received</strong></p>
-            <p style="margin: 8px 0;">Your Vodafone Cash payment confirmation has been received and verified. We will process your order shortly.</p>
-            <p style="margin: 8px 0; font-size: 12px; color: #1976d2;"><strong>📦 Expected Delivery: Within 24-48 hours</strong></p>
           </div>
-          
-          <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
-            <p style="text-align: center; font-size: 13px; color: #666; margin: 0;">
-              ✨ Thank you for shopping with Luqitchy Cosmetics! ✨
-            </p>
-            <p style="text-align: center; font-size: 12px; color: #999; margin: 5px 0 0 0;">
-              You will receive a shipping confirmation once your order is dispatched.
-            </p>
+
+          <!-- Confirmation -->
+          <div class="note">
+            <strong>✅ Your order has been confirmed!</strong> We will contact you at ${data.phone} to confirm delivery details.
+          </div>
+
+          <!-- Contact Info -->
+          <div class="section">
+            <div class="info-row">
+              📧 Contact: <strong>${data.customer_email}</strong>
+            </div>
+          </div>
+
+          <!-- Buttons -->
+          <div class="button-group">
+            <a href="http://localhost:3000" class="button">🏠 Back to Home</a>
+            <a href="http://localhost:3000" class="button">🛍️ Shop More</a>
           </div>
         </div>
-        
+
+        <!-- Footer -->
         <div class="footer">
-          <p style="margin: 0; font-weight: bold; font-size: 14px;">Luqitchy Cosmetics</p>
-          <p style="margin: 5px 0;">✨ Premium Beauty Products</p>
-          <p style="margin: 5px 0; font-size: 11px;">Follow us on Instagram @luqitchyglossy</p>
-          <hr style="margin: 10px 0; border: none; border-top: 1px solid #ddd;">
-          <p style="margin: 5px 0; font-size: 11px;">If you have any questions, please reply to this email or contact us via WhatsApp</p>
+          <p><strong>✨ Luqitchy Cosmetics — Your beauty starts here</strong></p>
+          <p>Thank you for your purchase! We appreciate your business.</p>
         </div>
       </div>
     </body>
