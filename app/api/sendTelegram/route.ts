@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { saveOrderToExcel } from '@/lib/excel-service';
 
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '';
 const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || '';
@@ -164,7 +165,37 @@ ${orderData.items.map((item: any) => `• ${item.name} × ${item.quantity}`).joi
 
     console.log('✅ [Telegram] Message sent successfully! Message ID:', messageData.result?.message_id);
 
-    // Step 2: Send image if provided (for bank transfers)
+    // Save order to Excel for bank transfers
+    if (messageType === 'bank_transfer' && body.orderData) {
+      try {
+        const excelResult = await saveOrderToExcel({
+          order_id: body.orderData.order_id,
+          product_name: body.orderData.product_name,
+          quantity: body.orderData.quantity,
+          price: body.orderData.price,
+          total_amount: body.orderData.total_amount,
+          customer_name: body.orderData.customer_name,
+          phone: body.orderData.phone,
+          customer_email: body.orderData.customer_email,
+          governorate: body.orderData.governorate,
+          city: body.orderData.city,
+          street: body.orderData.street,
+          landmark: body.orderData.landmark || '',
+          notes: body.orderData.notes || '',
+          payment_method: body.orderData.payment_method,
+          order_date: body.orderData.order_date,
+          status: 'معلق',
+        });
+        
+        if (excelResult.success) {
+          console.log('📊 [Excel] Order saved successfully');
+        } else {
+          console.warn('⚠️ [Excel] Failed to save order:', excelResult.error);
+        }
+      } catch (excelError) {
+        console.error('❌ [Excel] Error saving order:', excelError);
+      }
+    }
     if (body.imageData && messageType === 'bank_transfer') {
       console.log('📸 [Telegram] Sending payment proof image...');
 
@@ -179,8 +210,8 @@ ${orderData.items.map((item: any) => `• ${item.name} × ${item.quantity}`).joi
         
         // Create Blob from buffer
         const blob = new Blob([buffer], { type: mimeType });
-        formData.append('photo', blob, 'transfer-proof.jpg');
-        formData.append('caption', '📸 إثبات الدفع (Payment Proof)');
+        formData.append('photo', blob, `${body.orderData?.order_id || 'transfer'}-proof.jpg`);
+        formData.append('caption', `📸 إثبات الدفع - ${body.orderData?.order_id || 'Order'}`);
         formData.append('parse_mode', 'HTML');
 
         const photoResponse = await fetch(
@@ -209,7 +240,7 @@ ${orderData.items.map((item: any) => `• ${item.name} × ${item.quantity}`).joi
     }
 
     return NextResponse.json(
-      { success: true, message: 'Notification sent to Telegram' },
+      { success: true, message: 'Notification sent to Telegram and order saved to Excel' },
       { status: 200 }
     );
   } catch (error: any) {
