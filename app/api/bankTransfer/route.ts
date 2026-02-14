@@ -20,10 +20,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check file size
-    if (transferImage.size > 2 * 1024 * 1024) {
+    // Accept images of any reasonable size
+    const maxSize = 50 * 1024 * 1024; // 50MB limit
+    if (transferImage.size > maxSize) {
       return NextResponse.json(
-        { error: 'Image is too large. Please use an image smaller than 2MB.' },
+        { error: 'Image is too large. Please use an image smaller than 50MB.' },
         { status: 413 }
       );
     }
