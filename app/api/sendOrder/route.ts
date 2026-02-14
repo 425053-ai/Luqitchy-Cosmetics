@@ -316,17 +316,10 @@ export async function POST(request: NextRequest) {
 
     console.log(`📧 [Email] Processing order #${order_id} for ${customer_name} (${customer_email})`);
 
-    const htmlContent = generateOrderHTML(body);
-
-    // Prepare base64 image for EmailJS if available
-    let imageBase64 = null;
-    if (transferImage) {
-      console.log('📎 [Email] Including transfer proof image');
-      imageBase64 = transferImage;
-    }
-
     // Generate products table HTML for EmailJS template
+    console.log('📋 [Email] Generating products table...');
     const productsTable = generateProductsTable(body.products);
+    console.log('✓ [Email] Products table generated successfully');
 
     // EmailJS template parameters - mapped to new "Order Confirmation" template
     const templateParams = {
@@ -367,6 +360,7 @@ export async function POST(request: NextRequest) {
     console.log('   - To:', customer_email);
     console.log('   - Order ID:', order_id);
     console.log('   - Service:', process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID?.substring(0, 10) + '...');
+    console.log('   - Template Params Keys:', Object.keys(templateParams.template_params));
 
     // Send via EmailJS API
     const emailJSResponse = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
@@ -377,12 +371,27 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify(templateParams),
     });
 
-    const emailJSResult = await emailJSResponse.json();
+    let emailJSResult;
+    let responseText = '';
+    
+    try {
+      responseText = await emailJSResponse.text();
+      emailJSResult = JSON.parse(responseText);
+    } catch (parseError) {
+      console.error('❌ [Email] Failed to parse EmailJS response');
+      console.error('   Raw response:', responseText);
+      throw new Error('Failed to parse EmailJS response');
+    }
+
+    console.log('📥 [Email] EmailJS Response Received:');
+    console.log('   - HTTP Status:', emailJSResponse.status);
+    console.log('   - Response OK:', emailJSResponse.ok);
+    console.log('   - Response Text:', JSON.stringify(emailJSResult, null, 2));
 
     if (!emailJSResponse.ok) {
       console.error('❌ [Email] EmailJS API Error:', emailJSResponse.status);
       console.error('   Response:', JSON.stringify(emailJSResult, null, 2));
-      throw new Error(`EmailJS Error: ${emailJSResult.message || emailJSResponse.statusText}`);
+      throw new Error(`EmailJS Error: ${emailJSResult?.message || emailJSResponse.statusText || 'Unknown error'}`);
     }
 
     console.log('✅ [Email] Customer email sent successfully via EmailJS!');
