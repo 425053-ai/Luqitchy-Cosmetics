@@ -175,10 +175,9 @@ export default function CartPage() {
               governorate: formData.governorate,
               city: formData.city,
               street: formData.streetAddress,
-              landmark: formData.landmark,
-              notes: formData.notes || "",
+              landmark: formData.landmark || '',
+              notes: formData.notes || '',
               payment_method: paymentMethodName,
-              bill_reference: responseData.billReference
             }),
           })
 
@@ -244,8 +243,8 @@ export default function CartPage() {
               governorate: formData.governorate,
               city: formData.city,
               street: formData.streetAddress,
-              landmark: formData.landmark,
-              notes: `${formData.notes || ""}\n\n📱 Vodafone Cash Payment - Awaiting confirmation`,
+              landmark: formData.landmark || '',
+              notes: formData.notes || '',
               payment_method: 'Vodafone Cash'
             }),
           })
@@ -325,8 +324,8 @@ export default function CartPage() {
           governorate: formData.governorate,
           city: formData.city,
           street: formData.streetAddress,
-          landmark: formData.landmark,
-          notes: formData.notes || "No additional notes",
+          landmark: formData.landmark || '',
+          notes: formData.notes || '',
           payment_method: formData.paymentMethod
         }),
       })

@@ -32,6 +32,21 @@ interface SendOrderRequest {
   transferImageMime?: string;
 }
 
+function generateProductsTable(products: OrderProduct[]): string {
+  return products
+    .map(
+      (product) => `
+        <tr style="border: 1px solid #ff66b2;">
+          <td style="padding: 8px; border: 1px solid #ff66b2;">${product.name}</td>
+          <td style="padding: 8px; border: 1px solid #ff66b2; text-align: center;">${product.quantity}</td>
+          <td style="padding: 8px; border: 1px solid #ff66b2; text-align: center;">${product.price}</td>
+          <td style="padding: 8px; border: 1px solid #ff66b2; text-align: center;">${product.price * product.quantity}</td>
+        </tr>
+      `
+    )
+    .join('');
+}
+
 function generateOrderHTML(data: SendOrderRequest): string {
   const productsHTML = data.products
     .map(
@@ -310,40 +325,41 @@ export async function POST(request: NextRequest) {
       imageBase64 = transferImage;
     }
 
-    // EmailJS template parameters - mapped to "Order Confirmation" template variables
-    const deliveryAddress = `${body.street}${body.landmark ? `, ${body.landmark}` : ''}, ${body.city}, ${body.governorate}`;
-    const orderTime = new Date(body.order_date).toLocaleString('ar-EG', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    // Generate products table HTML for EmailJS template
+    const productsTable = generateProductsTable(body.products);
 
+    // EmailJS template parameters - mapped to new "Order Confirmation" template
     const templateParams = {
       service_id: process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID,
       template_id: process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID,
       user_id: process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY,
       template_params: {
-        // Email fields (required by EmailJS)
+        // Email fields
         to_email: customer_email,
         to_name: customer_name,
         
-        // Order Confirmation template variables (from EmailJS template)
+        // Order Receipt
         order_id: order_id,
-        customer_name: customer_name,
-        product_type: body.products?.[0]?.name || 'Product',
-        quantity: body.products?.[0]?.quantity || 1,
-        unit_price: body.products?.[0]?.price || 0,
-        total_price: body.total_amount || 0,
-        delivery_address: deliveryAddress,
-        customer_notes: body.notes || '',
-        order_time: orderTime,
+        order_date: body.order_date,
         
-        // Additional info
+        // Customer Information
+        full_name: customer_name,
         phone: body.phone || '',
         whatsapp: body.whatsapp || body.phone || '',
-        payment_method: body.payment_method || 'Bank Transfer',
+        email: customer_email,
+        
+        // Delivery Address
+        governorate: body.governorate || '',
+        city: body.city || '',
+        street: body.street || '',
+        landmark: body.landmark || '',
+        notes: body.notes || '',
+        
+        // Products table (HTML)
+        products_table: productsTable,
+        
+        // Total amount
+        total: body.total_amount || 0,
       }
     };
 

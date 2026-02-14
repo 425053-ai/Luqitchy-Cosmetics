@@ -249,11 +249,9 @@ export function ProductPage({ product }: ProductPageProps) {
           governorate: formData.governorate,
           city: formData.city,
           street: formData.streetAddress,
-          landmark: formData.landmark,
-          notes: formData.notes || "بدون ملاحظات",
+          landmark: formData.landmark || '',
+          notes: formData.notes || '',
           payment_method: "تحويل بنكي للرقم 01012622315",
-          transferImage: bankTransferData.imageData,
-          transferImageMime: bankTransferData.mimeType,
         }),
       })
 
