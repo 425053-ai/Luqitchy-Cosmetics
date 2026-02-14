@@ -231,19 +231,44 @@ export async function POST(request: NextRequest) {
       imageBase64 = transferImage;
     }
 
-    // EmailJS template parameters
+    // EmailJS template parameters - map all order data to template variables
     const templateParams = {
       service_id: process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID,
       template_id: process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID,
       user_id: process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY,
       template_params: {
+        // Email fields
         to_email: customer_email,
         to_name: customer_name,
+        from_email: process.env.BREVO_SENDER_EMAIL || 'luqitchycosmetics@gmail.com',
         from_name: 'Luqitchy Cosmetics',
-        from_email: process.env.BREVO_SENDER_EMAIL || 'noreply@luqitchy.com',
+        reply_to_email: process.env.BREVO_SENDER_EMAIL || 'luqitchycosmetics@gmail.com',
+        
+        // Order fields
         order_id: order_id,
         customer_name: customer_name,
-        html_content: htmlContent,
+        customer_email: customer_email,
+        order_date: body.order_date,
+        
+        // Product fields
+        product_type: body.products?.[0]?.name || 'Product',
+        quantity: body.products?.[0]?.quantity || 1,
+        unit_price: body.products?.[0]?.price || 0,
+        total_price: body.total_amount || 0,
+        
+        // Delivery address
+        governorate: body.governorate || '',
+        city: body.city || '',
+        street: body.street || '',
+        landmark: body.landmark || '',
+        
+        // Payment info
+        payment_method: body.payment_method || 'Bank Transfer',
+        notes: body.notes || 'No additional notes',
+        
+        // Phone
+        phone: body.phone || '',
+        whatsapp: body.whatsapp || body.phone || '',
       }
     };
 
