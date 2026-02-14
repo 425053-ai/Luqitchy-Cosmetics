@@ -1,0 +1,169 @@
+
+> my-v0-project@0.1.0 dev C:\Users\dell\OneDrive - Obour Institute\Desktop\Luqitchy-Cosmetics
+> next dev
+
+   Γû▓ Next.js 16.0.10 (Turbopack)
+   - Local:         http://localhost:3000
+   - Network:       http://192.168.0.100:3000
+   - Environments: .env.local
+
+ Γ£ô Starting...
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+ Γ£ô Ready in 748ms
+ GET /order/black-honey 200 in 3.2s (compile: 2.9s, render: 325ms)
+ GET / 200 in 1189ms (compile: 926ms, render: 263ms)
+ GET /order/body-lotion-splash-sugar-drop 200 in 419ms (compile: 370ms, render: 49ms)
+ POST /api/orderCounter 200 in 1004ms (compile: 230ms, render: 774ms)
+ POST /api/bankTransfer 200 in 97ms (compile: 88ms, render: 9ms)
+≡ƒöº [Email] SMTP Configuration Check:
+  - BREVO_SMTP_HOST: Γ£ô Set
+  - BREVO_SMTP_USER: Γ£ô Set (a0fa97001@smtp-brevo.com)
+  - BREVO_SENDER_EMAIL: Γ£ô Set (luqitchycosmetics@gmail.com)
+  - BREVO_SMTP_KEY length: 90 characters
+  - BREVO_SMTP_KEY starts with: xsmtpsib-83d40eced1c...
+  - BREVO_SMTP_KEY ends with: ...aEw-PBhikS1no3nYFLVD
+  - BREVO_API_KEY: Γ£ô Set (89 chars)
+≡ƒôº [Email] Processing order #ORD-0020 for Lingo (nn787897@gmail.com)
+≡ƒôÄ [Email] Adding transfer proof image as attachment
+≡ƒô¼ [Email] Sending email with these options:
+   - From: luqitchycosmetics@gmail.com
+   - To: nn787897@gmail.com
+   - Subject: Order Confirmation #ORD-0020 | Luqitchy Cosmetics
+   - Attachments: 1
+Γ¥î [Email] Exception thrown: Error
+   Message: Invalid login: 535 5.7.8 Authentication failed
+   Code: EAUTH
+≡ƒöº [Email] SMTP Credentials Debug:
+  - BREVO_SMTP_USER provided: true
+  - BREVO_SMTP_KEY provided: true
+  - BREVO_SMTP_KEY length: 90
+  - Using auth user: a0fa97001@smtp-brevo.com
+  - Host: smtp-relay.brevo.com
+  - Port: 587
+C:\Users\dell\OneDrive - Obour Institute\Desktop\Luqitchy-Cosmetics\.next\dev\server\chunks\218b2_nodemailer_ef9307ef._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+   Full error: Error: Invalid login: 535 5.7.8 Authentication failed
+    at SMTPConnection._formatError (C:\Users\dell\OneDrive - Obour Institute\Desktop\Luqitchy-Cosmetics\.next\dev\server\chunks\218b2_nodemailer_ef9307ef._.js:15610:19)
+    at SMTPConnection._actionAUTHComplete (C:\Users\dell\OneDrive - Obour Institute\Desktop\Luqitchy-Cosmetics\.next\dev\server\chunks\218b2_nodemailer_ef9307ef._.js:16240:34)
+    at SMTPConnection.<anonymous> (C:\Users\dell\OneDrive - Obour Institute\Desktop\Luqitchy-Cosmetics\.next\dev\server\chunks\218b2_nodemailer_ef9307ef._.js:15409:26)
+    at SMTPConnection._processResponse (C:\Users\dell\OneDrive - Obour Institute\Desktop\Luqitchy-Cosmetics\.next\dev\server\chunks\218b2_nodemailer_ef9307ef._.js:15751:20)
+    at SMTPConnection._onData (C:\Users\dell\OneDrive - Obour Institute\Desktop\Luqitchy-Cosmetics\.next\dev\server\chunks\218b2_nodemailer_ef9307ef._.js:15574:14)
+    at SMTPConnection._onSocketData (C:\Users\dell\OneDrive - Obour Institute\Desktop\Luqitchy-Cosmetics\.next\dev\server\chunks\218b2_nodemailer_ef9307ef._.js:15120:48) {
+  code: 'EAUTH',
+  response: '535 5.7.8 Authentication failed',
+  responseCode: 535,
+  command: 'AUTH PLAIN'
+}
+≡ƒöº [Email] Environment Variables Check:
+  - BREVO_SMTP_USER: Γ£ô Set (a0fa97001@smtp-brevo.com)
+  - BREVO_SENDER_EMAIL: Γ£ô Set (luqitchycosmetics@gmail.com)
+  - BREVO_SMTP_KEY: Γ£ô Set (xsmtpsib-8...1no3nYFLVD)
+  - BREVO_SMTP_HOST: Γ£ô Set (smtp-relay.brevo.com)
+   SMTP Response: 535 5.7.8 Authentication failed
+   SMTP Code: 535
+ POST /api/sendOrder 500 in 1100ms (compile: 182ms, render: 918ms)
+Γ¥î [Email] SMTP Connection Error on startup: Invalid login: 535 5.7.8 Authentication failed
+≡ƒöº [Telegram] Environment Variables Check:
+  - TELEGRAM_BOT_TOKEN: Γ£ô Set (8001027503:AAFI...)
+  - TELEGRAM_CHAT_ID: Γ£ô Set (1143952317)
+≡ƒôÑ [Telegram] Received request with type: bank_transfer
+≡ƒôÑ [Telegram] Request body keys: [ 'type', 'orderData', 'imageData' ]
+≡ƒô¥ [Telegram] Message preview (first 200 chars):
+  <b>≡ƒÄÇ ╪╖┘ä╪¿ ╪¼╪»┘è╪» ┘à┘å Luqitchy Cosmetics</b>
+
+<b>≡ƒæñ ╪¿┘è╪º┘å╪º╪¬ ╪º┘ä╪╣┘à┘è┘ä:</b>
+╪º╪│┘à: Lingo
+╪º┘ä┘ç╪º╪¬┘ü: 012 20293561
+╪º┘ä╪¿╪▒┘è╪»: nn787897@gmail.com
+
+<b>≡ƒôª ╪¬┘ü╪º╪╡┘è┘ä ╪º┘ä╪╖┘ä╪¿:</b>
+╪▒┘é┘à ╪º┘ä╪╖┘ä╪¿: <code>ORD-0020</code>
+╪º┘ä┘à┘å╪¬╪¼: Body Lot...
+≡ƒñû [Telegram] Sending message to Telegram API...
+   URL: https://api.telegram.org/bot8001027503:AAFINaeu8Oo...
+≡ƒô¼ [Telegram] API Response received:
+  - HTTP Status: 200
+  - ok flag: true
+  - Error Code: None
+  - Description: None
+Γ£à [Telegram] Message sent successfully! Message ID: 53
+≡ƒô╕ [Telegram] Sending payment proof image...
+≡ƒô╖ [Telegram] Photo Response:
+  - ok flag: false
+  - Message ID: N/A
+ΓÜá∩╕Å [Telegram] Photo send failed, but message was sent. Error: Bad Request: wrong remote file identifier specified: Wrong character in the string
+ POST /api/sendTelegram 200 in 1091ms (compile: 102ms, render: 989ms)
+ GET /order/body-lotion-splash-sugar-drop 200 in 30ms (compile: 5ms, render: 26ms)
+ POST /api/orderCounter 200 in 498ms (compile: 3ms, render: 495ms)
+ POST /api/bankTransfer 200 in 10ms (compile: 2ms, render: 8ms)
+≡ƒôº [Email] Processing order #ORD-0021 for Lingo (nn787897@gmail.com)
+≡ƒôÄ [Email] Adding transfer proof image as attachment
+≡ƒô¼ [Email] Sending email with these options:
+   - From: luqitchycosmetics@gmail.com
+   - To: nn787897@gmail.com
+   - Subject: Order Confirmation #ORD-0021 | Luqitchy Cosmetics
+   - Attachments: 1
+Γ¥î [Email] Exception thrown: Error
+   Message: Invalid login: 535 5.7.8 Authentication failed
+   Code: EAUTH
+≡ƒöº [Email] SMTP Credentials Debug:
+  - BREVO_SMTP_USER provided: true
+  - BREVO_SMTP_KEY provided: true
+  - BREVO_SMTP_KEY length: 90
+  - Using auth user: a0fa97001@smtp-brevo.com
+  - Host: smtp-relay.brevo.com
+  - Port: 587
+C:\Users\dell\OneDrive - Obour Institute\Desktop\Luqitchy-Cosmetics\.next\dev\server\chunks\218b2_nodemailer_ef9307ef._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+   Full error: Error: Invalid login: 535 5.7.8 Authentication failed
+    at SMTPConnection._formatError (C:\Users\dell\OneDrive - Obour Institute\Desktop\Luqitchy-Cosmetics\.next\dev\server\chunks\218b2_nodemailer_ef9307ef._.js:15610:19)
+    at SMTPConnection._actionAUTHComplete (C:\Users\dell\OneDrive - Obour Institute\Desktop\Luqitchy-Cosmetics\.next\dev\server\chunks\218b2_nodemailer_ef9307ef._.js:16240:34)
+    at SMTPConnection.<anonymous> (C:\Users\dell\OneDrive - Obour Institute\Desktop\Luqitchy-Cosmetics\.next\dev\server\chunks\218b2_nodemailer_ef9307ef._.js:15409:26)
+    at SMTPConnection._processResponse (C:\Users\dell\OneDrive - Obour Institute\Desktop\Luqitchy-Cosmetics\.next\dev\server\chunks\218b2_nodemailer_ef9307ef._.js:15751:20)
+    at SMTPConnection._onData (C:\Users\dell\OneDrive - Obour Institute\Desktop\Luqitchy-Cosmetics\.next\dev\server\chunks\218b2_nodemailer_ef9307ef._.js:15574:14)
+    at SMTPConnection._onSocketData (C:\Users\dell\OneDrive - Obour Institute\Desktop\Luqitchy-Cosmetics\.next\dev\server\chunks\218b2_nodemailer_ef9307ef._.js:15120:48) {
+  code: 'EAUTH',
+  response: '535 5.7.8 Authentication failed',
+  responseCode: 535,
+  command: 'AUTH PLAIN'
+}
+≡ƒöº [Email] Environment Variables Check:
+  - BREVO_SMTP_USER: Γ£ô Set (a0fa97001@smtp-brevo.com)
+  - BREVO_SENDER_EMAIL: Γ£ô Set (luqitchycosmetics@gmail.com)
+  - BREVO_SMTP_KEY: Γ£ô Set (xsmtpsib-8...1no3nYFLVD)
+  - BREVO_SMTP_HOST: Γ£ô Set (smtp-relay.brevo.com)
+   SMTP Response: 535 5.7.8 Authentication failed
+   SMTP Code: 535
+ POST /api/sendOrder 500 in 757ms (compile: 4ms, render: 753ms)
+≡ƒöº [Telegram] Environment Variables Check:
+  - TELEGRAM_BOT_TOKEN: Γ£ô Set (8001027503:AAFI...)
+  - TELEGRAM_CHAT_ID: Γ£ô Set (1143952317)
+≡ƒôÑ [Telegram] Received request with type: bank_transfer
+≡ƒôÑ [Telegram] Request body keys: [ 'type', 'orderData', 'imageData' ]
+≡ƒô¥ [Telegram] Message preview (first 200 chars):
+  <b>≡ƒÄÇ ╪╖┘ä╪¿ ╪¼╪»┘è╪» ┘à┘å Luqitchy Cosmetics</b>
+
+<b>≡ƒæñ ╪¿┘è╪º┘å╪º╪¬ ╪º┘ä╪╣┘à┘è┘ä:</b>
+╪º╪│┘à: Lingo
+╪º┘ä┘ç╪º╪¬┘ü: 01220293561
+╪º┘ä╪¿╪▒┘è╪»: nn787897@gmail.com
+
+<b>≡ƒôª ╪¬┘ü╪º╪╡┘è┘ä ╪º┘ä╪╖┘ä╪¿:</b>
+╪▒┘é┘à ╪º┘ä╪╖┘ä╪¿: <code>ORD-0021</code>
+╪º┘ä┘à┘å╪¬╪¼: Body Loti...
+≡ƒñû [Telegram] Sending message to Telegram API...
+   URL: https://api.telegram.org/bot8001027503:AAFINaeu8Oo...
+≡ƒô¼ [Telegram] API Response received:
+  - HTTP Status: 200
+  - ok flag: true
+  - Error Code: None
+  - Description: None
+Γ£à [Telegram] Message sent successfully! Message ID: 54
+≡ƒô╕ [Telegram] Sending payment proof image...
+≡ƒô╖ [Telegram] Photo Response:
+  - ok flag: false
+  - Message ID: N/A
+ΓÜá∩╕Å [Telegram] Photo send failed, but message was sent. Error: Bad Request: wrong remote file identifier specified: Wrong character in the string
+ POST /api/sendTelegram 200 in 936ms (compile: 2ms, render: 934ms)
+   Reload env: .env.local
+ GET /order/black-honey 200 in 206ms (compile: 85ms, render: 121ms)
+ GET /order/black-honey 200 in 170ms (compile: 78ms, render: 92ms)
+ΓÇëELIFECYCLEΓÇë Command failed with exit code 3221225786.

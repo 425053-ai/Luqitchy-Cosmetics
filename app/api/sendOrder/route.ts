@@ -2,26 +2,33 @@ import { NextRequest, NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 
 // Configure Brevo SMTP
-const transporter = nodemailer.createTransport({
+const smtpConfig = {
   host: process.env.BREVO_SMTP_HOST || 'smtp-relay.brevo.com',
   port: 587,
+  secure: false, // TLS
   auth: {
     user: process.env.BREVO_SMTP_USER || process.env.BREVO_SENDER_EMAIL,
     pass: process.env.BREVO_SMTP_KEY,
   },
-});
+  connectionTimeout: 10000,
+  socketTimeout: 10000,
+};
+
+const transporter = nodemailer.createTransport(smtpConfig);
 
 // Verify configuration on startup
 console.log('🔧 [Email] SMTP Configuration Check:');
 console.log('  - BREVO_SMTP_HOST:', process.env.BREVO_SMTP_HOST ? '✓ Set' : '✗ Missing');
-console.log('  - BREVO_SMTP_USER:', process.env.BREVO_SMTP_USER ? '✓ Set' : '✗ Missing');
-console.log('  - BREVO_SENDER_EMAIL:', process.env.BREVO_SENDER_EMAIL ? '✓ Set' : '✗ Missing');
-console.log('  - BREVO_SMTP_KEY:', process.env.BREVO_SMTP_KEY ? '✓ Set' : '✗ Missing');
-console.log('  - BREVO_API_KEY:', process.env.BREVO_API_KEY ? '✓ Set' : '✗ Missing');
+console.log('  - BREVO_SMTP_USER:', process.env.BREVO_SMTP_USER ? '✓ Set (' + process.env.BREVO_SMTP_USER + ')' : '✗ Missing');
+console.log('  - BREVO_SENDER_EMAIL:', process.env.BREVO_SENDER_EMAIL ? '✓ Set (' + process.env.BREVO_SENDER_EMAIL + ')' : '✗ Missing');
+console.log('  - BREVO_SMTP_KEY length:', process.env.BREVO_SMTP_KEY ? process.env.BREVO_SMTP_KEY.length + ' characters' : '✗ Missing');
+console.log('  - BREVO_SMTP_KEY starts with:', process.env.BREVO_SMTP_KEY ? process.env.BREVO_SMTP_KEY.substring(0, 20) + '...' : '✗ Missing');
+console.log('  - BREVO_SMTP_KEY ends with:', process.env.BREVO_SMTP_KEY ? '...' + process.env.BREVO_SMTP_KEY.substring(process.env.BREVO_SMTP_KEY.length - 20) : '✗ Missing');
+console.log('  - BREVO_API_KEY:', process.env.BREVO_API_KEY ? '✓ Set (' + process.env.BREVO_API_KEY.length + ' chars)' : '✗ Missing');
 
 transporter.verify((error, success) => {
   if (error) {
-    console.error('❌ [Email] SMTP Connection Error:', error.message);
+    console.error('❌ [Email] SMTP Connection Error on startup:', error.message);
   } else {
     console.log('✅ [Email] SMTP Server is ready to send emails');
   }
@@ -294,16 +301,31 @@ export async function POST(request: NextRequest) {
     console.error('   Message:', error.message);
     console.error('   Code:', error.code);
     
+    // Log SMTP credentials for debugging
+    console.error('🔧 [Email] SMTP Credentials Debug:');
+    console.error('  - BREVO_SMTP_USER provided:', !!process.env.BREVO_SMTP_USER);
+    console.error('  - BREVO_SMTP_KEY provided:', !!process.env.BREVO_SMTP_KEY);
+    console.error('  - BREVO_SMTP_KEY length:', process.env.BREVO_SMTP_KEY?.length || 0);
+    console.error('  - Using auth user:', process.env.BREVO_SMTP_USER || process.env.BREVO_SENDER_EMAIL);
+    console.error('  - Host:', process.env.BREVO_SMTP_HOST);
+    console.error('  - Port: 587');
+    
+    // Log full error trace
+    console.error('   Full error:', error);
+    
     // Log environment variables status
     console.error('🔧 [Email] Environment Variables Check:');
-    console.error('  - BREVO_SMTP_USER:', process.env.BREVO_SMTP_USER ? '✓ Set (' + process.env.BREVO_SMTP_USER.substring(0, 10) + '...)' : '✗ Missing');
+    console.error('  - BREVO_SMTP_USER:', process.env.BREVO_SMTP_USER ? '✓ Set (' + process.env.BREVO_SMTP_USER + ')' : '✗ Missing');
     console.error('  - BREVO_SENDER_EMAIL:', process.env.BREVO_SENDER_EMAIL ? '✓ Set (' + process.env.BREVO_SENDER_EMAIL + ')' : '✗ Missing');
-    console.error('  - BREVO_SMTP_KEY:', process.env.BREVO_SMTP_KEY ? '✓ Set (' + process.env.BREVO_SMTP_KEY.substring(0, 10) + '...)' : '✗ Missing');
+    console.error('  - BREVO_SMTP_KEY:', process.env.BREVO_SMTP_KEY ? '✓ Set (' + process.env.BREVO_SMTP_KEY.substring(0, 10) + '...' + process.env.BREVO_SMTP_KEY.substring(process.env.BREVO_SMTP_KEY.length - 10) + ')' : '✗ Missing');
     console.error('  - BREVO_SMTP_HOST:', process.env.BREVO_SMTP_HOST ? '✓ Set (' + process.env.BREVO_SMTP_HOST + ')' : '✗ Missing');
     
     // Log error details
     if (error.response) {
       console.error('   SMTP Response:', error.response.toString());
+    }
+    if (error.responseCode) {
+      console.error('   SMTP Code:', error.responseCode);
     }
     
     return NextResponse.json(
