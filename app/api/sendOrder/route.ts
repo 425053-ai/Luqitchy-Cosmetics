@@ -230,44 +230,40 @@ export async function POST(request: NextRequest) {
       imageBase64 = transferImage;
     }
 
-    // EmailJS template parameters - map all order data to template variables
+    // EmailJS template parameters - mapped to "Order Confirmation" template variables
+    const deliveryAddress = `${body.street}${body.landmark ? `, ${body.landmark}` : ''}, ${body.city}, ${body.governorate}`;
+    const orderTime = new Date(body.order_date).toLocaleString('ar-EG', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+
     const templateParams = {
       service_id: process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID,
       template_id: process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID,
       user_id: process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY,
       template_params: {
-        // Email fields
+        // Email fields (required by EmailJS)
         to_email: customer_email,
         to_name: customer_name,
-        from_email: 'luqitchycosmetics@gmail.com',
-        from_name: 'Luqitchy Cosmetics',
-        reply_to_email: 'luqitchycosmetics@gmail.com',
         
-        // Order fields
+        // Order Confirmation template variables (from EmailJS template)
         order_id: order_id,
         customer_name: customer_name,
-        customer_email: customer_email,
-        order_date: body.order_date,
-        
-        // Product fields
         product_type: body.products?.[0]?.name || 'Product',
         quantity: body.products?.[0]?.quantity || 1,
         unit_price: body.products?.[0]?.price || 0,
         total_price: body.total_amount || 0,
+        delivery_address: deliveryAddress,
+        customer_notes: body.notes || '',
+        order_time: orderTime,
         
-        // Delivery address
-        governorate: body.governorate || '',
-        city: body.city || '',
-        street: body.street || '',
-        landmark: body.landmark || '',
-        
-        // Payment info
-        payment_method: body.payment_method || 'Bank Transfer',
-        notes: body.notes || 'No additional notes',
-        
-        // Phone
+        // Additional info
         phone: body.phone || '',
         whatsapp: body.whatsapp || body.phone || '',
+        payment_method: body.payment_method || 'Bank Transfer',
       }
     };
 
