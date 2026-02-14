@@ -5,7 +5,6 @@ console.log('🔧 [Email] EmailJS Configuration Check:');
 console.log('  - SERVICE_ID:', process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID ? '✓ Set' : '✗ Missing');
 console.log('  - TEMPLATE_ID:', process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID ? '✓ Set' : '✗ Missing');
 console.log('  - PUBLIC_KEY:', process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY ? '✓ Set' : '✗ Missing');
-console.log('  - SENDER_EMAIL:', process.env.BREVO_SENDER_EMAIL ? '✓ Set (' + process.env.BREVO_SENDER_EMAIL + ')' : '✗ Missing');
 
 interface OrderProduct {
   name: string;
@@ -240,9 +239,9 @@ export async function POST(request: NextRequest) {
         // Email fields
         to_email: customer_email,
         to_name: customer_name,
-        from_email: process.env.BREVO_SENDER_EMAIL || 'luqitchycosmetics@gmail.com',
+        from_email: 'luqitchycosmetics@gmail.com',
         from_name: 'Luqitchy Cosmetics',
-        reply_to_email: process.env.BREVO_SENDER_EMAIL || 'luqitchycosmetics@gmail.com',
+        reply_to_email: 'luqitchycosmetics@gmail.com',
         
         // Order fields
         order_id: order_id,
@@ -318,6 +317,7 @@ export async function POST(request: NextRequest) {
     console.error('  - SERVICE_ID:', process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID ? '✓ Set' : '✗ Missing');
     console.error('  - TEMPLATE_ID:', process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID ? '✓ Set' : '✗ Missing');
     console.error('  - PUBLIC_KEY:', process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY ? '✓ Set' : '✗ Missing');
+    console.error('  - EmailJS API: Reach https://api.emailjs.com/api/v1.0/email/send');
     
     // Log full error trace
     console.error('   Full error:', error);
