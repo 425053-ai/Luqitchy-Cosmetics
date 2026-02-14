@@ -23,12 +23,22 @@ interface OrderData {
 
 export async function saveOrderToExcel(orderData: OrderData) {
   try {
+    console.log('🔍 [Excel] Starting Excel save process...');
+    console.log('📥 [Excel] Received order data:', {
+      order_id: orderData.order_id,
+      customer_name: orderData.customer_name,
+      total_amount: orderData.total_amount,
+    });
+
     // Use public folder to store the Excel file
     const excelDir = path.join(process.cwd(), 'public', 'data');
     const excelPath = path.join(excelDir, 'orders.xlsx');
 
+    console.log('📂 [Excel] Excel path:', excelPath);
+
     // Ensure directory exists
     if (!fs.existsSync(excelDir)) {
+      console.log('📁 [Excel] Creating directory...');
       fs.mkdirSync(excelDir, { recursive: true });
     }
 
@@ -52,6 +62,8 @@ export async function saveOrderToExcel(orderData: OrderData) {
       'Status': orderData.status || 'Pending',
     };
 
+    console.log('✏️ [Excel] Row data prepared:', rowData);
+
     let workbook: XLSX.WorkBook;
     let worksheet: XLSX.WorkSheet;
     let allData: any[] = [];
@@ -62,28 +74,38 @@ export async function saveOrderToExcel(orderData: OrderData) {
       // Load existing workbook
       const buffer = fs.readFileSync(excelPath);
       workbook = XLSX.read(buffer, { type: 'buffer' });
-      worksheet = workbook.Sheets['Orders'];
-
-      // Read all existing data
-      if (worksheet['!ref']) {
-        allData = XLSX.utils.sheet_to_json(worksheet);
-        console.log(`📊 [Excel] Found ${allData.length} existing orders`);
-      }
-
-      // Add new row to data
-      allData.push(rowData);
-      console.log(`➕ [Excel] Adding new order, total will be ${allData.length} orders`);
-
-      // Recreate the worksheet with all data including new row
-      worksheet = XLSX.utils.json_to_sheet(allData);
       
-      // Apply column width formatting
-      const headers = Object.keys(rowData);
-      worksheet['!cols'] = headers.map(() => ({ wch: 20 }));
+      if (!workbook.Sheets['Orders']) {
+        console.log('⚠️ [Excel] Sheet "Orders" not found, creating new one');
+        worksheet = XLSX.utils.json_to_sheet([rowData]);
+      } else {
+        worksheet = workbook.Sheets['Orders'];
+
+        // Read all existing data
+        if (worksheet['!ref']) {
+          allData = XLSX.utils.sheet_to_json(worksheet);
+          console.log(`📊 [Excel] Found ${allData.length} existing orders`);
+        } else {
+          console.log('📊 [Excel] No existing data found');
+        }
+
+        // Add new row to data
+        allData.push(rowData);
+        console.log(`➕ [Excel] Adding new order, total will be ${allData.length} orders`);
+
+        // Recreate the worksheet with all data including new row
+        worksheet = XLSX.utils.json_to_sheet(allData);
+        console.log('✅ [Excel] Worksheet recreated with all orders');
+        
+        // Apply column width formatting
+        const headers = Object.keys(rowData);
+        worksheet['!cols'] = headers.map(() => ({ wch: 20 }));
+      }
     } else {
       console.log('📝 [Excel] Creating new file...');
       // Create new workbook with headers
       worksheet = XLSX.utils.json_to_sheet([rowData]);
+      console.log('✨ [Excel] New worksheet created');
 
       // Apply better formatting
       const headers = Object.keys(rowData);
@@ -91,17 +113,30 @@ export async function saveOrderToExcel(orderData: OrderData) {
 
       // Create workbook
       workbook = XLSX.utils.book_new();
+      console.log('📚 [Excel] New workbook created');
     }
 
     // Ensure sheet is in workbook
     if (!workbook.Sheets['Orders']) {
+      console.log('📌 [Excel] Appending Orders sheet to workbook');
       XLSX.utils.book_append_sheet(workbook, worksheet, 'Orders');
     } else {
+      console.log('🔄 [Excel] Updating Orders sheet in workbook');
       workbook.Sheets['Orders'] = worksheet;
     }
 
     // Save workbook
+    console.log('💾 [Excel] Saving file...');
     XLSX.writeFile(workbook, excelPath);
+
+    // Verify file was written
+    if (fs.existsSync(excelPath)) {
+      const stats = fs.statSync(excelPath);
+      console.log(`✅ [Excel] File saved successfully! Size: ${stats.size} bytes`);
+    } else {
+      console.error('❌ [Excel] File was not saved!');
+      throw new Error('File save verification failed');
+    }
 
     console.log(`✅ Order ${orderData.order_id} saved to Excel successfully`);
     return {
@@ -110,6 +145,7 @@ export async function saveOrderToExcel(orderData: OrderData) {
     };
   } catch (error) {
     console.error('❌ Excel save error:', error);
+    console.error('Error details:', error instanceof Error ? error.message : String(error));
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Failed to save to Excel',

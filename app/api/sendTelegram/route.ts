@@ -167,6 +167,10 @@ ${orderData.items.map((item: any) => `• ${item.name} × ${item.quantity}`).joi
 
     // Save order to Excel for bank transfers
     if (messageType === 'bank_transfer' && body.orderData) {
+      console.log('═══════════════════════════════════════════════════');
+      console.log('📊 [Order Flow] STEP 3: Saving to Excel');
+      console.log(`   Order ID: ${body.orderData.order_id}`);
+      console.log('═══════════════════════════════════════════════════');
       try {
         const excelResult = await saveOrderToExcel({
           order_id: body.orderData.order_id,
@@ -188,12 +192,19 @@ ${orderData.items.map((item: any) => `• ${item.name} × ${item.quantity}`).joi
         });
         
         if (excelResult.success) {
-          console.log('📊 [Excel] Order saved successfully');
+          console.log('✅ [Order Flow] STEP 3 SUCCESS - Order saved to Excel');
         } else {
-          console.warn('⚠️ [Excel] Failed to save order:', excelResult.error);
+          console.warn('⚠️ [Order Flow] STEP 3 WARNING - Failed to save order:', excelResult.error);
         }
       } catch (excelError) {
-        console.error('❌ [Excel] Error saving order:', excelError);
+        console.error('❌ [Order Flow] STEP 3 FAILED - Excel error:', excelError);
+      }
+    } else {
+      if (messageType !== 'bank_transfer') {
+        console.log('ℹ️ [Excel] Skipping Excel save - order type is not bank_transfer:', messageType);
+      }
+      if (!body.orderData) {
+        console.log('ℹ️ [Excel] Skipping Excel save - no orderData provided');
       }
     }
     if (body.imageData && messageType === 'bank_transfer') {
