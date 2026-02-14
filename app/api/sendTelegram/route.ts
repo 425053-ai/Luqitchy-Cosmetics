@@ -168,33 +168,43 @@ ${orderData.items.map((item: any) => `• ${item.name} × ${item.quantity}`).joi
     if (body.imageData && messageType === 'bank_transfer') {
       console.log('📸 [Telegram] Sending payment proof image...');
 
-      const photoResponse = await fetch(
-        `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendPhoto`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            chat_id: TELEGRAM_CHAT_ID,
-            photo: body.imageData,
-            caption: '📸 إثبات الدفع (Payment Proof)',
-            parse_mode: 'HTML',
-          }),
+      try {
+        // Convert base64 to buffer
+        const buffer = Buffer.from(body.imageData, 'base64');
+        const mimeType = body.transferImageMime || 'image/jpeg';
+
+        // Create FormData for multipart/form-data request
+        const formData = new FormData();
+        formData.append('chat_id', TELEGRAM_CHAT_ID);
+        
+        // Create Blob from buffer
+        const blob = new Blob([buffer], { type: mimeType });
+        formData.append('photo', blob, 'transfer-proof.jpg');
+        formData.append('caption', '📸 إثبات الدفع (Payment Proof)');
+        formData.append('parse_mode', 'HTML');
+
+        const photoResponse = await fetch(
+          `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendPhoto`,
+          {
+            method: 'POST',
+            body: formData,
+          }
+        );
+
+        const photoData = await photoResponse.json();
+
+        // ✅ LOG 5: Log photo response
+        console.log('📷 [Telegram] Photo Response:');
+        console.log('  - ok flag:', photoData.ok);
+        console.log('  - Message ID:', photoData.result?.message_id || 'N/A');
+
+        if (!photoData.ok) {
+          console.warn('⚠️ [Telegram] Photo send failed, but message was sent. Error:', photoData.description);
+        } else {
+          console.log('✅ [Telegram] Payment proof image sent successfully!');
         }
-      );
-
-      const photoData = await photoResponse.json();
-
-      // ✅ LOG 5: Log photo response
-      console.log('📷 [Telegram] Photo Response:');
-      console.log('  - ok flag:', photoData.ok);
-      console.log('  - Message ID:', photoData.result?.message_id || 'N/A');
-
-      if (!photoData.ok) {
-        console.warn('⚠️ [Telegram] Photo send failed, but message was sent. Error:', photoData.description);
-      } else {
-        console.log('✅ [Telegram] Payment proof image sent successfully');
+      } catch (photoError: any) {
+        console.warn('⚠️ [Telegram] Photo upload error (but message was sent):', photoError.message);
       }
     }
 
