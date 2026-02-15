@@ -310,6 +310,8 @@ export default function CartPage() {
           body: JSON.stringify({
             type: 'cart_order',
             orderData: {
+              order_id: order_id,
+              order_date: order_date,
               customer_name: formData.fullName,
               customer_email: formData.email,
               phone: formData.phone,

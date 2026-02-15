@@ -228,25 +228,36 @@ export function ProductPage({ product }: ProductPageProps) {
       existingProofs.push(newProof)
       localStorage.setItem('transfer-proofs', JSON.stringify(existingProofs))
 
-      // Send email notification with image
+      // Send email notification with full order details
       console.log('═══════════════════════════════════════════════════');
       console.log('📧 [Order Flow] STEP 1: Sending email notification');
       console.log('   To:', formData.email);
       console.log('   Order ID:', order_id);
       console.log('═══════════════════════════════════════════════════');
       
-      const emailResponse = await fetch('/api/send-order', {
+      const emailResponse = await fetch('/api/sendOrder', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          email: formData.email,
-          orderId: order_id,
-          cart: [{
+          customer_name: formData.fullName,
+          customer_email: formData.email,
+          phone: formData.phone,
+          whatsapp: formData.whatsapp || formData.phone,
+          order_id: order_id,
+          order_date: order_date,
+          products: [{
             name: product.name,
             quantity: quantity,
             price: product.price,
+            total: quantity * product.price,
           }],
-          total: quantity * product.price,
+          total_amount: quantity * product.price,
+          governorate: formData.governorate,
+          city: formData.city,
+          street: formData.streetAddress,
+          landmark: formData.landmark,
+          notes: formData.notes || 'بدون ملاحظات',
+          payment_method: 'تحويل بنكي للرقم 01012622315',
         }),
       })
 
@@ -1052,6 +1063,28 @@ export function ProductPage({ product }: ProductPageProps) {
                             <li>Payment status (Completed/Success)</li>
                             <li>Receiver number (01012622315)</li>
                           </ul>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* WhatsApp Help Support */}
+                    <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-4">
+                      <div className="flex items-start gap-3">
+                        <span className="text-xl">💬</span>
+                        <div className="flex-1">
+                          <p className="text-sm font-semibold text-green-700 dark:text-green-400 mb-2">Need help uploading the screenshot?</p>
+                          <p className="text-xs text-green-700 dark:text-green-400 mb-3">
+                            If you encounter any issues while uploading your payment confirmation, our team is here to help you quickly!
+                          </p>
+                          <a 
+                            href="https://wa.me/201012622315?text=Hello%20I%20am%20having%20trouble%20uploading%20my%20payment%20screenshot" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-medium transition-colors text-xs sm:text-sm"
+                          >
+                            <span>📱</span>
+                            Contact us on WhatsApp
+                          </a>
                         </div>
                       </div>
                     </div>

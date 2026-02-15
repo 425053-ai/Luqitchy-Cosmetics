@@ -165,43 +165,84 @@ ${orderData.items.map((item: any) => `• ${item.name} × ${item.quantity}`).joi
 
     console.log('✅ [Telegram] Message sent successfully! Message ID:', messageData.result?.message_id);
 
-    // Save order to Excel for bank transfers
-    if (messageType === 'bank_transfer' && body.orderData) {
+    // Save order to Excel for bank transfers and cart orders
+    if ((messageType === 'bank_transfer' || messageType === 'cart_order') && body.orderData) {
       console.log('═══════════════════════════════════════════════════');
       console.log('📊 [Order Flow] STEP 3: Saving to Excel');
-      console.log(`   Order ID: ${body.orderData.order_id}`);
+      console.log(`   Order ID: ${body.orderData.order_id || 'N/A'}`);
       console.log('═══════════════════════════════════════════════════');
       try {
-        const excelResult = await saveOrderToExcel({
-          order_id: body.orderData.order_id,
-          product_name: body.orderData.product_name,
-          quantity: body.orderData.quantity,
-          price: body.orderData.price,
-          total_amount: body.orderData.total_amount,
-          customer_name: body.orderData.customer_name,
-          phone: body.orderData.phone,
-          customer_email: body.orderData.customer_email,
-          governorate: body.orderData.governorate,
-          city: body.orderData.city,
-          street: body.orderData.street,
-          landmark: body.orderData.landmark || '',
-          notes: body.orderData.notes || '',
-          payment_method: body.orderData.payment_method,
-          order_date: body.orderData.order_date,
-          status: 'معلق',
-        });
-        
-        if (excelResult.success) {
-          console.log('✅ [Order Flow] STEP 3 SUCCESS - Order saved to Excel');
-        } else {
-          console.warn('⚠️ [Order Flow] STEP 3 WARNING - Failed to save order:', excelResult.error);
+        if (messageType === 'bank_transfer') {
+          // Single product bank transfer
+          const excelResult = await saveOrderToExcel({
+            order_id: body.orderData.order_id,
+            product_name: body.orderData.product_name,
+            quantity: body.orderData.quantity,
+            price: body.orderData.price,
+            total_amount: body.orderData.total_amount,
+            customer_name: body.orderData.customer_name,
+            phone: body.orderData.phone,
+            customer_email: body.orderData.customer_email,
+            governorate: body.orderData.governorate,
+            city: body.orderData.city,
+            street: body.orderData.street,
+            landmark: body.orderData.landmark || '',
+            notes: body.orderData.notes || '',
+            payment_method: body.orderData.payment_method,
+            order_date: body.orderData.order_date,
+            status: 'معلق',
+          });
+          
+          if (excelResult.success) {
+            console.log('✅ [Order Flow] STEP 3 SUCCESS - Order saved to Excel');
+          } else {
+            console.warn('⚠️ [Order Flow] STEP 3 WARNING - Failed to save order:', excelResult.error);
+          }
+        } else if (messageType === 'cart_order' && body.orderData.products) {
+          // Multiple products - save each one
+          console.log(`   Saving ${body.orderData.products.length} products...`);
+          
+          const timestamp = new Date().toLocaleString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          });
+          
+          for (const product of body.orderData.products) {
+            try {
+              await saveOrderToExcel({
+                order_id: body.orderData.order_id,
+                product_name: product.name,
+                quantity: product.quantity,
+                price: product.price,
+                total_amount: product.price * product.quantity,
+                customer_name: body.orderData.customer_name,
+                phone: body.orderData.phone,
+                customer_email: body.orderData.customer_email,
+                governorate: body.orderData.governorate,
+                city: body.orderData.city,
+                street: body.orderData.street,
+                landmark: body.orderData.landmark || '',
+                notes: body.orderData.notes || '',
+                payment_method: body.orderData.payment_method || 'Customer Delivery',
+                order_date: body.orderData.order_date || timestamp,
+                status: 'معلق',
+              });
+              console.log(`   ✓ Saved: ${product.name}`);
+            } catch (productError: any) {
+              console.warn(`   ✗ Failed to save ${product.name}:`, productError.message);
+            }
+          }
+          console.log('✅ [Order Flow] STEP 3 SUCCESS - All products saved to Excel');
         }
       } catch (excelError) {
         console.error('❌ [Order Flow] STEP 3 FAILED - Excel error:', excelError);
       }
     } else {
-      if (messageType !== 'bank_transfer') {
-        console.log('ℹ️ [Excel] Skipping Excel save - order type is not bank_transfer:', messageType);
+      if (!['bank_transfer', 'cart_order'].includes(messageType)) {
+        console.log('ℹ️ [Excel] Skipping Excel save - order type is not bank_transfer or cart_order:', messageType);
       }
       if (!body.orderData) {
         console.log('ℹ️ [Excel] Skipping Excel save - no orderData provided');
