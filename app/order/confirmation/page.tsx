@@ -91,6 +91,9 @@ export default function ConfirmationPage() {
   const [transferImage, setTransferImage] = useState<string | null>(null)
 
   useEffect(() => {
+    // Scroll to top of page
+    window.scrollTo(0, 0)
+    
     // Get order ID from URL params
     const urlOrderId = searchParams.get('orderId')
     const urlBillRef = searchParams.get('billRef')
