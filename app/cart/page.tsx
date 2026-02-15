@@ -9,6 +9,7 @@ import { useCart } from "@/context/CartContext"
 import { useOrderHistory } from "@/context/OrderHistoryContext"
 import { Button } from "@/components/ui/button"
 import { Footer } from "@/components/footer"
+import { compressImage } from "@/lib/image-compression"
 
 export default function CartPage() {
   const router = useRouter()
@@ -63,63 +64,15 @@ export default function CartPage() {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
-      // Accept any image file type
-      if (!file.type.startsWith('image/')) {
-        alert("❌ Please select a valid image file")
-        return
-      }
-
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        const img = new window.Image()
-        img.onload = () => {
-          // Compress image for Vercel payload limits
-          const canvas = document.createElement('canvas')
-          const ctx = canvas.getContext('2d')
-          if (!ctx) return
-
-          // Set canvas size with reduced dimensions for better compression
-          const maxWidth = 900  // Reduced from 1200
-          const maxHeight = 900  // Reduced from 1200
-          let width = img.width
-          let height = img.height
-
-          if (width > height) {
-            if (width > maxWidth) {
-              height *= maxWidth / width
-              width = maxWidth
-            }
-          } else {
-            if (height > maxHeight) {
-              width *= maxHeight / height
-              height = maxHeight
-            }
-          }
-
-          canvas.width = width
-          canvas.height = height
-          ctx.drawImage(img, 0, 0, width, height)
-
-          // Convert compressed image to blob and create new file
-          canvas.toBlob(
-            (blob) => {
-              if (blob) {
-                const compressedFile = new File([blob], file.name, {
-                  type: 'image/jpeg',
-                  lastModified: Date.now(),
-                })
-                console.log(`📷 Image compressed: ${(file.size / 1024).toFixed(1)}KB → ${(blob.size / 1024).toFixed(1)}KB`)
-                setTransferImage(compressedFile)
-                setImagePreview(canvas.toDataURL('image/jpeg', 0.65))
-              }
-            },
-            'image/jpeg',
-            0.65  // Reduced from 0.85 for better compression
-          )
-        }
-        img.src = reader.result as string
-      }
-      reader.readAsDataURL(file)
+      compressImage(file)
+        .then((result) => {
+          setTransferImage(result.file)
+          setImagePreview(result.preview)
+        })
+        .catch((error) => {
+          console.error('Image compression failed:', error)
+          alert(`❌ ${error.message}`)
+        })
     }
   }
 
@@ -172,54 +125,56 @@ export default function CartPage() {
     // Handle Vodafone Cash with image upload (no external payment gateway)
     if (formData.paymentMethod === 'vodafone') {
       try {
-        // For Vodafone Cash: User uploads screenshot, then we process order
-        // No external payment initiation needed
+        // Convert image to base64 if present
+        let imageData = ''
+        if (imagePreview) {
+          imageData = imagePreview
+        }
 
-        // Send email notification
-        await fetch('/api/send-order', {
+        // UNIFIED ORDER PROCESSING - Single call to /api/orders
+        console.log('═══════════════════════════════════════════════════');
+        console.log('📦 [Order Flow] Processing cart order');
+        console.log('   Order ID:', order_id);
+        console.log('   Items:', items.length);
+        console.log('═══════════════════════════════════════════════════');
+
+        const unifiedOrderResponse = await fetch('/api/orders', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            email: formData.email,
-            orderId: order_id,
-            cart: items.map(item => ({
+            order_id: order_id,
+            order_date: order_date,
+            order_type: 'cart',
+            customer_name: formData.fullName,
+            customer_email: formData.email,
+            phone: formData.phone,
+            whatsapp: sameAsPhone ? formData.phone : formData.whatsapp,
+            products: items.map(item => ({
               name: item.name,
               quantity: item.quantity,
               price: item.price,
+              total: item.quantity * item.price,
             })),
-            total: totalPrice,
+            total_amount: totalPrice,
+            governorate: formData.governorate,
+            city: formData.city,
+            street: formData.streetAddress,
+            landmark: formData.landmark,
+            notes: formData.notes || 'بدون ملاحظات',
+            payment_method: 'Vodafone Cash',
+            imageData: imageData || undefined,
+            transferImageMime: 'image/jpeg',
           }),
         })
 
-        // Send Telegram notification
-        try {
-          await fetch('/api/sendTelegram', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              type: 'cart_order',
-              orderData: {
-                order_id: order_id,
-                order_date: order_date,
-                customer_name: formData.fullName,
-                customer_email: formData.email,
-                customer_phone: formData.phone,
-                whatsapp: sameAsPhone ? formData.phone : formData.whatsapp,
-                governorate: formData.governorate,
-                city: formData.city,
-                street_address: formData.streetAddress,
-                landmark: formData.landmark,
-                notes: formData.notes,
-                items: items,
-                total_price: totalPrice,
-                payment_method: 'vodafone',
-              },
-              imageData: imagePreview || null,
-            }),
-          }).catch(err => console.log('Telegram notification sent'))
-        } catch (err) {
-          console.log('Telegram notification skipped')
+        if (!unifiedOrderResponse.ok) {
+          const errorData = await unifiedOrderResponse.json().catch(() => ({}))
+          console.error('❌ [Order Flow] Failed:', errorData)
+          throw new Error(errorData.error || 'Failed to process order')
         }
+
+        const orderResult = await unifiedOrderResponse.json()
+        console.log('✅ [Order Flow] Order processed successfully!')
 
         // Add to order history
         if (addOrder) {
@@ -256,6 +211,10 @@ export default function CartPage() {
           customerData: formData,
           orderTime: order_date,
         })
+        
+        // Scroll to top
+        window.scrollTo({ top: 0, left: 0, behavior: "instant" })
+        
         setSubmitted(true)
         setIsSubmitting(false)
         return
@@ -267,11 +226,6 @@ export default function CartPage() {
         return
       }
     }
-
-    // Unsupported payment method
-    alert('❌ Only Vodafone Cash is currently supported')
-    setIsSubmitting(false)
-    return
   }
 
   if (submitted && submittedOrder) {

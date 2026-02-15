@@ -9,6 +9,7 @@ import { useCart } from "@/context/CartContext"
 import { useOrderHistory } from "@/context/OrderHistoryContext"
 import { Button } from "@/components/ui/button"
 import { Footer } from "@/components/footer"
+import { compressImage } from "@/lib/image-compression"
 
 interface ProductPageProps {
   product: {
@@ -61,61 +62,15 @@ export function ProductPage({ product }: ProductPageProps) {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
-      // Accept any image file type
-      if (!file.type.startsWith('image/')) {
-        alert("❌ Please select a valid image file")
-        return
-      }      const reader = new FileReader()
-      reader.onloadend = () => {
-        const img = new window.Image()
-        img.onload = () => {
-          // Compress image for Vercel payload limits
-          const canvas = document.createElement('canvas')
-          const ctx = canvas.getContext('2d')
-          if (!ctx) return
-
-          // Set canvas size with reduced dimensions for better compression
-          const maxWidth = 900  // Reduced from 1200
-          const maxHeight = 900  // Reduced from 1200
-          let width = img.width
-          let height = img.height
-
-          if (width > height) {
-            if (width > maxWidth) {
-              height *= maxWidth / width
-              width = maxWidth
-            }
-          } else {
-            if (height > maxHeight) {
-              width *= maxHeight / height
-              height = maxHeight
-            }
-          }
-
-          canvas.width = width
-          canvas.height = height
-          ctx.drawImage(img, 0, 0, width, height)
-
-          // Convert compressed image to blob and create new file
-          canvas.toBlob(
-            (blob) => {
-              if (blob) {
-                const compressedFile = new File([blob], file.name, {
-                  type: 'image/jpeg',
-                  lastModified: Date.now(),
-                })
-                console.log(`📷 Image compressed: ${(file.size / 1024).toFixed(1)}KB → ${(blob.size / 1024).toFixed(1)}KB`)
-                setTransferImage(compressedFile)
-                setImagePreview(canvas.toDataURL('image/jpeg', 0.65))
-              }
-            },
-            'image/jpeg',
-            0.65  // Reduced from 0.85 for better compression
-          )
-        }
-        img.src = reader.result as string
-      }
-      reader.readAsDataURL(file)
+      compressImage(file)
+        .then((result) => {
+          setTransferImage(result.file)
+          setImagePreview(result.preview)
+        })
+        .catch((error) => {
+          console.error('Image compression failed:', error)
+          alert(`❌ ${error.message}`)
+        })
     }
   }
 
@@ -159,11 +114,13 @@ export function ProductPage({ product }: ProductPageProps) {
         const { orderId } = await orderIdResponse.json()
         order_id = orderId
       } else {
-        // Fallback to timestamp if API fails
-        order_id = `ORD-${Date.now()}`
+        throw new Error('Failed to generate order ID')
       }
-    } catch {
-      order_id = `ORD-${Date.now()}`
+    } catch (error) {
+      console.error('Order ID generation failed:', error)
+      alert('❌ Failed to generate order ID. Please try again.')
+      setIsSubmitting(false)
+      return
     }
     
     const order_date = new Date().toLocaleString('en-US', {
@@ -175,16 +132,10 @@ export function ProductPage({ product }: ProductPageProps) {
     })
 
     try {
-      // Upload transfer image and get base64
+      // Convert image to base64
       setUploadingImage(true)
       const imageFormData = new FormData()
       imageFormData.append('transferImage', transferImage)
-      imageFormData.append('orderId', order_id)
-      imageFormData.append('customerName', formData.fullName)
-      imageFormData.append('customerEmail', formData.email)
-      imageFormData.append('phone', formData.phone)
-      imageFormData.append('amount', total_price.toString())
-      imageFormData.append('bankName', '01012622315')
 
       const bankTransferResponse = await fetch('/api/bankTransfer', {
         method: 'POST',
@@ -192,8 +143,7 @@ export function ProductPage({ product }: ProductPageProps) {
       })
 
       if (!bankTransferResponse.ok) {
-        const errorData = await bankTransferResponse.json().catch(() => ({}))
-        throw new Error(errorData.error || 'Failed to process image. Please try again.')
+        throw new Error('Failed to process image')
       }
 
       const bankTransferData = await bankTransferResponse.json()
@@ -215,101 +165,49 @@ export function ProductPage({ product }: ProductPageProps) {
       existingProofs.push(newProof)
       localStorage.setItem('transfer-proofs', JSON.stringify(existingProofs))
 
-      // Send email notification with full order details
+      // UNIFIED ORDER PROCESSING - Single call to /api/orders
       console.log('═══════════════════════════════════════════════════');
-      console.log('📧 [Order Flow] STEP 1: Sending email notification');
-      console.log('   To:', formData.email);
+      console.log('📦 [Order Flow] Processing single-product order');
       console.log('   Order ID:', order_id);
       console.log('═══════════════════════════════════════════════════');
-      
-      const emailResponse = await fetch('/api/sendOrder', {
+
+      const unifiedOrderResponse = await fetch('/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          order_id: order_id,
+          order_date: order_date,
+          order_type: 'single_product',
           customer_name: formData.fullName,
           customer_email: formData.email,
           phone: formData.phone,
           whatsapp: formData.whatsapp || formData.phone,
-          order_id: order_id,
-          order_date: order_date,
           products: [{
             name: product.name,
             quantity: quantity,
             price: product.price,
             total: quantity * product.price,
           }],
-          total_amount: quantity * product.price,
+          total_amount: total_price,
           governorate: formData.governorate,
           city: formData.city,
           street: formData.streetAddress,
           landmark: formData.landmark,
           notes: formData.notes || 'بدون ملاحظات',
           payment_method: 'تحويل بنكي للرقم 01012622315',
+          imageData: bankTransferData.imageData,
+          transferImageMime: bankTransferData.mimeType,
         }),
       })
 
-      if (!emailResponse.ok) {
-        const emailError = await emailResponse.json().catch(() => ({}))
-        console.error('❌ [Order Flow] STEP 1 FAILED - Email sending error:');
-        console.error('   Status:', emailResponse.status);
-        console.error('   Response:', emailError);
-      } else {
-        const emailResult = await emailResponse.json()
-        console.log('✅ [Order Flow] STEP 1 SUCCESS - Email sent successfully');
-        console.log('   Response:', emailResult);
+      if (!unifiedOrderResponse.ok) {
+        const errorData = await unifiedOrderResponse.json().catch(() => ({}))
+        console.error('❌ [Order Flow] Failed:', errorData)
+        throw new Error(errorData.error || 'Failed to process order')
       }
 
-      // Send Telegram notification with image via server API
-      console.log('────────────────────────────────────────────────────');
-      console.log('🤖 [Order Flow] STEP 2: Sending Telegram notification');
-      console.log('   Order ID:', order_id);
-      console.log('   Message Type:', 'bank_transfer');
-      console.log('────────────────────────────────────────────────────');
-      
-      try {
-        const telegramResponse = await fetch('/api/sendTelegram', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            type: 'bank_transfer',
-            orderData: {
-              order_id: order_id,
-              product_name: product.name,
-              quantity: quantity,
-              price: product.price,
-              total_amount: total_price,
-              customer_name: formData.fullName,
-              phone: formData.phone,
-              customer_email: formData.email,
-              governorate: formData.governorate,
-              city: formData.city,
-              street: formData.streetAddress,
-              landmark: formData.landmark,
-              notes: formData.notes || 'بدون ملاحظات',
-              payment_method: 'تحويل بنكي للرقم 01012622315',
-              order_date: order_date,
-            },
-            imageData: bankTransferData.imageData,
-          }),
-        })
-
-        const telegramData = await telegramResponse.json()
-        if (telegramData.success) {
-          console.log('✅ [Order Flow] STEP 2 SUCCESS - Telegram notification sent');
-          console.log('   Response:', telegramData);
-        } else {
-          console.warn('❌ [Order Flow] STEP 2 FAILED - Telegram error:');
-          console.warn('   Status:', telegramResponse.status);
-          console.warn('   Error:', telegramData.error);
-          console.warn('   Details:', telegramData.details);
-
-        }
-      } catch (telegramError: any) {
-        console.error('❌ [Order Flow] STEP 2 EXCEPTION - Telegram error:');
-        console.error('   Error Name:', telegramError.name);
-        console.error('   Error Message:', telegramError.message);
-        console.error('   Error Stack:', telegramError.stack);
-      }
+      const orderResult = await unifiedOrderResponse.json()
+      console.log('✅ [Order Flow] Order processed successfully!')
 
       // Save to order history
       const fullAddressForHistory = `${formData.streetAddress}${formData.landmark ? ` (${formData.landmark})` : ''}, ${formData.city}, ${formData.governorate}`;
@@ -358,7 +256,7 @@ export function ProductPage({ product }: ProductPageProps) {
       console.error("Order Error:", err)
       const errorMessage = err?.message || "Failed to process order"
       console.error("Detailed error:", errorMessage)
-      alert(`❌ Error: ${errorMessage}\n\nTip: Make sure the image is compressed and smaller than 2MB`)
+      alert(`❌ Error: ${errorMessage}`)
     } finally {
       setIsSubmitting(false)
       setUploadingImage(false)
