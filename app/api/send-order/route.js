@@ -74,11 +74,6 @@ export async function POST(req) {
     const data = await req.json();
     const brevoApiKey = process.env.BREVO_API_KEY;
 
-    console.log('📧 [Email] Brevo API Key status:', brevoApiKey ? 'Present' : 'Missing');
-    console.log('🔍 [Email] Key preview (first 20 chars):', brevoApiKey ? brevoApiKey.slice(0, 20) : 'undefined');
-    console.log('🔍 [Email] Key type:', typeof brevoApiKey);
-    console.log('🔍 [Email] Key trimmed length:', brevoApiKey ? brevoApiKey.trim().length : 0);
-
     if (!brevoApiKey || brevoApiKey.trim() === '') {
       console.error('❌ [Email] BREVO_API_KEY is not configured or empty');
       console.log('📝 [Email] Skipping email notification - no API key configured');
