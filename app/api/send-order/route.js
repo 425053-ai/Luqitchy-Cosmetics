@@ -72,12 +72,12 @@ function generateEmailHTML(data, productsTable) {
 export async function POST(req) {
   try {
     const data = await req.json();
-    const brevoApiKey = process.env.BREVO_API_KEY;
+    const brevoApiKey = process.env.BREVO_API_KEY || '';
+    const trimmedKey = brevoApiKey.trim();
 
-    if (!brevoApiKey || brevoApiKey.trim() === '') {
+    if (!trimmedKey) {
       console.error('❌ [Email] BREVO_API_KEY is not configured or empty');
       console.log('📝 [Email] Skipping email notification - no API key configured');
-      // Don't fail the order - just skip email
       return new Response(
         JSON.stringify({ 
           success: true, 
@@ -122,7 +122,7 @@ export async function POST(req) {
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
-        'api-key': brevoApiKey.trim(),
+        'api-key': trimmedKey,
       },
       body: JSON.stringify(emailPayload),
     });

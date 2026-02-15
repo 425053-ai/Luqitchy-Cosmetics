@@ -34,6 +34,21 @@ export async function GET() {
 // POST - Generate next order ID (atomic increment)
 export async function POST() {
   try {
+    // Check if Redis is configured before trying to use it
+    const url = (process.env.UPSTASH_REDIS_REST_URL || '').trim()
+    const token = (process.env.UPSTASH_REDIS_REST_TOKEN || '').trim()
+    
+    if (!url || !token) {
+      // Use fallback if Redis not configured
+      const fallbackId = `ORD-${Date.now()}`
+      console.warn('⚠️ Redis not configured, using fallback ID:', fallbackId)
+      return NextResponse.json({ 
+        orderId: fallbackId,
+        orderNumber: Date.now(),
+        warning: 'Redis not configured, used fallback ID'
+      }, { status: 200 })
+    }
+    
     // INCR is atomic - no race conditions even with concurrent requests!
     const newCounter = await getRedis().incr(COUNTER_KEY)
     
@@ -53,6 +68,6 @@ export async function POST() {
       orderId: fallbackId,
       orderNumber: Date.now(),
       warning: 'Used fallback ID due to database error'
-    })
+    }, { status: 200 })
   }
 }

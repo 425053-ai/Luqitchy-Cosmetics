@@ -72,23 +72,29 @@ ${orderData.notes ? `<b>📝 ملاحظات:</b>\n${orderData.notes}` : ''}
       `.trim();
     } else if (messageType === 'cart_order' && body.orderData) {
       const { orderData } = body;
+      const productsText = orderData.items 
+        ? orderData.items.map((p: any) => `• ${p.name} × ${p.quantity} = ${p.price * p.quantity} ج.م`).join('\n')
+        : orderData.products 
+        ? orderData.products.map((p: any) => `• ${p.name} × ${p.quantity} = ${p.price * p.quantity} ج.م`).join('\n')
+        : '(لا توجد منتجات)';
+      
       orderText = `
 <b>🛒 طلب متعدد المنتجات</b>
 
 <b>👤 بيانات العميل:</b>
 اسم: ${orderData.customer_name}
 الإيميل: ${orderData.customer_email}
-تليفون: ${orderData.phone}
+تليفون: ${orderData.customer_phone}
 
 <b>📦 المنتجات:</b>
-${orderData.products.map((p: any) => `• ${p.name} × ${p.quantity} = ${p.price * p.quantity} ج.م`).join('\n')}
+${productsText}
 
 <b>💰 الإجمالي: ${orderData.total_price} ج.م</b>
 
 <b>📍 عنوان التسليم:</b>
 المحافظة: ${orderData.governorate}
 ${orderData.city ? `المدينة: ${orderData.city}` : ''}
-العنوان: ${orderData.street}
+العنوان: ${orderData.street_address}
 
 <b>⏰ التاريخ:</b>
 ${new Date().toLocaleString('ar-EG')}
