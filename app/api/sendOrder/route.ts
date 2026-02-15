@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { saveOrderToExcel } from '@/lib/excel-service';
 
 interface OrderProduct {
   name: string;
@@ -258,6 +259,38 @@ export async function POST(request: NextRequest) {
     const responseData = await brevoResponse.json();
     console.log('✅ [Email] Email sent successfully via Brevo!');
     console.log('   - Message ID:', responseData.messageId);
+
+    // Save to Excel
+    console.log('📊 [Excel] Saving order to Excel sheet...');
+    const excelOrderData = {
+      order_id: body.order_id,
+      product_name: body.products.map(p => p.name).join(', '),
+      quantity: body.products.reduce((sum, p) => sum + p.quantity, 0),
+      price: body.products[0]?.price || 0,
+      total_amount: body.total_amount,
+      customer_name: body.customer_name,
+      phone: body.phone,
+      customer_email: body.customer_email,
+      governorate: body.governorate,
+      city: body.city,
+      street: body.street,
+      landmark: body.landmark || '',
+      notes: body.notes || '',
+      payment_method: body.payment_method,
+      order_date: body.order_date,
+      status: 'Pending',
+    };
+
+    try {
+      const excelResult = await saveOrderToExcel(excelOrderData);
+      if (excelResult.success) {
+        console.log('✅ [Excel] Order saved to Excel successfully');
+      } else {
+        console.warn('⚠️ [Excel] Failed to save to Excel:', excelResult.error);
+      }
+    } catch (excelError) {
+      console.error('⚠️ [Excel] Error saving to Excel (non-blocking):', excelError);
+    }
 
     return NextResponse.json(
       { 

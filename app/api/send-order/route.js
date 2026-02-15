@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { saveBulkOrderToExcel } from '@/lib/excel-service';
 
 function generateProductsTable(cart) {
   return cart
@@ -146,6 +147,45 @@ export async function POST(req) {
     }
 
     console.log('✅ [Email] Email sent successfully via Brevo');
+    
+    // Save cart order to Excel
+    console.log('📊 [Excel] Saving cart order to Excel sheet...');
+    try {
+      const order_date = new Date().toLocaleString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+
+      const excelOrderData = {
+        order_id: data.orderId,
+        customer_name: data.email?.split('@')[0] || 'Customer',
+        phone: data.email || 'N/A',
+        customer_email: data.email,
+        governorate: 'Mobile Order',
+        city: 'Mobile Order',
+        street: 'Mobile Order',
+        landmark: '',
+        notes: 'Cart Order',
+        payment_method: 'Vodafone Cash',
+        order_date: order_date,
+        products: data.cart || [],
+        total_amount: data.total,
+        status: 'Pending',
+      };
+
+      const excelResult = await saveBulkOrderToExcel(excelOrderData);
+      if (excelResult.success) {
+        console.log('✅ [Excel] Cart order saved to Excel successfully');
+      } else {
+        console.warn('⚠️ [Excel] Failed to save to Excel:', excelResult.error);
+      }
+    } catch (excelError) {
+      console.error('⚠️ [Excel] Error saving to Excel (non-blocking):', excelError.message || excelError);
+    }
+
     return new Response(
       JSON.stringify({ success: true }),
       { status: 200, headers: { 'Content-Type': 'application/json' } }
