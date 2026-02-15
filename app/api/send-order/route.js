@@ -74,11 +74,18 @@ export async function POST(req) {
     const data = await req.json();
     const brevoApiKey = process.env.BREVO_API_KEY;
 
-    if (!brevoApiKey) {
-      console.error('❌ [Email] BREVO_API_KEY is not set');
+    console.log('📧 [Email] Brevo API Key status:', brevoApiKey ? 'Present' : 'Missing');
+
+    if (!brevoApiKey || brevoApiKey.trim() === '') {
+      console.error('❌ [Email] BREVO_API_KEY is not configured or empty');
+      console.log('📝 [Email] Skipping email notification - no API key configured');
+      // Don't fail the order - just skip email
       return new Response(
-        JSON.stringify({ success: false, error: 'Email service not configured' }),
-        { status: 500, headers: { 'Content-Type': 'application/json' } }
+        JSON.stringify({ 
+          success: true, 
+          message: 'Order recorded (email skipped - service not configured)' 
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
       );
     }
 
@@ -86,37 +93,58 @@ export async function POST(req) {
     const emailHTML = generateEmailHTML(data, productsTable);
 
     console.log(`📧 [Email] Sending email via Brevo to ${data.email}`);
+    console.log('📋 [Email] Generating products table...');
+
+    const emailPayload = {
+      to: [
+        {
+          email: data.email,
+        }
+      ],
+      sender: {
+        email: process.env.BREVO_SENDER_EMAIL || 'luqitchycosmetics@gmail.com',
+        name: process.env.BREVO_SENDER_NAME || 'Luqitchy Cosmetics',
+      },
+      subject: `Order Confirmation - ${data.orderId}`,
+      htmlContent: emailHTML,
+      replyTo: {
+        email: 'luqitchycosmetics@gmail.com',
+        name: 'Luqitchy Cosmetics Support',
+      },
+    };
+
+    console.log('✓ [Email] Email HTML generated successfully');
+    console.log('📬 [Email] Sending email via Brevo API:');
+    console.log(`   - To: ${data.email}`);
+    console.log(`   - Order ID: ${data.orderId}`);
+    console.log(`   - Subject: Order Confirmation - ${data.orderId}`);
 
     const brevoResponse = await fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
-        'api-key': brevoApiKey,
+        'api-key': brevoApiKey.trim(),
       },
-      body: JSON.stringify({
-        to: [
-          {
-            email: data.email,
-          }
-        ],
-        sender: {
-          email: process.env.BREVO_SENDER_EMAIL || 'luqitchycosmetics@gmail.com',
-          name: process.env.BREVO_SENDER_NAME || 'Luqitchy Cosmetics',
-        },
-        subject: `Order Confirmation - ${data.orderId}`,
-        htmlContent: emailHTML,
-        replyTo: {
-          email: 'luqitchycosmetics@gmail.com',
-          name: 'Luqitchy Cosmetics Support',
-        },
-      }),
+      body: JSON.stringify(emailPayload),
     });
 
     if (!brevoResponse.ok) {
       const errorData = await brevoResponse.json();
-      console.error('❌ [Email] Brevo API Error:', errorData);
-      throw new Error(`Brevo error: ${JSON.stringify(errorData)}`);
+      console.error('❌ [Email] Brevo API Error:');
+      console.error(`   Status: ${brevoResponse.status}`);
+      console.error(`   Error: ${JSON.stringify(errorData)}`);
+      
+      // Log but don't fail the order processing
+      console.log('⚠️ [Email] Email notification failed, but order will proceed');
+      
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          message: 'Order recorded (email notification failed but order processed)' 
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      );
     }
 
     console.log('✅ [Email] Email sent successfully via Brevo');
@@ -127,9 +155,13 @@ export async function POST(req) {
 
   } catch (error) {
     console.error('❌ [Email] Error:', error.message);
+    // Don't fail the order due to email issues
     return new Response(
-      JSON.stringify({ success: false, error: error.message }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
+      JSON.stringify({ 
+        success: true, 
+        message: 'Order recorded (email service error, but order processed)' 
+      }),
+      { status: 200, headers: { 'Content-Type': 'application/json' } }
     );
   }
 }

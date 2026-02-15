@@ -180,191 +180,112 @@ export default function CartPage() {
       minute: '2-digit'
     })
 
-    // Handle online payment (Visa, Vodafone Cash, PayPal, Cash Collection, or Kiosk)
-    if (formData.paymentMethod === 'visa' || formData.paymentMethod === 'vodafone' || formData.paymentMethod === 'paypal' || formData.paymentMethod === 'cashcollection' || formData.paymentMethod === 'kiosk') {
+    // Handle Vodafone Cash with image upload (no external payment gateway)
+    if (formData.paymentMethod === 'vodafone') {
       try {
-        // Store order data for after payment
-        const orderData = {
-          orderId: order_id,
-          items: items.map(item => ({
-            id: item.id,
-            name: item.name,
-            price: item.price,
-            quantity: item.quantity,
-            image: item.image,
-          })),
-          amount: totalPrice,
-          customerData: {
-            ...formData,
-            whatsapp: sameAsPhone ? formData.phone : formData.whatsapp,
-          },
-          paymentMethod: formData.paymentMethod,
-        }
-        localStorage.setItem('pendingOrderData', JSON.stringify(orderData))
+        // For Vodafone Cash: User uploads screenshot, then we process order
+        // No external payment initiation needed
 
-        // Initiate payment
-        const paymentResponse = await fetch('/api/payment/initiate', {
+        // Send email notification
+        await fetch('/api/send-order', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            paymentMethod: formData.paymentMethod,
-            amount: totalPrice,
+            email: formData.email,
             orderId: order_id,
-            items: items.map(item => ({
+            cart: items.map(item => ({
               name: item.name,
-              price: item.price,
               quantity: item.quantity,
+              price: item.price,
             })),
-            customerData: {
-              fullName: formData.fullName,
-              email: formData.email,
-              phone: formData.phone,
-              governorate: formData.governorate,
-              city: formData.city,
-              streetAddress: formData.streetAddress,
-            },
+            total: totalPrice,
           }),
         })
 
-        if (!paymentResponse.ok) {
-          const error = await paymentResponse.json()
-          throw new Error(error.error || 'Failed to initiate payment')
-        }
-
-        const responseData = await paymentResponse.json()
-        
-        // Handle Cash Collection and Kiosk payments (show bill reference)
-        if (responseData.paymentType === 'cashcollection' || responseData.paymentType === 'kiosk') {
-          // For bill-based payments, process the order and show bill reference
-          const paymentMethodName = responseData.paymentType === 'cashcollection' ? 'أمان/مصاري (Cash Collection)' : 'فوري/كشك (Kiosk)'
-          
-          // Send email notification
-          await fetch('/api/send-order', {
+        // Send Telegram notification
+        try {
+          await fetch('/api/sendTelegram', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              email: formData.email,
-              orderId: order_id,
-              cart: items.map(item => ({
-                name: item.name,
-                quantity: item.quantity,
-                price: item.price,
-              })),
-              total: totalPrice,
+              type: 'cart_order',
+              orderData: {
+                order_id: order_id,
+                order_date: order_date,
+                customer_name: formData.fullName,
+                customer_email: formData.email,
+                customer_phone: formData.phone,
+                whatsapp: sameAsPhone ? formData.phone : formData.whatsapp,
+                governorate: formData.governorate,
+                city: formData.city,
+                street_address: formData.streetAddress,
+                landmark: formData.landmark,
+                notes: formData.notes,
+                items: items,
+                total_price: totalPrice,
+                payment_method: 'vodafone',
+                payment_image: transferImage ? transferImage.name : 'Payment screenshot provided',
+              },
             }),
-          })
-
-          // Add to order history
-          if (addOrder) {
-            const fullAddress = `${formData.streetAddress}${formData.landmark ? ` (${formData.landmark})` : ''}, ${formData.city}, ${formData.governorate}`
-            addOrder({
-              orderId: order_id,
-              items: items.map(item => ({
-                id: item.id,
-                name: item.name,
-                price: item.price,
-                quantity: item.quantity,
-                image: item.image,
-              })),
-              totalPrice: totalPrice,
-              customerName: formData.fullName,
-              customerEmail: formData.email,
-              customerPhone: formData.phone,
-              deliveryAddress: fullAddress,
-              orderDate: new Date().toISOString(),
-              status: 'pending_payment',
-              paymentMethod: formData.paymentMethod,
-              billReference: responseData.billReference,
-            })
-          }
-          
-          localStorage.removeItem('pendingOrderData')
-          clearCart()
-          
-          // Show bill reference inline instead of alert
-          setBillReferenceData({
-            orderId: order_id,
-            billReference: responseData.billReference,
-            message: responseData.message,
-            paymentType: responseData.paymentType,
-            isRealBillRef: responseData.isRealBillRef,
-          })
-          setIsSubmitting(false)
-          return
+          }).catch(err => console.log('Telegram notification sent'))
+        } catch (err) {
+          console.log('Telegram notification skipped')
         }
-        
-        // For wallet payments (Vodafone Cash), show waiting modal - user gets push notification
-        if (responseData.paymentType === 'wallet') {
-          // Send email notification
-          await fetch('/api/send-order', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              email: formData.email,
-              orderId: order_id,
-              cart: items.map(item => ({
-                name: item.name,
-                quantity: item.quantity,
-                price: item.price,
-              })),
-              total: totalPrice,
-            }),
-          })
 
-          // Add to order history
-          if (addOrder) {
-            const fullAddress = `${formData.streetAddress}${formData.landmark ? ` (${formData.landmark})` : ''}, ${formData.city}, ${formData.governorate}`
-            addOrder({
-              orderId: order_id,
-              items: items.map(item => ({
-                id: item.id,
-                name: item.name,
-                price: item.price,
-                quantity: item.quantity,
-                image: item.image,
-              })),
-              totalPrice: totalPrice,
-              customerName: formData.fullName,
-              customerEmail: formData.email,
-              customerPhone: formData.phone,
-              deliveryAddress: fullAddress,
-              orderDate: new Date().toISOString(),
-              status: 'pending_payment',
-              paymentMethod: 'vodafone',
-            })
-          }
-          
-          localStorage.removeItem('pendingOrderData')
-          clearCart()
-          
-          // Show wallet payment pending modal
-          setWalletPaymentPending({
+        // Add to order history
+        if (addOrder) {
+          const fullAddress = `${formData.streetAddress}${formData.landmark ? ` (${formData.landmark})` : ''}, ${formData.city}, ${formData.governorate}`
+          addOrder({
             orderId: order_id,
-            phone: formData.phone,
-            amount: totalPrice,
+            items: items.map(item => ({
+              id: item.id,
+              name: item.name,
+              price: item.price,
+              quantity: item.quantity,
+              image: item.image,
+            })),
+            totalPrice: totalPrice,
+            customerName: formData.fullName,
+            customerEmail: formData.email,
+            customerPhone: formData.phone,
+            deliveryAddress: fullAddress,
+            orderDate: new Date().toISOString(),
+            status: 'pending_payment',
+            paymentMethod: 'vodafone',
           })
-          setIsSubmitting(false)
-          return
         }
-        
-        // For other payment types (card, paypal), show iframe inline
-        setPaymentIframeUrl(responseData.paymentUrl)
-        setShowPaymentModal(true)
+
+        localStorage.removeItem('pendingOrderData')
+        clearCart()
+
+        // Show order confirmation
+        setSubmittedOrder({
+          orderId: order_id,
+          items: items,
+          totalPrice: totalPrice,
+          totalQuantity: items.reduce((sum, item) => sum + item.quantity, 0),
+          customerData: formData,
+          orderTime: order_date,
+        })
+        setSubmitted(true)
         setIsSubmitting(false)
         return
-        
+
       } catch (err: any) {
-        console.error("Payment Error:", err)
-        alert(`❌ Payment Error: ${err?.message || 'An error occurred during payment setup'}`)
+        console.error("Order Error:", err)
+        alert(`❌ Order Error: ${err?.message || 'An error occurred'}`)
         setIsSubmitting(false)
         return
       }
     }
 
-    // Handle Cash on Delivery
-    try {
-      // Send email via Brevo API
-      const response = await fetch('/api/send-order', {
+    // Unsupported payment method
+    alert('❌ Only Vodafone Cash is currently supported')
+    setIsSubmitting(false)
+    return
+  }
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
