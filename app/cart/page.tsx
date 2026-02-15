@@ -24,7 +24,7 @@ export default function CartPage() {
     streetAddress: "",
     landmark: "",
     notes: "",
-    paymentMethod: "cash",
+    paymentMethod: "vodafone",
   })
   const [submitted, setSubmitted] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -1080,193 +1080,14 @@ export default function CartPage() {
                   />
                 </div>
 
-                {/* Payment Method */}
+                {/* Payment Method - Vodafone Cash Only */}
                 <div className="space-y-3 pt-3 border-t border-border">
-                  <h4 className="font-medium text-xs pt-2">💳 Payment Method *</h4>
-                  
-                  <div className="space-y-2">
-                    {/* Cash on Delivery */}
-                    <label 
-                      className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all duration-300 ${
-                        formData.paymentMethod === 'cash' 
-                          ? 'border-accent bg-accent/10' 
-                          : 'border-border/50 hover:border-accent/50 bg-background/50'
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="paymentMethod"
-                        value="cash"
-                        checked={formData.paymentMethod === 'cash'}
-                        onChange={handleChange}
-                        className="w-4 h-4 text-accent focus:ring-accent"
-                      />
-                      <span className="text-lg">💵</span>
-                      <div className="flex-1">
-                        <span className="font-medium text-sm block">Cash on Delivery</span>
-                        <span className="text-[10px] text-muted-foreground">Pay when you receive</span>
-                      </div>
-                    </label>
+                  <h4 className="font-medium text-xs pt-2">💳 Payment Method</h4>
+                  <p className="text-xs text-muted-foreground font-semibold">📱 Vodafone Cash Wallet</p>
 
-                    {/* Vodafone Cash */}
-                    <label 
-                      className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all duration-300 ${
-                        formData.paymentMethod === 'vodafone' 
-                          ? 'border-red-500 bg-red-500/10' 
-                          : 'border-border/50 hover:border-red-500/50 bg-background/50'
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="paymentMethod"
-                        value="vodafone"
-                        checked={formData.paymentMethod === 'vodafone'}
-                        onChange={handleChange}
-                        className="w-4 h-4 text-red-500 focus:ring-red-500"
-                      />
-                      <span className="text-lg">📱</span>
-                      <div className="flex-1">
-                        <span className="font-medium text-sm block text-red-600 dark:text-red-400">Vodafone Cash</span>
-                        <span className="text-[10px] text-muted-foreground">Vodafone Cash wallet</span>
-                      </div>
-                    </label>
-
-                    {/* Vodafone Cash Detailed Card - Shows when selected */}
-                    {formData.paymentMethod === 'vodafone' && (
-                      <div className="premium-card rounded-xl sm:rounded-2xl p-4 sm:p-5 md:p-6 bg-gradient-to-br from-red-500/10 to-pink-500/10 border-2 border-red-500/30">
-                        <div className="flex items-start gap-4">
-                          <div className="text-4xl">📱</div>
-                          <div className="flex-1">
-                            <h3 className="font-bold text-lg mb-2">Vodafone Cash Wallet</h3>
-                            <p className="text-sm text-muted-foreground mb-3">Send payment to Vodafone Cash wallet and attach the payment confirmation screenshot</p>
-                            <div className="bg-white/30 dark:bg-black/30 rounded-lg p-3 mb-3 border border-red-500/20">
-                              <p className="text-sm text-muted-foreground mb-1">Vodafone Cash Wallet:</p>
-                              <p className="text-sm font-mono font-bold text-lg text-red-600 dark:text-red-400">📱 <span dir="ltr">01012622315</span></p>
-                            </div>
-                            <ul className="text-xs space-y-1 text-muted-foreground">
-                              <li>✅ Secure wallet payment</li>
-                              <li>✅ Instant confirmation</li>
-                              <li>✅ Protected transaction</li>
-                            </ul>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Visa / MasterCard */}
-                    <label 
-                      className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all duration-300 ${
-                        formData.paymentMethod === 'visa' 
-                          ? 'border-blue-500 bg-blue-500/10' 
-                          : 'border-border/50 hover:border-blue-500/50 bg-background/50'
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="paymentMethod"
-                        value="visa"
-                        checked={formData.paymentMethod === 'visa'}
-                        onChange={handleChange}
-                        className="w-4 h-4 text-blue-500 focus:ring-blue-500"
-                      />
-                      <span className="text-lg">💳</span>
-                      <div className="flex-1">
-                        <span className="font-medium text-sm block text-blue-600 dark:text-blue-400">Visa / MasterCard</span>
-                        <span className="text-[10px] text-muted-foreground">Credit or debit card</span>
-                      </div>
-                    </label>
-
-                    {/* PayPal */}
-                    <label 
-                      className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all duration-300 ${
-                        formData.paymentMethod === 'paypal' 
-                          ? 'border-[#0070ba] bg-[#0070ba]/10' 
-                          : 'border-border/50 hover:border-[#0070ba]/50 bg-background/50'
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="paymentMethod"
-                        value="paypal"
-                        checked={formData.paymentMethod === 'paypal'}
-                        onChange={handleChange}
-                        className="w-4 h-4 text-[#0070ba] focus:ring-[#0070ba]"
-                      />
-                      <span className="text-lg">🅿️</span>
-                      <div className="flex-1">
-                        <span className="font-medium text-sm block text-[#0070ba]">PayPal</span>
-                        <span className="text-[10px] text-muted-foreground">PayPal account</span>
-                      </div>
-                    </label>
-
-                    {/* Cash Collection (Aman, Masary) */}
-                    <label 
-                      className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all duration-300 ${
-                        formData.paymentMethod === 'cashcollection' 
-                          ? 'border-orange-500 bg-orange-500/10' 
-                          : 'border-border/50 hover:border-orange-500/50 bg-background/50'
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="paymentMethod"
-                        value="cashcollection"
-                        checked={formData.paymentMethod === 'cashcollection'}
-                        onChange={handleChange}
-                        className="w-4 h-4 text-orange-500 focus:ring-orange-500"
-                      />
-                      <span className="text-lg">🏪</span>
-                      <div className="flex-1">
-                        <span className="font-medium text-sm block text-orange-600 dark:text-orange-400">Aman / Masary</span>
-                        <span className="text-[10px] text-muted-foreground">Pay at outlets</span>
-                      </div>
-                    </label>
-
-                    {/* Kiosk (Fawry) */}
-                    <label 
-                      className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all duration-300 ${
-                        formData.paymentMethod === 'kiosk' 
-                          ? 'border-yellow-500 bg-yellow-500/10' 
-                          : 'border-border/50 hover:border-yellow-500/50 bg-background/50'
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="paymentMethod"
-                        value="kiosk"
-                        checked={formData.paymentMethod === 'kiosk'}
-                        onChange={handleChange}
-                        className="w-4 h-4 text-yellow-500 focus:ring-yellow-500"
-                      />
-                      <span className="text-lg">🎫</span>
-                      <div className="flex-1">
-                        <span className="font-medium text-sm block text-yellow-600 dark:text-yellow-400">Fawry / Kiosk</span>
-                        <span className="text-[10px] text-muted-foreground">Pay via Fawry</span>
-                      </div>
-                    </label>
-                  </div>
-
-                  {/* Cash on Delivery Info */}
-                  {formData.paymentMethod === 'cash' && (
-                    <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-3 space-y-2 animate-in slide-in-from-top-2 duration-300">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xl">💵</span>
-                        <div>
-                          <p className="font-semibold text-sm text-green-700 dark:text-green-400">Cash on Delivery</p>
-                          <p className="text-[10px] text-muted-foreground">Pay when your order arrives</p>
-                        </div>
-                      </div>
-                      <p className="text-[10px] text-muted-foreground bg-white/50 dark:bg-black/20 rounded p-2">
-                        ✅ No payment now • 🚚 Pay the delivery agent • 💰 Cash only
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Vodafone Cash Payment Details - Complete with Image Upload */}
-                  {formData.paymentMethod === 'vodafone' && (
-                    <div className="space-y-4 pt-3 border-t border-border/50">
-                      {/* Vodafone Cash Wallet Card */}
-                      <div className="premium-card rounded-xl sm:rounded-2xl p-4 sm:p-5 md:p-6 bg-gradient-to-br from-red-500/10 to-pink-500/10 border-2 border-red-500/30">
+                  <div className="space-y-4 pt-3 border-t border-border/50">
+                    {/* Vodafone Cash Wallet Card */}
+                    <div className="premium-card rounded-xl sm:rounded-2xl p-4 sm:p-5 md:p-6 bg-gradient-to-br from-red-500/10 to-pink-500/10 border-2 border-red-500/30">
                         <div className="flex items-start gap-4">
                           <div className="text-4xl">📱</div>
                           <div className="flex-1">
@@ -1374,100 +1195,8 @@ export default function CartPage() {
                         </div>
                       </div>
                     </div>
-                  )}
+                  </div>
 
-                  {/* Visa Instructions */}
-                  {formData.paymentMethod === 'visa' && (
-                    <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3 space-y-2 animate-in slide-in-from-top-2 duration-300">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xl">💳</span>
-                        <div>
-                          <p className="font-semibold text-sm text-blue-600 dark:text-blue-400">Credit/Debit Card</p>
-                          <p className="text-[10px] text-muted-foreground">Visa, MasterCard, Meeza</p>
-                        </div>
-                      </div>
-                      <div className="bg-white/50 dark:bg-black/20 rounded p-2">
-                        <p className="text-[10px] font-medium mb-1">How it works:</p>
-                        <ol className="text-[10px] text-muted-foreground space-y-0.5 list-decimal list-inside">
-                          <li>Click "Complete Order"</li>
-                          <li>Secure payment form appears</li>
-                          <li>Enter card details</li>
-                          <li>Payment processed instantly</li>
-                        </ol>
-                        <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1">
-                          🔒 256-bit SSL encryption
-                        </p>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* PayPal Instructions */}
-                  {formData.paymentMethod === 'paypal' && (
-                    <div className="bg-[#0070ba]/10 border border-[#0070ba]/30 rounded-lg p-3 space-y-2 animate-in slide-in-from-top-2 duration-300">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xl">🅿️</span>
-                        <div>
-                          <p className="font-semibold text-sm text-[#0070ba]">PayPal Checkout</p>
-                          <p className="text-[10px] text-muted-foreground">Fast & secure payment</p>
-                        </div>
-                      </div>
-                      <div className="bg-white/50 dark:bg-black/20 rounded p-2">
-                        <p className="text-[10px] font-medium mb-1">How it works:</p>
-                        <ol className="text-[10px] text-muted-foreground space-y-0.5 list-decimal list-inside">
-                          <li>Click "Complete Order"</li>
-                          <li>PayPal login window appears</li>
-                          <li>Log in to your account</li>
-                          <li>Confirm the payment</li>
-                        </ol>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Cash Collection Instructions */}
-                  {formData.paymentMethod === 'cashcollection' && (
-                    <div className="bg-orange-500/10 border border-orange-500/30 rounded-lg p-3 space-y-2 animate-in slide-in-from-top-2 duration-300">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xl">🏪</span>
-                        <div>
-                          <p className="font-semibold text-sm text-orange-600 dark:text-orange-400">Aman / Masary</p>
-                          <p className="text-[10px] text-muted-foreground">15,000+ outlets in Egypt</p>
-                        </div>
-                      </div>
-                      <div className="bg-white/50 dark:bg-black/20 rounded p-2">
-                        <p className="text-[10px] font-medium mb-1">How it works:</p>
-                        <ol className="text-[10px] text-muted-foreground space-y-0.5 list-decimal list-inside">
-                          <li>Click "Complete Order" for reference</li>
-                          <li>Note down the number</li>
-                          <li>Visit Aman or Masary outlet</li>
-                          <li>Pay and keep receipt</li>
-                        </ol>
-                        <p className="text-[10px] text-orange-600 dark:text-orange-400 mt-1">⏱️ Pay within 24 hours</p>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Kiosk Instructions */}
-                  {formData.paymentMethod === 'kiosk' && (
-                    <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 space-y-2 animate-in slide-in-from-top-2 duration-300">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xl">🎫</span>
-                        <div>
-                          <p className="font-semibold text-sm text-yellow-600 dark:text-yellow-400">Fawry / Kiosk</p>
-                          <p className="text-[10px] text-muted-foreground">Pay at any Fawry outlet</p>
-                        </div>
-                      </div>
-                      <div className="bg-white/50 dark:bg-black/20 rounded p-2">
-                        <p className="text-[10px] font-medium mb-1">How it works:</p>
-                        <ol className="text-[10px] text-muted-foreground space-y-0.5 list-decimal list-inside">
-                          <li>Click "Complete Order" for reference</li>
-                          <li>Note down the number</li>
-                          <li>Visit Fawry outlet or use app</li>
-                          <li>Pay and keep receipt</li>
-                        </ol>
-                        <p className="text-[10px] text-yellow-600 dark:text-yellow-400 mt-1">⏱️ Pay within 24 hours</p>
-                      </div>
-                    </div>
-                  )}
                 </div>
 
                 <Button
