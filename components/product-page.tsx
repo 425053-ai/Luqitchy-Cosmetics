@@ -61,24 +61,11 @@ export function ProductPage({ product }: ProductPageProps) {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
-      // Check file size (max 10MB - will be compressed automatically)
-      if (file.size > 10 * 1024 * 1024) {
-        alert("❌ Image is too large. Please select an image smaller than 10MB")
-        return
-      }
-
-      // Warn if image is larger than 5MB
-      if (file.size > 5 * 1024 * 1024) {
-        alert("⚠️ Large image detected. Compressing... This may take a moment.")
-      }
-
-      // Check file type
+      // Accept any image file type
       if (!file.type.startsWith('image/')) {
         alert("❌ Please select a valid image file")
         return
-      }
-
-      const reader = new FileReader()
+      }      const reader = new FileReader()
       reader.onloadend = () => {
         const img = new window.Image()
         img.onload = () => {

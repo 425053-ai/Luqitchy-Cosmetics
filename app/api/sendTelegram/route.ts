@@ -254,7 +254,7 @@ ${orderData.items.map((item: any) => `• ${item.name} × ${item.quantity}`).joi
         console.log('ℹ️ [Excel] Skipping Excel save - no orderData provided');
       }
     }
-    if (body.imageData && messageType === 'bank_transfer') {
+    if (body.imageData && ['bank_transfer', 'cart_order'].includes(messageType)) {
       console.log('📸 [Telegram] Sending payment proof image...');
 
       try {

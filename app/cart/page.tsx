@@ -63,18 +63,7 @@ export default function CartPage() {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
-      // Check file size (max 10MB - will be compressed automatically)
-      if (file.size > 10 * 1024 * 1024) {
-        alert("❌ Image is too large. Please select an image smaller than 10MB")
-        return
-      }
-
-      // Warn if image is larger than 5MB
-      if (file.size > 5 * 1024 * 1024) {
-        alert("⚠️ Large image detected. Compressing... This may take a moment.")
-      }
-
-      // Check file type
+      // Accept any image file type
       if (!file.type.startsWith('image/')) {
         alert("❌ Please select a valid image file")
         return
@@ -224,8 +213,8 @@ export default function CartPage() {
                 items: items,
                 total_price: totalPrice,
                 payment_method: 'vodafone',
-                payment_image: transferImage ? transferImage.name : 'Payment screenshot provided',
               },
+              imageData: imagePreview || null,
             }),
           }).catch(err => console.log('Telegram notification sent'))
         } catch (err) {
