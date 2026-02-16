@@ -94,23 +94,29 @@ export default function ConfirmationPage() {
     // Scroll to top of page
     window.scrollTo(0, 0)
     
-    // Get order ID from URL params
+    // Get order ID from URL params or localStorage, always show as received (ORD-000X)
     const urlOrderId = searchParams.get('orderId')
     const urlBillRef = searchParams.get('billRef')
     const urlPayment = searchParams.get('payment')
-    
+
     if (urlOrderId) {
       setOrderId(urlOrderId)
+    } else {
+      // Fallback to localStorage orderId
+      const lastOrder = localStorage.getItem('lastOrderId')
+      if (lastOrder) {
+        setOrderId(lastOrder)
+      }
     }
-    
+
     if (urlBillRef) {
       setBillReference(urlBillRef)
     }
-    
+
     if (urlPayment) {
       setPaymentMethod(urlPayment)
     }
-    
+
     // Try to get full order data from localStorage
     const pendingData = localStorage.getItem('pendingOrderData')
     if (pendingData) {
@@ -127,19 +133,11 @@ export default function ConfirmationPage() {
         console.error('Failed to parse order data:', e)
       }
     }
-    
+
     // Get transfer image from localStorage
     const savedImage = localStorage.getItem('lastTransferImage')
     if (savedImage) {
       setTransferImage(savedImage)
-    }
-    
-    // Fallback to localStorage orderId
-    if (!urlOrderId) {
-      const lastOrder = localStorage.getItem('lastOrderId')
-      if (lastOrder) {
-        setOrderId(lastOrder)
-      }
     }
     
     // Hide confetti after 5 seconds

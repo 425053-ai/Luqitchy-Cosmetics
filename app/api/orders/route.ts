@@ -478,49 +478,19 @@ export async function POST(request: NextRequest) {
     // STEP 2: Send Telegram notification with image
     console.log('🤖 [Order Flow] STEP 2: Sending Telegram notification...');
     
-    let telescopeMessage = '';
-    if (order_type === 'single_product') {
-      const product = products[0];
-      telescopeMessage = `
-<b>🎀 طلب جديد من Luqitchy Cosmetics</b>
+    // Unified Telegram message for both single and cart orders
+    const productsText = products
+      .map((p) => `• ${p.name} × ${p.quantity} = ${p.quantity * p.price} ج.م`)
+      .join('\n');
+
+    const telescopeMessage = `
+<b>🛒 طلب جديد من Luqitchy Cosmetics</b>
+
+<b>رقم الطلب:</b> <code>${order_id}</code>
 
 <b>👤 بيانات العميل:</b>
 اسم: ${customer_name}
-الهاتف: ${phone}
 البريد: ${customer_email}
-
-<b>📦 تفاصيل الطلب:</b>
-رقم الطلب: <code>${order_id}</code>
-المنتج: ${product.name}
-الكمية: ${product.quantity}
-السعر: ${product.price} ج.م
-الإجمالي: <b>${total_amount} ج.م</b>
-
-<b>📍 عنوان التسليم:</b>
-المحافظة: ${governorate}
-المدينة: ${city}
-الشارع: ${street}
-${landmark ? `المعلم: ${landmark}` : ''}
-
-<b>💳 طريقة الدفع:</b>
-${payment_method}
-
-<b>⏰ وقت الطلب:</b>
-${order_date}
-
-${notes ? `<b>📝 ملاحظات:</b>\n${notes}` : ''}
-      `.trim();
-    } else if (order_type === 'cart') {
-      const productsText = products
-        .map((p) => `• ${p.name} × ${p.quantity} = ${p.quantity * p.price} ج.م`)
-        .join('\n');
-
-      telescopeMessage = `
-<b>🛒 طلب متعدد المنتجات</b>
-
-<b>👤 بيانات العميل:</b>
-اسم: ${customer_name}
-الإيميل: ${customer_email}
 تليفون: ${phone}
 
 <b>📦 المنتجات:</b>
@@ -534,12 +504,14 @@ ${productsText}
 العنوان: ${street}
 ${landmark ? `المعلم: ${landmark}` : ''}
 
-<b>⏰ التاريخ:</b>
-${new Date().toLocaleString('ar-EG')}
+<b>💳 طريقة الدفع:</b>
+${payment_method}
+
+<b>⏰ وقت الطلب:</b>
+${order_date}
 
 ${notes ? `<b>📝 ملاحظات:</b>\n${notes}` : ''}
-      `.trim();
-    }
+    `.trim();
 
     const telegramResult = await sendTelegramNotification({
       type: order_type === 'single_product' ? 'bank_transfer' : 'cart_order',

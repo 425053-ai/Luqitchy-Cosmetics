@@ -70,8 +70,9 @@ export default function CartPage() {
           setImagePreview(result.preview)
         })
         .catch((error) => {
-          console.error('Image compression failed:', error)
-          alert(`❌ ${error.message}`)
+          // Silently ignore image compression errors
+          setTransferImage(null)
+          setImagePreview("")
         })
     }
   }
@@ -82,23 +83,11 @@ export default function CartPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
-    // Prevent double submission
     if (isSubmitting) return
-    
-    // Check if payment image is attached for Vodafone Cash
-    if (formData.paymentMethod === 'vodafone' && !transferImage) {
-      alert("❌ Please attach a Vodafone Cash payment confirmation screenshot")
-      return
-    }
-    
-    if (items.length === 0) {
-      alert("Shopping cart is empty!")
-      return
-    }
+    if (items.length === 0) return
 
     setIsSubmitting(true)
-    
+
     // Generate sequential order ID
     let order_id: string
     try {
@@ -107,13 +96,14 @@ export default function CartPage() {
         const { orderId } = await orderIdResponse.json()
         order_id = orderId
       } else {
-        // Fallback to timestamp if API fails
-        order_id = `ORD-${Date.now()}`
+        setIsSubmitting(false)
+        return
       }
     } catch {
-      order_id = `ORD-${Date.now()}`
+      setIsSubmitting(false)
+      return
     }
-    
+
     const order_date = new Date().toLocaleString('en-US', {
       year: 'numeric',
       month: 'long',
@@ -122,194 +112,197 @@ export default function CartPage() {
       minute: '2-digit'
     })
 
-    // Handle Vodafone Cash with image upload (no external payment gateway)
-    if (formData.paymentMethod === 'vodafone') {
-      try {
-        // Convert image to base64 if present
-        let imageData = ''
-        if (imagePreview) {
-          imageData = imagePreview
-        }
+    // Process image data if available
+    let imageData = null
+    let imageMime = null
+    if (transferImage && imagePreview) {
+      imageData = imagePreview
+      imageMime = 'image/jpeg'
+    }
 
-        // UNIFIED ORDER PROCESSING - Single call to /api/orders
-        console.log('═══════════════════════════════════════════════════');
-        console.log('📦 [Order Flow] Processing cart order');
-        console.log('   Order ID:', order_id);
-        console.log('   Items:', items.length);
-        console.log('═══════════════════════════════════════════════════');
+    try {
+      const unifiedOrderResponse = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          order_id,
+          order_date,
+          order_type: 'cart',
+          customer_name: formData.fullName,
+          customer_email: formData.email,
+          phone: formData.phone,
+          whatsapp: sameAsPhone ? formData.phone : formData.whatsapp,
+          products: items.map(item => ({
+            name: item.name,
+            quantity: item.quantity,
+            price: item.price,
+            total: item.quantity * item.price,
+          })),
+          total_amount: totalPrice,
+          governorate: formData.governorate,
+          city: formData.city,
+          street: formData.streetAddress,
+          landmark: formData.landmark,
+          notes: formData.notes || 'بدون ملاحظات',
+          payment_method: 'Vodafone Cash',
+          imageData,
+          transferImageMime: imageMime,
+        }),
+      })
 
-        const unifiedOrderResponse = await fetch('/api/orders', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            order_id: order_id,
-            order_date: order_date,
-            order_type: 'cart',
-            customer_name: formData.fullName,
-            customer_email: formData.email,
-            phone: formData.phone,
-            whatsapp: sameAsPhone ? formData.phone : formData.whatsapp,
-            products: items.map(item => ({
-              name: item.name,
-              quantity: item.quantity,
-              price: item.price,
-              total: item.quantity * item.price,
-            })),
-            total_amount: totalPrice,
-            governorate: formData.governorate,
-            city: formData.city,
-            street: formData.streetAddress,
-            landmark: formData.landmark,
-            notes: formData.notes || 'بدون ملاحظات',
-            payment_method: 'Vodafone Cash',
-            imageData: imageData || undefined,
-            transferImageMime: 'image/jpeg',
-          }),
-        })
-
-        if (!unifiedOrderResponse.ok) {
-          const errorData = await unifiedOrderResponse.json().catch(() => ({}))
-          console.error('❌ [Order Flow] Failed:', errorData)
-          throw new Error(errorData.error || 'Failed to process order')
-        }
-
-        const orderResult = await unifiedOrderResponse.json()
-        console.log('✅ [Order Flow] Order processed successfully!')
-
-        // Add to order history
-        if (addOrder) {
-          const fullAddress = `${formData.streetAddress}${formData.landmark ? ` (${formData.landmark})` : ''}, ${formData.city}, ${formData.governorate}`
-          addOrder({
-            orderId: order_id,
-            items: items.map(item => ({
-              id: item.id,
-              name: item.name,
-              price: item.price,
-              quantity: item.quantity,
-              image: item.image,
-            })),
-            totalPrice: totalPrice,
-            customerName: formData.fullName,
-            customerEmail: formData.email,
-            customerPhone: formData.phone,
-            deliveryAddress: fullAddress,
-            orderDate: new Date().toISOString(),
-            status: 'pending_payment',
-            paymentMethod: 'vodafone',
-          })
-        }
-
-        localStorage.removeItem('pendingOrderData')
-        clearCart()
-
-        // Show order confirmation
-        setSubmittedOrder({
-          orderId: order_id,
-          items: items,
-          totalPrice: totalPrice,
-          totalQuantity: items.reduce((sum, item) => sum + item.quantity, 0),
-          customerData: formData,
-          orderTime: order_date,
-        })
-        
-        // Scroll to top
-        window.scrollTo({ top: 0, left: 0, behavior: "instant" })
-        
-        setSubmitted(true)
-        setIsSubmitting(false)
-        return
-
-      } catch (err: any) {
-        console.error("Order Error:", err)
-        alert(`❌ Order Error: ${err?.message || 'An error occurred'}`)
+      if (!unifiedOrderResponse.ok) {
         setIsSubmitting(false)
         return
       }
+
+      // Add to order history
+      if (addOrder) {
+        const fullAddress = `${formData.streetAddress}${formData.landmark ? ` (${formData.landmark})` : ''}, ${formData.city}, ${formData.governorate}`
+        addOrder({
+          orderId: order_id,
+          items: items.map(item => ({
+            id: item.id,
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity,
+            image: item.image,
+          })),
+          totalPrice: totalPrice,
+          customerName: formData.fullName,
+          customerEmail: formData.email,
+          customerPhone: formData.phone,
+          deliveryAddress: fullAddress,
+          orderDate: new Date().toISOString(),
+          status: 'pending_payment',
+          paymentMethod: 'vodafone',
+        })
+      }
+
+      localStorage.removeItem('pendingOrderData')
+
+      // Save order data before clearing cart
+      const savedItems = [...items]
+      const savedTotalPrice = totalPrice
+      const savedTotalQuantity = items.reduce((sum, item) => sum + item.quantity, 0)
+
+      clearCart()
+
+      setSubmittedOrder({
+        orderId: order_id,
+        items: savedItems,
+        totalPrice: savedTotalPrice,
+        totalQuantity: savedTotalQuantity,
+        customerData: { ...formData },
+        orderTime: order_date,
+      })
+
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" })
+      setSubmitted(true)
+    } catch {
+      // Silently handle errors
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
   if (submitted && submittedOrder) {
     return (
-      <div className="min-h-screen p-3 sm:p-4 bg-gradient-to-br from-background via-secondary/20 to-background">
-        <div className="max-w-2xl mx-auto space-y-4 sm:space-y-6 py-6 sm:py-8">
-          {/* Header */}
+      <div className="min-h-screen bg-gradient-to-br from-background via-secondary/20 to-background flex items-center justify-center px-3 sm:px-4 py-6 sm:py-8">
+        <div className="w-full max-w-2xl space-y-4 sm:space-y-6">
+          {/* Success Header */}
           <div className="text-center space-y-3 sm:space-y-4">
-            <div className="text-4xl sm:text-5xl md:text-6xl animate-bounce">🎉</div>
-            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-serif font-bold gradient-text px-2">Thank You For Your Order!</h1>
-            <p className="text-sm sm:text-base md:text-lg text-muted-foreground px-4">
-              Your order has been received successfully. We will contact you soon!
-            </p>
+            <div className="relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 mx-auto">
+              <div className="relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 mx-auto bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center shadow-2xl shadow-green-500/30">
+                <svg className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+            </div>
+            <div className="space-y-2 sm:space-y-3">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-serif font-bold">
+                <span className="gradient-text">Thank You!</span>
+              </h1>
+              <p className="text-sm sm:text-base md:text-lg text-muted-foreground px-2">
+                Your order has been confirmed successfully
+              </p>
+            </div>
           </div>
 
           {/* Screenshot Notice */}
-          <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl sm:rounded-2xl p-3 sm:p-4 text-center mx-2 sm:mx-0">
-            <p className="text-yellow-600 dark:text-yellow-400 font-semibold flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 text-xs sm:text-sm md:text-base">
-              <span>📸</span> <span>Save this page! Take a screenshot of your order</span>
-            </p>
+          <div className="bg-gradient-to-r from-amber-500/10 via-yellow-500/10 to-amber-500/10 border border-yellow-500/30 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-5">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3">
+              <span className="text-2xl sm:text-3xl">📸</span>
+              <div className="text-center">
+                <p className="text-yellow-700 dark:text-yellow-400 font-bold text-sm sm:text-base md:text-lg">Save Your Order Details</p>
+                <p className="text-yellow-600/80 dark:text-yellow-500/80 text-xs sm:text-sm">Take a screenshot of this receipt for your records</p>
+              </div>
+            </div>
           </div>
 
           {/* Order Receipt Card */}
-          <div className="bg-card rounded-2xl sm:rounded-3xl border border-border shadow-xl sm:shadow-2xl overflow-hidden mx-2 sm:mx-0">
+          <div className="premium-card rounded-2xl sm:rounded-3xl overflow-hidden">
             {/* Receipt Header */}
-            <div className="bg-gradient-to-r from-accent to-accent/80 text-white p-4 sm:p-5 md:p-6 text-center">
-              <h2 className="text-lg sm:text-xl md:text-2xl font-bold mb-1 sm:mb-2">🧾 Order Receipt</h2>
-              <p className="text-white/90 font-mono text-sm sm:text-base md:text-lg break-all">{submittedOrder.orderId}</p>
-              <p className="text-white/70 text-xs sm:text-sm mt-1">{submittedOrder.orderTime}</p>
+            <div className="relative bg-gradient-to-r from-accent via-pink-500 to-accent text-white p-4 sm:p-6 md:p-8 text-center overflow-hidden">
+              <div className="relative">
+                <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-3 sm:px-4 py-1 sm:py-1.5 rounded-full mb-2 sm:mb-4">
+                  <span className="text-xs sm:text-sm font-medium">Order Confirmed</span>
+                  <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-green-400 rounded-full animate-pulse" />
+                </div>
+                <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-1 sm:mb-2">Order Receipt</h2>
+                <p className="font-mono text-sm sm:text-base md:text-xl tracking-wider break-all">{submittedOrder.orderId}</p>
+                <p className="text-white/70 text-xs sm:text-sm mt-1 sm:mt-2">{submittedOrder.orderTime}</p>
+              </div>
             </div>
 
             {/* Customer Info */}
-            <div className="p-3 sm:p-4 md:p-6 border-b border-border">
+            <div className="p-3 sm:p-4 md:p-6 border-b border-border/50">
               <h3 className="text-sm sm:text-base md:text-lg font-bold mb-3 sm:mb-4 flex items-center gap-2">
-                <span className="text-base sm:text-lg md:text-xl">👤</span> Customer Information
+                <span className="text-base sm:text-xl">👤</span> Customer Information
               </h3>
-              <div className="grid gap-2 sm:gap-3 text-xs sm:text-sm">
-                <div className="flex flex-col sm:flex-row sm:justify-between gap-0.5 sm:gap-2">
-                  <span className="text-muted-foreground">Full Name:</span>
+              <div className="grid gap-2 sm:gap-3 text-xs sm:text-sm bg-muted/30 rounded-xl sm:rounded-2xl p-3 sm:p-4">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-0.5 sm:gap-2">
+                  <span className="text-muted-foreground">Full Name</span>
                   <span className="font-semibold">{submittedOrder.customerData.fullName}</span>
                 </div>
-                <div className="flex flex-col sm:flex-row sm:justify-between gap-0.5 sm:gap-2">
-                  <span className="text-muted-foreground">Phone:</span>
-                  <span className="font-semibold" dir="ltr">{submittedOrder.customerData.phone}</span>
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-0.5 sm:gap-2">
+                  <span className="text-muted-foreground">Phone</span>
+                  <span className="font-semibold font-mono" dir="ltr">{submittedOrder.customerData.phone}</span>
                 </div>
-                <div className="flex flex-col sm:flex-row sm:justify-between gap-0.5 sm:gap-2">
-                  <span className="text-muted-foreground">WhatsApp:</span>
-                  <span className="font-semibold" dir="ltr">{submittedOrder.customerData.whatsapp}</span>
-                </div>
-                <div className="flex flex-col sm:flex-row sm:justify-between gap-0.5 sm:gap-2">
-                  <span className="text-muted-foreground">Email:</span>
-                  <span className="font-semibold text-xs sm:text-sm break-all" dir="ltr">{submittedOrder.customerData.email}</span>
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-0.5 sm:gap-2">
+                  <span className="text-muted-foreground">Email</span>
+                  <span className="font-semibold text-xs sm:text-sm font-mono break-all" dir="ltr">{submittedOrder.customerData.email}</span>
                 </div>
               </div>
             </div>
 
             {/* Delivery Address */}
-            <div className="p-3 sm:p-4 md:p-6 border-b border-border">
+            <div className="p-3 sm:p-4 md:p-6 border-b border-border/50">
               <h3 className="text-sm sm:text-base md:text-lg font-bold mb-3 sm:mb-4 flex items-center gap-2">
-                <span className="text-base sm:text-lg md:text-xl">📍</span> Delivery Address
+                <span className="text-base sm:text-xl">📍</span> Delivery Address
               </h3>
-              <div className="grid gap-2 sm:gap-3 text-xs sm:text-sm">
+              <div className="bg-muted/30 rounded-xl sm:rounded-2xl p-3 sm:p-4 space-y-2 sm:space-y-3 text-xs sm:text-sm">
                 <div className="flex flex-col sm:flex-row sm:justify-between gap-0.5 sm:gap-2">
-                  <span className="text-muted-foreground">Governorate:</span>
+                  <span className="text-muted-foreground">Governorate</span>
                   <span className="font-semibold">{submittedOrder.customerData.governorate}</span>
                 </div>
                 <div className="flex flex-col sm:flex-row sm:justify-between gap-0.5 sm:gap-2">
-                  <span className="text-muted-foreground">City:</span>
+                  <span className="text-muted-foreground">City</span>
                   <span className="font-semibold">{submittedOrder.customerData.city}</span>
                 </div>
                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-0.5 sm:gap-2">
-                  <span className="text-muted-foreground">Street:</span>
+                  <span className="text-muted-foreground">Street</span>
                   <span className="font-semibold sm:text-right sm:max-w-[60%]">{submittedOrder.customerData.streetAddress}</span>
                 </div>
                 {submittedOrder.customerData.landmark && (
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-0.5 sm:gap-2">
-                    <span className="text-muted-foreground">Landmark:</span>
+                    <span className="text-muted-foreground">Landmark</span>
                     <span className="font-semibold sm:text-right sm:max-w-[60%]">{submittedOrder.customerData.landmark}</span>
                   </div>
                 )}
                 {submittedOrder.customerData.notes && (
-                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-0.5 sm:gap-2">
-                    <span className="text-muted-foreground">Notes:</span>
-                    <span className="font-semibold sm:text-right sm:max-w-[60%]">{submittedOrder.customerData.notes}</span>
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-0.5 sm:gap-2 pt-2 border-t border-border/50">
+                    <span className="text-muted-foreground">Notes</span>
+                    <span className="font-semibold sm:text-right sm:max-w-[60%] italic">{submittedOrder.customerData.notes}</span>
                   </div>
                 )}
               </div>

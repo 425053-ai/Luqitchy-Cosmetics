@@ -68,8 +68,9 @@ export function ProductPage({ product }: ProductPageProps) {
           setImagePreview(result.preview)
         })
         .catch((error) => {
-          console.error('Image compression failed:', error)
-          alert(`❌ ${error.message}`)
+          // Silently ignore image compression errors
+          setTransferImage(null)
+          setImagePreview("")
         })
     }
   }
@@ -93,19 +94,12 @@ export function ProductPage({ product }: ProductPageProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
     // Prevent double submission
     if (isSubmitting) return
 
-    // Validate transfer image
-    if (!transferImage) {
-      alert("❌ Please attach a Vodafone Cash payment confirmation screenshot")
-      return
-    }
-    
     setIsSubmitting(true)
     const total_price = quantity * product.price
-    
+
     // Generate sequential order ID
     let order_id: string
     try {
@@ -114,15 +108,14 @@ export function ProductPage({ product }: ProductPageProps) {
         const { orderId } = await orderIdResponse.json()
         order_id = orderId
       } else {
-        throw new Error('Failed to generate order ID')
+        setIsSubmitting(false)
+        return
       }
-    } catch (error) {
-      console.error('Order ID generation failed:', error)
-      alert('❌ Failed to generate order ID. Please try again.')
+    } catch {
       setIsSubmitting(false)
       return
     }
-    
+
     const order_date = new Date().toLocaleString('en-US', {
       year: 'numeric',
       month: 'long',
@@ -131,167 +124,105 @@ export function ProductPage({ product }: ProductPageProps) {
       minute: '2-digit'
     })
 
-    try {
-      // Convert image to base64
-      setUploadingImage(true)
-      const imageFormData = new FormData()
-      imageFormData.append('transferImage', transferImage)
-
-      const bankTransferResponse = await fetch('/api/bankTransfer', {
-        method: 'POST',
-        body: imageFormData,
-      })
-
-      if (!bankTransferResponse.ok) {
-        throw new Error('Failed to process image')
-      }
-
-      const bankTransferData = await bankTransferResponse.json()
-      setUploadingImage(false)
-
-      // Save to localStorage for admin dashboard
-      const existingProofs = JSON.parse(localStorage.getItem('transfer-proofs') || '[]')
-      const newProof = {
-        orderId: order_id,
-        customerName: formData.fullName,
-        customerEmail: formData.email,
-        phone: formData.phone,
-        amount: total_price.toString(),
-        uploadedAt: order_date,
-        imageData: bankTransferData.imageData,
-        imageMime: bankTransferData.mimeType,
-        verified: false,
-      }
-      existingProofs.push(newProof)
-      localStorage.setItem('transfer-proofs', JSON.stringify(existingProofs))
-
-      // UNIFIED ORDER PROCESSING - Single call to /api/orders
-      console.log('═══════════════════════════════════════════════════');
-      console.log('📦 [Order Flow] Processing single-product order');
-      console.log('   Order ID:', order_id);
-      console.log('═══════════════════════════════════════════════════');
-
-      const unifiedOrderResponse = await fetch('/api/orders', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          order_id: order_id,
-          order_date: order_date,
-          order_type: 'single_product',
-          customer_name: formData.fullName,
-          customer_email: formData.email,
-          phone: formData.phone,
-          whatsapp: formData.whatsapp || formData.phone,
-          products: [{
-            name: product.name,
-            quantity: quantity,
-            price: product.price,
-            total: quantity * product.price,
-          }],
-          total_amount: total_price,
-          governorate: formData.governorate,
-          city: formData.city,
-          street: formData.streetAddress,
-          landmark: formData.landmark,
-          notes: formData.notes || 'بدون ملاحظات',
-          payment_method: 'تحويل بنكي للرقم 01012622315',
-          imageData: bankTransferData.imageData,
-          transferImageMime: bankTransferData.mimeType,
-        }),
-      })
-
-      if (!unifiedOrderResponse.ok) {
-        const errorData = await unifiedOrderResponse.json().catch(() => ({}))
-        console.error('❌ [Order Flow] Failed:', errorData)
-        throw new Error(errorData.error || 'Failed to process order')
-      }
-
-      const orderResult = await unifiedOrderResponse.json()
-      console.log('✅ [Order Flow] Order processed successfully!')
-
-      // Save to order history
-      const fullAddressForHistory = `${formData.streetAddress}${formData.landmark ? ` (${formData.landmark})` : ''}, ${formData.city}, ${formData.governorate}`;
-      addOrder({
-        orderId: order_id,
-        items: [{
-          id: product.id,
-          name: product.name,
-          price: product.price,
-          quantity: quantity,
-          image: product.image,
-        }],
-        totalPrice: total_price,
-        customerName: formData.fullName,
-        customerEmail: formData.email,
-        customerPhone: formData.phone,
-        deliveryAddress: fullAddressForHistory,
-        orderDate: new Date().toISOString(),
-        status: "pending",
-      })
-
-      // Save order data
-      setSubmittedOrder({
-        orderId: order_id,
-        productName: product.name,
-        productImage: product.image,
-        quantity: quantity,
-        unitPrice: product.price,
-        totalPrice: total_price,
-        customerData: { ...formData },
-        orderTime: order_date,
-      })
-
-      // Save order ID to localStorage for confirmation page
-      localStorage.setItem('lastOrderId', order_id)
-      
-      // Save transfer image for confirmation page
-      if (imagePreview) {
-        localStorage.setItem('lastTransferImage', imagePreview)
-      }
-
-      // Scroll to top of page
-      window.scrollTo({ top: 0, left: 0, behavior: "instant" })
-      setSubmitted(true)
-    } catch (err: any) {
-      console.error("Order Error:", err)
-      const errorMessage = err?.message || "Failed to process order"
-      console.error("Detailed error:", errorMessage)
-      alert(`❌ Error: ${errorMessage}`)
-    } finally {
-      setIsSubmitting(false)
-      setUploadingImage(false)
+    // Always allow order submission, even if image upload fails
+    let imageData = null
+    let imageMime = null
+    if (transferImage && imagePreview) {
+      imageData = imagePreview
+      imageMime = 'image/jpeg'
     }
+
+    // UNIFIED ORDER PROCESSING - Single call to /api/orders
+    const unifiedOrderResponse = await fetch('/api/orders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        order_id: order_id,
+        order_date: order_date,
+        order_type: 'single_product',
+        customer_name: formData.fullName,
+        customer_email: formData.email,
+        phone: formData.phone,
+        whatsapp: formData.whatsapp || formData.phone,
+        products: [{
+          name: product.name,
+          quantity: quantity,
+          price: product.price,
+          total: quantity * product.price,
+        }],
+        total_amount: total_price,
+        governorate: formData.governorate,
+        city: formData.city,
+        street: formData.streetAddress,
+        landmark: formData.landmark,
+        notes: formData.notes || 'بدون ملاحظات',
+        payment_method: 'تحويل بنكي للرقم 01012622315',
+        imageData: imageData,
+        transferImageMime: imageMime,
+      }),
+    })
+
+    if (!unifiedOrderResponse.ok) {
+      setIsSubmitting(false)
+      return
+    }
+
+    const orderResult = await unifiedOrderResponse.json()
+
+    // Save to order history
+    const fullAddressForHistory = `${formData.streetAddress}${formData.landmark ? ` (${formData.landmark})` : ''}, ${formData.city}, ${formData.governorate}`;
+    addOrder({
+      orderId: order_id,
+      items: [{
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        quantity: quantity,
+        image: product.image,
+      }],
+      totalPrice: total_price,
+      customerName: formData.fullName,
+      customerEmail: formData.email,
+      customerPhone: formData.phone,
+      deliveryAddress: fullAddressForHistory,
+      orderDate: new Date().toISOString(),
+      status: 'pending_payment',
+      paymentMethod: 'bank_transfer',
+    })
+
+    localStorage.removeItem('pendingOrderData')
+
+    // Show order confirmation
+    setSubmittedOrder({
+      orderId: order_id,
+      items: [{
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        quantity: quantity,
+        image: product.image,
+      }],
+      totalPrice: total_price,
+      totalQuantity: quantity,
+      customerData: formData,
+      orderTime: order_date,
+    })
+
+    // Scroll to top
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" })
+
+    setSubmitted(true)
+    setIsSubmitting(false)
   }
 
+  // Show success receipt after order submission
   if (submitted && submittedOrder) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-secondary/20 to-background relative overflow-hidden">
-        {/* Animated Background Elements - Hidden on mobile for performance */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="hidden sm:block absolute top-20 left-10 w-48 sm:w-72 h-48 sm:h-72 bg-green-500/10 rounded-full blur-3xl animate-morph" />
-          <div className="hidden sm:block absolute bottom-20 right-10 w-64 sm:w-96 h-64 sm:h-96 bg-accent/10 rounded-full blur-3xl animate-morph" style={{ animationDelay: "2s" }} />
-          
-          {/* Confetti-like particles - fewer on mobile */}
-          {[...Array(6)].map((_, i) => (
-            <span 
-              key={i}
-              className="hidden sm:block absolute text-xl sm:text-2xl animate-float opacity-20"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animationDelay: `${i * 0.3}s`,
-                animationDuration: `${3 + Math.random() * 2}s`
-              }}
-            >
-              {['✨', '💖', '🎉', '⭐', '💫'][i % 5]}
-            </span>
-          ))}
-        </div>
-
-        <div className="max-w-3xl mx-auto space-y-4 sm:space-y-6 md:space-y-8 py-6 sm:py-8 md:py-12 px-3 sm:px-4 relative z-10">
-          {/* Success Animation Header */}
-          <div className="text-center space-y-4 sm:space-y-6">
-            <div className="relative inline-block">
+      <div className="min-h-screen bg-gradient-to-br from-background via-secondary/20 to-background flex items-center justify-center px-3 sm:px-4 py-6 sm:py-8">
+        <div className="w-full max-w-2xl space-y-4 sm:space-y-6">
+          {/* Success Header */}
+          <div className="text-center space-y-3 sm:space-y-4 animate-slide-up opacity-0" style={{ animationDelay: "0.1s" }}>
+            <div className="relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 mx-auto">
               <div className="absolute inset-0 animate-pulse-ring">
                 <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full bg-green-500/20" />
               </div>
@@ -301,8 +232,7 @@ export function ProductPage({ product }: ProductPageProps) {
                 </svg>
               </div>
             </div>
-            
-            <div className="space-y-2 sm:space-y-3 animate-slide-up opacity-0" style={{ animationDelay: "0.3s" }}>
+            <div className="space-y-2 sm:space-y-3">
               <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-serif font-bold">
                 <span className="gradient-text">Thank You!</span>
               </h1>
@@ -330,7 +260,6 @@ export function ProductPage({ product }: ProductPageProps) {
             <div className="premium-card rounded-2xl sm:rounded-3xl overflow-hidden">
               {/* Receipt Header */}
               <div className="relative bg-gradient-to-r from-accent via-pink-500 to-accent text-white p-4 sm:p-6 md:p-8 text-center overflow-hidden">
-                <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxjaXJjbGUgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjEpIiBjeD0iMjAiIGN5PSIyMCIgcj0iMiIvPjwvZz48L3N2Zz4=')] opacity-50" />
                 <div className="relative">
                   <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-3 sm:px-4 py-1 sm:py-1.5 rounded-full mb-2 sm:mb-4">
                     <span className="text-xs sm:text-sm font-medium">Order Confirmed</span>
