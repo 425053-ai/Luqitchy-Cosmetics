@@ -83,13 +83,7 @@ export async function POST() {
 
     if (url && token) {
       try {
-        // Check if counter is using old 1000+ format and reset it
-        const currentValue = await getRedis().get<number>(COUNTER_KEY)
-        if (currentValue !== null && currentValue >= 1000) {
-          console.log('🔄 Resetting Redis counter from old format:', currentValue)
-          await getRedis().set(COUNTER_KEY, 0)
-        }
-        // Try to use Redis
+        // Use Redis atomic increment for sequential order IDs
         newCounter = await getRedis().incr(COUNTER_KEY)
         usingRedis = true
         console.log('✅ Using Redis counter:', newCounter)
