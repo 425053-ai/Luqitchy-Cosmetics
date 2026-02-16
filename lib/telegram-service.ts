@@ -1,8 +1,8 @@
-'use server';
-
 // Telegram Bot Service for Luqitchy Cosmetics
 // Bot: @luqitchy_bot
-// NOTE: This file is now server-only. Client-side Telegram calls should use /api/sendTelegram instead.
+// NOTE: This file is server-only. Client-side Telegram calls should use /api/sendTelegram instead.
+
+import FormData from 'form-data';
 
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '8001027503:AAFINaeu8OolPc5KDeMb4743U_VD9Z-unsE';
 const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || '1143952317';
@@ -55,9 +55,6 @@ export const sendTelegramMessage = async (message: string): Promise<TelegramResp
     return { success: false, error }
   }
 };
-
-
-import FormData from 'form-data';
 
 /**
  * Send a photo to Telegram using multipart/form-data (Node.js)
@@ -356,13 +353,18 @@ ${customerData.landmark ? `• علامة مميزة: ${customerData.landmark}` 
 ⚠️ <b>الحالة:</b> في انتظار التحقق من التحويل
   `.trim();
 
-  return await sendBankTransferProof(orderData.transferProofBase64, orderData.transferProofMime, message);
+  // Send text message first, then photo
+  const textResult = await sendTelegramMessage(message);
+  const imageBuffer = Buffer.from(orderData.transferProofBase64, 'base64');
+  const photoResult = await sendPhotoToTelegram(imageBuffer, orderData.transferProofMime, `📸 إثبات الدفع - ${orderData.orderId}`, `${orderData.orderId}-proof.jpg`);
+  if (!photoResult.success) {
+    console.error('⚠️ [Telegram] Photo upload failed for bank transfer, but text was sent:', photoResult.error);
+  }
+  return {
+    success: textResult.success,
+    data: { text: textResult.data, photo: photoResult?.data },
+    error: textResult.error || photoResult?.error,
+  };
 };
 
-// Export default للاستخدام السهل
-export default {
-  sendTelegramMessage,
-  sendSingleProductOrder,
-  sendCartOrderToTelegram,
-  sendPhotoToTelegram,
-};
+
