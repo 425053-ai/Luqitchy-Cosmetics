@@ -274,16 +274,6 @@ ${orderData.items.map((item: any) => `• ${item.name} × ${item.quantity}`).joi
       }
     }
 
-
-// Increase Vercel body size limit for large image uploads
-export const config = {
-  api: {
-    bodyParser: {
-      sizeLimit: '20mb',
-    },
-  },
-};
-
     return NextResponse.json(
       { success: true, message: 'Notification sent to Telegram and order saved to Excel' },
       { status: 200 }
@@ -298,3 +288,12 @@ export const config = {
     );
   }
 }
+
+// Increase Vercel body size limit for large image uploads
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '20mb',
+    },
+  },
+};
