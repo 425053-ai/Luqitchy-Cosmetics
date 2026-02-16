@@ -2,8 +2,6 @@
 // Bot: @luqitchy_bot
 // NOTE: This file is server-only. Client-side Telegram calls should use /api/sendTelegram instead.
 
-import FormData from 'form-data';
-
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '8001027503:AAFINaeu8OolPc5KDeMb4743U_VD9Z-unsE';
 const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || '1143952317';
 
@@ -72,30 +70,43 @@ export const sendPhotoToTelegram = async (
 ): Promise<TelegramResponse> => {
   const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendPhoto`;
   try {
+    console.log(`📸 [Telegram] Uploading photo: ${filename} (${imageBuffer.length} bytes, ${mimeType})`);
+
+    // Use Web API FormData + Blob (works natively with fetch in Node.js 18+/Next.js)
+    const blob = new Blob([imageBuffer], { type: mimeType });
     const form = new FormData();
     form.append('chat_id', TELEGRAM_CHAT_ID);
-    form.append('caption', caption);
+    form.append('caption', caption.substring(0, 1024)); // Telegram caption limit
     form.append('parse_mode', 'HTML');
-    form.append('photo', imageBuffer, { filename, contentType: mimeType });
+    form.append('photo', blob, filename);
 
     const response = await fetch(url, {
       method: 'POST',
-      body: form as any,
-      headers: form.getHeaders(),
+      body: form,
     });
-    const data = await response.json();
+
+    const responseText = await response.text();
+    console.log('📬 [Telegram] Photo API response status:', response.status);
+
+    let data;
+    try {
+      data = JSON.parse(responseText);
+    } catch {
+      console.error('❌ [Telegram] Non-JSON response:', responseText.substring(0, 500));
+      return { success: false, error: `Non-JSON response: ${responseText.substring(0, 200)}` };
+    }
+
     if (data.ok) {
       console.log('✅ [Telegram] Photo sent successfully!');
       return { success: true, data };
     } else {
       console.error('❌ [Telegram] Photo upload error:', data.description || 'Unknown error');
       console.error('   Error Code:', data.error_code);
-      console.error('   Full Response:', data);
       return { success: false, error: data };
     }
   } catch (error: any) {
     console.error('Telegram photo upload full error:', error);
-    return { success: false, error };
+    return { success: false, error: error.message || error };
   }
 };
 

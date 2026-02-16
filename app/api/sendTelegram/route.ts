@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { saveOrderToExcel } from '@/lib/excel-service';
-import { sendOrderToTelegram } from '@/lib/telegram-service';
 import { Buffer } from 'buffer';
 
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '';
@@ -10,6 +9,7 @@ interface TelegramPayload {
   type?: 'bank_transfer' | 'cart_order' | 'payment_success' | 'text_message';
   orderData?: any;
   imageData?: string;
+  transferImageMime?: string;
   message?: string;
 }
 
@@ -267,8 +267,10 @@ ${orderData.items.map((item: any) => `• ${item.name} × ${item.quantity}`).joi
         const imageBuffer = Buffer.from(rawBase64, 'base64');
         const mimeType = body.transferImageMime || 'image/jpeg';
         const filename = `${body.orderData?.order_id || 'transfer'}-proof.jpg`;
-        // Use the new unified Telegram service
-        const telegramResult = await sendOrderToTelegram(orderText, imageBuffer, mimeType, filename);
+        const caption = `📸 إثبات الدفع - ${body.orderData?.order_id || 'Order'}`;
+        // Use sendPhotoToTelegram (not sendOrderToTelegram to avoid duplicate message)
+        const { sendPhotoToTelegram } = await import('@/lib/telegram-service');
+        const telegramResult = await sendPhotoToTelegram(imageBuffer, mimeType, caption, filename);
         if (!telegramResult.success) {
           console.warn('⚠️ [Telegram] Photo upload error (but message was sent):', telegramResult.error);
         } else {

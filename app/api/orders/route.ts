@@ -228,11 +228,13 @@ async function sendEmailNotification(data: SendOrderRequest): Promise<{ success:
     return { success: false, error: 'Email service not configured' };
   }
 
-  const trimmedKey = brevoApiKey.trim();
+  // Clean the key: remove quotes, newlines, whitespace
+  const trimmedKey = brevoApiKey.replace(/["'\n\r\s]/g, '');
   const productsTable = generateProductsTable(data.products);
   const emailHTML = generateEmailHTML(data, productsTable);
 
   console.log(`📧 [Email] Sending to ${data.customer_email} for order ${data.order_id}`);
+  console.log(`📧 [Email] API Key: length=${trimmedKey.length}, starts=${trimmedKey.substring(0, 8)}..., ends=...${trimmedKey.substring(trimmedKey.length - 4)}`);
 
   try {
     const brevoResponse = await fetch('https://api.brevo.com/v3/smtp/email', {
