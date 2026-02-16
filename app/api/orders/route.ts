@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { saveOrderToExcel, saveBulkOrderToExcel } from '@/lib/excel-service';
 import { sendPhotoToTelegram } from '@/lib/telegram-service';
+import { saveOrderToGoogleSheets, saveBulkOrderToGoogleSheets } from '@/lib/google-sheets-service';
 
 interface OrderProduct {
   name: string;
@@ -550,12 +551,60 @@ ${notes ? `<b>📝 ملاحظات:</b>\n${notes}` : ''}
       console.warn('⚠️ [Telegram] Failed but continuing with order processing');
     }
 
-    // STEP 3: Save to Excel
+    // STEP 3: Save to Excel (local only)
     console.log('📊 [Order Flow] STEP 3: Saving to Excel...');
     const excelResult = await saveToExcel(order_type, body, products);
 
     if (!excelResult.success) {
       console.warn('⚠️ [Excel] Failed but order was processed');
+    }
+
+    // STEP 4: Save to Google Sheets (works from mobile + desktop)
+    console.log('📊 [Order Flow] STEP 4: Saving to Google Sheets...');
+    try {
+      if (order_type === 'single_product') {
+        const gsResult = await saveOrderToGoogleSheets({
+          order_id,
+          product_name: products[0]?.name || 'Product',
+          quantity: products[0]?.quantity || 1,
+          price: products[0]?.price || 0,
+          total_amount,
+          customer_name,
+          phone,
+          customer_email,
+          governorate,
+          city,
+          street,
+          landmark: landmark || '',
+          notes: notes || '',
+          payment_method,
+          order_date,
+        });
+        if (!gsResult.success) {
+          console.warn('⚠️ [Google Sheets] Failed:', gsResult.error);
+        }
+      } else if (order_type === 'cart') {
+        const gsResult = await saveBulkOrderToGoogleSheets({
+          order_id,
+          customer_name,
+          phone,
+          customer_email,
+          governorate,
+          city,
+          street,
+          landmark: landmark || '',
+          notes: notes || '',
+          payment_method,
+          order_date,
+          products,
+          total_amount,
+        });
+        if (!gsResult.success) {
+          console.warn('⚠️ [Google Sheets] Failed:', gsResult.error);
+        }
+      }
+    } catch (gsError: any) {
+      console.warn('⚠️ [Google Sheets] Exception:', gsError.message);
     }
 
     console.log('═══════════════════════════════════════════════════');

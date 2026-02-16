@@ -949,27 +949,7 @@ export default function CartPage() {
                           </div>
                         </div>
 
-                        {/* WhatsApp Help Support */}
-                        <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-4">
-                          <div className="flex items-start gap-3">
-                            <span className="text-xl">💬</span>
-                            <div className="flex-1">
-                              <p className="text-sm font-semibold text-green-700 dark:text-green-400 mb-2">Need help uploading the screenshot?</p>
-                              <p className="text-xs text-green-700 dark:text-green-400 mb-3">
-                                If you encounter any issues while uploading your payment confirmation, our team is here to help you quickly!
-                              </p>
-                              <a 
-                                href="https://wa.me/201012622315?text=Hello%20I%20am%20having%20trouble%20uploading%20my%20payment%20screenshot" 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-medium transition-colors text-xs sm:text-sm"
-                              >
-                                <span>📱</span>
-                                Contact us on WhatsApp
-                              </a>
-                            </div>
-                          </div>
-                        </div>
+
                       </div>
                     </div>
 
