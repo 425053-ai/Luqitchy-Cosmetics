@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { saveOrderToExcel, saveBulkOrderToExcel } from '@/lib/excel-service';
+import { sendPhotoToTelegram } from '@/lib/telegram-service';
 
 interface OrderProduct {
   name: string;
@@ -58,6 +59,7 @@ interface SendOrderRequest {
 
 interface TelegramPayload {
   type: 'bank_transfer' | 'cart_order' | 'payment_success' | 'text_message';
+  message: string;
   orderData: any;
   imageData?: string;
   transferImageMime?: string;
@@ -312,29 +314,20 @@ async function sendTelegramNotification(telegramPayload: TelegramPayload): Promi
     if (telegramPayload.imageData && ['bank_transfer', 'cart_order'].includes(telegramPayload.type)) {
       console.log('📸 [Telegram] Sending payment proof image...');
       try {
-        const buffer = Buffer.from(telegramPayload.imageData, 'base64');
+        // Strip data URI prefix (e.g., "data:image/jpeg;base64,") if present
+        let rawBase64 = telegramPayload.imageData;
+        if (rawBase64.includes(',')) {
+          rawBase64 = rawBase64.split(',')[1];
+        }
+        const buffer = Buffer.from(rawBase64, 'base64');
         const mimeType = telegramPayload.transferImageMime || 'image/jpeg';
+        const filename = `${telegramPayload.orderData?.order_id || 'transfer'}-proof.jpg`;
+        const caption = `📸 إثبات الدفع - ${telegramPayload.orderData?.order_id || 'Order'}`;
 
-        const formData = new FormData();
-        formData.append('chat_id', TELEGRAM_CHAT_ID);
+        const photoResult = await sendPhotoToTelegram(buffer, mimeType, caption, filename);
 
-        const blob = new Blob([buffer], { type: mimeType });
-        formData.append('photo', blob, `${telegramPayload.orderData?.order_id || 'transfer'}-proof.jpg`);
-        formData.append('caption', `📸 إثبات الدفع - ${telegramPayload.orderData?.order_id || 'Order'}`);
-        formData.append('parse_mode', 'HTML');
-
-        const photoResponse = await fetch(
-          `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendPhoto`,
-          {
-            method: 'POST',
-            body: formData,
-          }
-        );
-
-        const photoData = await photoResponse.json();
-
-        if (!photoData.ok) {
-          console.warn('⚠️ [Telegram] Photo send failed:', photoData.description);
+        if (!photoResult.success) {
+          console.warn('⚠️ [Telegram] Photo send failed:', photoResult.error);
         } else {
           console.log('✅ [Telegram] Payment proof image sent successfully!');
         }

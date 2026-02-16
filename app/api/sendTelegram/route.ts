@@ -259,7 +259,12 @@ ${orderData.items.map((item: any) => `• ${item.name} × ${item.quantity}`).joi
     if (body.imageData && ['bank_transfer', 'cart_order'].includes(messageType)) {
       console.log('📸 [Telegram] Sending payment proof image...');
       try {
-        const imageBuffer = Buffer.from(body.imageData, 'base64');
+        // Strip data URI prefix (e.g., "data:image/jpeg;base64,") if present
+        let rawBase64 = body.imageData;
+        if (rawBase64.includes(',')) {
+          rawBase64 = rawBase64.split(',')[1];
+        }
+        const imageBuffer = Buffer.from(rawBase64, 'base64');
         const mimeType = body.transferImageMime || 'image/jpeg';
         const filename = `${body.orderData?.order_id || 'transfer'}-proof.jpg`;
         // Use the new unified Telegram service

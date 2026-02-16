@@ -50,11 +50,9 @@ export function ProductPage({ product }: ProductPageProps) {
   // Save submitted order data
   const [submittedOrder, setSubmittedOrder] = useState<{
     orderId: string;
-    productName: string;
-    productImage: string;
-    quantity: number;
-    unitPrice: number;
+    items: { id: string; name: string; price: number; quantity: number; image: string }[];
     totalPrice: number;
+    totalQuantity: number;
     customerData: typeof formData;
     orderTime: string;
   } | null>(null)
@@ -343,23 +341,27 @@ export function ProductPage({ product }: ProductPageProps) {
                     <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-accent/10 flex items-center justify-center">
                       <span className="text-base sm:text-xl">📦</span>
                     </div>
-                    <h3 className="text-sm sm:text-base md:text-lg font-bold">Product Details</h3>
+                    <h3 className="text-sm sm:text-base md:text-lg font-bold">Product Details ({submittedOrder.totalQuantity} items)</h3>
                   </div>
-                  <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 md:gap-5 bg-gradient-to-r from-muted/50 to-muted/30 rounded-xl sm:rounded-2xl p-3 sm:p-4 order-card">
-                    <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-xl sm:rounded-2xl overflow-hidden flex-shrink-0 shadow-lg ring-2 ring-white/50">
-                      <Image src={submittedOrder.productImage} alt={submittedOrder.productName} fill className="object-cover" />
-                    </div>
-                    <div className="flex-1 min-w-0 text-center sm:text-left">
-                      <p className="font-bold text-base sm:text-lg md:text-xl mb-1">{submittedOrder.productName}</p>
-                      <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
-                        <span className="bg-accent/10 px-2 sm:px-3 py-1 rounded-full">Qty: {submittedOrder.quantity}</span>
-                        <span>{submittedOrder.unitPrice} EGP each</span>
+                  <div className="space-y-3 sm:space-y-4">
+                    {submittedOrder.items.map((item, index) => (
+                      <div key={index} className="flex items-center gap-2 sm:gap-3 md:gap-4 bg-gradient-to-r from-muted/50 to-muted/30 rounded-xl sm:rounded-2xl p-3 sm:p-4 order-card">
+                        <div className="relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-xl sm:rounded-2xl overflow-hidden flex-shrink-0 shadow-lg ring-2 ring-white/50">
+                          <Image src={item.image} alt={item.name} fill className="object-cover" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-bold text-sm sm:text-base md:text-lg mb-1">{item.name}</p>
+                          <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
+                            <span className="bg-accent/10 px-2 sm:px-3 py-1 rounded-full">Qty: {item.quantity}</span>
+                            <span>{item.price} EGP each</span>
+                          </div>
+                        </div>
+                        <div className="text-right flex-shrink-0">
+                          <p className="text-xs sm:text-sm text-muted-foreground">Subtotal</p>
+                          <p className="font-bold text-accent text-base sm:text-lg md:text-xl">{item.price * item.quantity} EGP</p>
+                        </div>
                       </div>
-                    </div>
-                    <div className="text-center sm:text-right">
-                      <p className="text-xs sm:text-sm text-muted-foreground">Subtotal</p>
-                      <p className="font-bold text-accent text-xl sm:text-2xl">{submittedOrder.totalPrice} EGP</p>
-                    </div>
+                    ))}
                   </div>
                 </div>
 

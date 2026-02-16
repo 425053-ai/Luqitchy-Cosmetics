@@ -7,7 +7,7 @@ const COUNTER_KEY = 'luqitchy:order_counter'
 const COUNTER_FILE = path.join(process.cwd(), 'data', 'order-counter.json')
 
 // In-memory counter as fallback
-let memoryCounter = 1000
+let memoryCounter = 0
 
 // Try to load counter from file
 function loadCounterFromFile(): number {
@@ -15,7 +15,7 @@ function loadCounterFromFile(): number {
     if (fs.existsSync(COUNTER_FILE)) {
       const data = fs.readFileSync(COUNTER_FILE, 'utf-8')
       const parsed = JSON.parse(data)
-      memoryCounter = Math.max(memoryCounter, parsed.counter || 1000)
+      memoryCounter = Math.max(memoryCounter, parsed.counter || 0)
       return memoryCounter
     }
   } catch (err) {
@@ -83,6 +83,12 @@ export async function POST() {
 
     if (url && token) {
       try {
+        // Check if counter is using old 1000+ format and reset it
+        const currentValue = await getRedis().get<number>(COUNTER_KEY)
+        if (currentValue !== null && currentValue >= 1000) {
+          console.log('🔄 Resetting Redis counter from old format:', currentValue)
+          await getRedis().set(COUNTER_KEY, 0)
+        }
         // Try to use Redis
         newCounter = await getRedis().incr(COUNTER_KEY)
         usingRedis = true
