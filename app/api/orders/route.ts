@@ -223,35 +223,20 @@ function generateEmailHTML(data: SendOrderRequest, productsTable: string): strin
 }
 
 async function sendEmailNotification(data: SendOrderRequest): Promise<{ success: boolean; error?: string }> {
-  const brevoApiKey = process.env.BREVO_API_KEY;
+  // Use hardcoded key as primary, env var as fallback
+  const brevoApiKey = process.env.BREVO_API_KEY || 'xkeysib-83d40eced1ccb9f90eefCcijrCfZBuqDzBWp3qSrBEZCqBUfQVz4CWGHWF91iaEw-ztZJxwlXa58vP67T';
+  
   if (!brevoApiKey) {
-    console.error('❌ [Email] BREVO_API_KEY environment variable is not set');
+    console.error('❌ [Email] BREVO_API_KEY is not configured');
     return { success: false, error: 'Email service not configured' };
   }
 
-  // Aggressive cleaning: keep only ASCII printable chars (no hidden unicode, BOM, zero-width spaces)
-  const trimmedKey = brevoApiKey.replace(/[^a-zA-Z0-9\-]/g, '');
+  // Trim whitespace/newlines only (no aggressive cleaning that could break the key)
+  const cleanKey = brevoApiKey.trim();
   const productsTable = generateProductsTable(data.products);
   const emailHTML = generateEmailHTML(data, productsTable);
 
   console.log(`📧 [Email] Sending to ${data.customer_email} for order ${data.order_id}`);
-  console.log(`📧 [Email] API Key: raw_length=${brevoApiKey.length}, clean_length=${trimmedKey.length}, starts=${trimmedKey.substring(0, 12)}..., ends=...${trimmedKey.substring(trimmedKey.length - 6)}`);
-
-  // Quick verify: test the key against Brevo account endpoint first
-  try {
-    const verifyRes = await fetch('https://api.brevo.com/v3/account', {
-      headers: { 'api-key': trimmedKey },
-    });
-    const verifyData = await verifyRes.json();
-    if (!verifyRes.ok) {
-      console.error('❌ [Email] Brevo key verification FAILED:', verifyData);
-      console.error('❌ [Email] The API key is invalid or revoked. Generate a new one at: https://app.brevo.com/settings/keys/api');
-      return { success: false, error: 'Brevo API key is invalid. Please generate a new key from Brevo dashboard.' };
-    }
-    console.log(`✅ [Email] Brevo key verified! Account: ${verifyData.email}, Plan: ${verifyData.plan?.[0]?.type || 'unknown'}`);
-  } catch (verifyErr: any) {
-    console.warn('⚠️ [Email] Could not verify Brevo key:', verifyErr.message);
-  }
 
   try {
     const brevoResponse = await fetch('https://api.brevo.com/v3/smtp/email', {
@@ -259,7 +244,7 @@ async function sendEmailNotification(data: SendOrderRequest): Promise<{ success:
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
-        'api-key': trimmedKey,
+        'api-key': cleanKey,
       },
       body: JSON.stringify({
         to: [
@@ -270,7 +255,7 @@ async function sendEmailNotification(data: SendOrderRequest): Promise<{ success:
         ],
         sender: {
           email: process.env.BREVO_SENDER_EMAIL || 'luqitchycosmetics@gmail.com',
-          name: process.env.BREVO_SENDER_NAME || 'Luqitchy Cosmetics 💖',
+          name: 'Luqitchy Cosmetics',
         },
         subject: `Order Confirmation - ${data.order_id}`,
         htmlContent: emailHTML,
@@ -283,15 +268,15 @@ async function sendEmailNotification(data: SendOrderRequest): Promise<{ success:
 
     if (!brevoResponse.ok) {
       const errorData = await brevoResponse.json();
-      console.error('❌ [Email] Brevo API Error:', errorData);
-      return { success: false, error: `Brevo API error: ${JSON.stringify(errorData)}` };
+      console.error('❌ [Email] Brevo REST API Error:', brevoResponse.status, errorData);
+      return { success: false, error: `Brevo API error (${brevoResponse.status}): ${errorData?.message || JSON.stringify(errorData)}` };
     }
 
     const responseData = await brevoResponse.json();
-    console.log('✅ [Email] Email sent successfully!');
+    console.log('✅ [Email] Email sent successfully via Brevo REST API! MessageId:', responseData.messageId);
     return { success: true };
   } catch (error: any) {
-    console.error('❌ [Email] Error sending email:', error.message);
+    console.error('❌ [Email] Network error sending email:', error.message);
     return { success: false, error: error.message };
   }
 }

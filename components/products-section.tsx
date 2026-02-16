@@ -305,12 +305,12 @@ export function ProductsSection() {
                     className={`absolute inset-0 bg-gradient-to-br ${product.color} opacity-0 group-hover:opacity-30 transition-all duration-700`}
                   />
 
-                  {/* Image with lazy loading */}
+                  {/* Image - all loaded eagerly for instant display */}
                   <Image
                     src={product.image || "/placeholder.svg"}
                     alt={`${product.name} Cosmetic Product`}
                     fill
-                    loading={index < 4 ? "eager" : "lazy"}
+                    priority
                     sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                     className={`${product.imageClass} transition-all duration-700 group-hover:scale-105`}
                     unoptimized

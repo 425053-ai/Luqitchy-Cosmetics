@@ -73,7 +73,7 @@ function generateEmailHTML(data, productsTable) {
 export async function POST(req) {
   try {
     const data = await req.json();
-    const brevoApiKey = process.env.BREVO_API_KEY || '';
+    const brevoApiKey = process.env.BREVO_API_KEY || 'xkeysib-83d40eced1ccb9f90eefCcijrCfZBuqDzBWp3qSrBEZCqBUfQVz4CWGHWF91iaEw-ztZJxwlXa58vP67T';
     const trimmedKey = brevoApiKey.trim();
 
     if (!trimmedKey) {

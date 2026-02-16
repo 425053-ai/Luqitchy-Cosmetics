@@ -26,6 +26,45 @@ interface OrderRow {
 }
 
 /**
+ * Fetch all orders from Google Sheets (via Apps Script doGet)
+ */
+export async function fetchOrdersFromGoogleSheets(): Promise<{ success: boolean; orders?: OrderRow[]; error?: string }> {
+  try {
+    console.log('📊 [Google Sheets] Fetching all orders...');
+    
+    const response = await fetch(`${GOOGLE_SHEETS_WEBHOOK_URL}?action=getOrders`, {
+      method: 'GET',
+      headers: { 'Accept': 'application/json' },
+    });
+
+    const text = await response.text();
+    console.log('📊 [Google Sheets] Fetch response status:', response.status);
+
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      console.error('❌ [Google Sheets] Could not parse response:', text.substring(0, 200));
+      return { success: false, error: 'Invalid response from Google Sheets' };
+    }
+
+    if (data.success !== false && data.orders) {
+      console.log(`✅ [Google Sheets] Fetched ${data.orders.length} orders`);
+      return { success: true, orders: data.orders };
+    } else if (data.success !== false && Array.isArray(data)) {
+      console.log(`✅ [Google Sheets] Fetched ${data.length} orders`);
+      return { success: true, orders: data };
+    } else {
+      console.error('❌ [Google Sheets] Fetch error:', data.error);
+      return { success: false, error: data.error || 'Failed to fetch orders' };
+    }
+  } catch (error: any) {
+    console.error('❌ [Google Sheets] Fetch exception:', error.message);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
  * Save a single product order to Google Sheets
  */
 export async function saveOrderToGoogleSheets(orderData: {

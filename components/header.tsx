@@ -8,7 +8,6 @@ import { Menu, X, Sparkles, ShoppingCart, Heart, Package } from "lucide-react"
 import { useCart } from "@/context/CartContext"
 import { useWishlist } from "@/context/WishlistContext"
 import { QuickSearch } from "@/components/quick-search"
-import { CartPreview } from "@/components/cart-preview"
 
 const navLinks = [
   { label: "Home", href: "#hero" },
@@ -90,8 +89,17 @@ export function Header() {
                 <Package className="w-5 h-5" />
               </Button>
             </Link>
-            {/* Cart Preview Dropdown */}
-            <CartPreview />
+            {/* Cart Button - Direct link to cart page */}
+            <Link href="/cart" className="relative group">
+              <Button variant="outline" size="icon" className="relative h-11 w-11 rounded-full hover:bg-accent/10 hover:border-accent transition-all hover:scale-105 group-hover:animate-cute-wiggle">
+                <ShoppingCart className="w-5 h-5 group-hover:text-accent transition-colors" />
+                {totalItems > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-accent text-accent-foreground text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center shadow-lg animate-bounce">
+                    {totalItems}
+                  </span>
+                )}
+              </Button>
+            </Link>
             <Link href="#products">
               <Button className="relative bg-accent hover:bg-accent/90 text-accent-foreground rounded-full px-7 py-5 shadow-lg shadow-accent/40 hover:shadow-xl hover:shadow-accent/50 transition-all duration-300 hover:scale-105 group overflow-hidden btn-kawaii animate-glow-soft">
                 <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />

@@ -192,11 +192,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 2️⃣ Confirm Brevo API key is loaded
-    const brevoApiKey = process.env.BREVO_API_KEY;
-    console.log('Brevo key exists:', !!brevoApiKey);
+    // 2️⃣ Get Brevo API key
+    const brevoApiKey = (process.env.BREVO_API_KEY || 'xkeysib-83d40eced1ccb9f90eefCcijrCfZBuqDzBWp3qSrBEZCqBUfQVz4CWGHWF91iaEw-ztZJxwlXa58vP67T').trim();
     if (!brevoApiKey) {
-      console.error('❌ [Email] BREVO_API_KEY environment variable is not set');
+      console.error('❌ [Email] BREVO_API_KEY is not configured');
       return NextResponse.json(
         { error: 'Email service not configured' },
         { status: 500 }
@@ -216,7 +215,7 @@ export async function POST(request: NextRequest) {
       ],
       sender: {
         email: process.env.BREVO_SENDER_EMAIL || 'luqitchycosmetics@gmail.com',
-        name: process.env.BREVO_SENDER_NAME || 'Luqitchy Cosmetics 💖',
+        name: 'Luqitchy Cosmetics',
       },
       subject: `Order Confirmation - ${order_id}`,
       htmlContent: emailHTML,
@@ -226,49 +225,26 @@ export async function POST(request: NextRequest) {
       },
     };
 
-    // 4️⃣ Send email with retry logic
-    let brevoResponse, responseData, lastError;
-    for (let attempt = 1; attempt <= 2; attempt++) {
-      try {
-        console.log(`📬 [Email] Sending email via Brevo API (attempt ${attempt})`);
-        brevoResponse = await fetch('https://api.brevo.com/v3/smtp/email', {
-          method: 'POST',
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'api-key': brevoApiKey,
-          },
-          body: JSON.stringify(emailPayload),
-        });
+    // 4️⃣ Send email via Brevo REST API (single attempt, fast)
+    console.log(`📬 [Email] Sending email via Brevo REST API to ${customer_email}`);
+    const brevoResponse = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'api-key': brevoApiKey,
+      },
+      body: JSON.stringify(emailPayload),
+    });
 
-        if (brevoResponse.ok) {
-          responseData = await brevoResponse.json();
-          console.log('✅ [Email] Email sent successfully via Brevo!');
-          console.log('   - Message ID:', responseData.messageId);
-          break;
-        } else {
-          const errorData = await brevoResponse.json();
-          lastError = errorData;
-          console.error('❌ [Email] Brevo API Error:');
-          console.error('   Status:', brevoResponse.status);
-          console.error('   Error:', errorData);
-          if (attempt === 2) {
-            throw new Error(`Brevo API error: ${JSON.stringify(errorData)}`);
-          } else {
-            console.warn('🔁 [Email] Retrying Brevo email send...');
-            await new Promise(res => setTimeout(res, 1000));
-          }
-        }
-      } catch (err) {
-        lastError = err;
-        if (attempt === 2) {
-          console.error('❌ [Email] Final Brevo send attempt failed:', err);
-          throw err;
-        } else {
-          console.warn('🔁 [Email] Retrying Brevo email send after error:', err);
-          await new Promise(res => setTimeout(res, 1000));
-        }
-      }
+    let responseData;
+    if (!brevoResponse.ok) {
+      const errorData = await brevoResponse.json();
+      console.error('❌ [Email] Brevo REST API Error:', brevoResponse.status, errorData);
+      // Don't throw - continue to save to Excel
+    } else {
+      responseData = await brevoResponse.json();
+      console.log('✅ [Email] Email sent successfully! MessageId:', responseData.messageId);
     }
 
     // 5️⃣ Save to Excel
