@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { saveOrderToExcel } from '@/lib/excel-service';
+import { sendOrderToTelegram } from '@/lib/telegram-service';
+import { Buffer } from 'buffer';
 
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '';
 const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || '';
@@ -256,46 +258,29 @@ ${orderData.items.map((item: any) => `• ${item.name} × ${item.quantity}`).joi
     }
     if (body.imageData && ['bank_transfer', 'cart_order'].includes(messageType)) {
       console.log('📸 [Telegram] Sending payment proof image...');
-
       try {
-        // Convert base64 to buffer
-        const buffer = Buffer.from(body.imageData, 'base64');
+        const imageBuffer = Buffer.from(body.imageData, 'base64');
         const mimeType = body.transferImageMime || 'image/jpeg';
-
-        // Create FormData for multipart/form-data request
-        const formData = new FormData();
-        formData.append('chat_id', TELEGRAM_CHAT_ID);
-        
-        // Create Blob from buffer
-        const blob = new Blob([buffer], { type: mimeType });
-        formData.append('photo', blob, `${body.orderData?.order_id || 'transfer'}-proof.jpg`);
-        formData.append('caption', `📸 إثبات الدفع - ${body.orderData?.order_id || 'Order'}`);
-        formData.append('parse_mode', 'HTML');
-
-        const photoResponse = await fetch(
-          `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendPhoto`,
-          {
-            method: 'POST',
-            body: formData,
-          }
-        );
-
-        const photoData = await photoResponse.json();
-
-        // ✅ LOG 5: Log photo response
-        console.log('📷 [Telegram] Photo Response:');
-        console.log('  - ok flag:', photoData.ok);
-        console.log('  - Message ID:', photoData.result?.message_id || 'N/A');
-
-        if (!photoData.ok) {
-          console.warn('⚠️ [Telegram] Photo send failed, but message was sent. Error:', photoData.description);
+        const filename = `${body.orderData?.order_id || 'transfer'}-proof.jpg`;
+        // Use the new unified Telegram service
+        const telegramResult = await sendOrderToTelegram(orderText, imageBuffer, mimeType, filename);
+        if (!telegramResult.success) {
+          console.warn('⚠️ [Telegram] Photo upload error (but message was sent):', telegramResult.error);
         } else {
           console.log('✅ [Telegram] Payment proof image sent successfully!');
         }
       } catch (photoError: any) {
-        console.warn('⚠️ [Telegram] Photo upload error (but message was sent):', photoError.message);
+        console.error('Telegram photo upload full error:', photoError);
       }
     }
+// Increase Vercel body size limit for large image uploads
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '20mb',
+    },
+  },
+};
 
     return NextResponse.json(
       { success: true, message: 'Notification sent to Telegram and order saved to Excel' },

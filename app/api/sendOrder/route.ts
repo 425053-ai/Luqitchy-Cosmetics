@@ -171,12 +171,7 @@ function generateEmailHTML(data: SendOrderRequest, productsTable: string): strin
 export async function POST(request: NextRequest) {
   try {
     const body: SendOrderRequest = await request.json();
-
-    const {
-      customer_name,
-      customer_email,
-      order_id,
-    } = body;
+    const { customer_name, customer_email, order_id } = body;
 
     // Validate required fields
     if (!customer_name || !customer_email || !order_id) {
@@ -197,10 +192,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log(`📧 [Email] Processing order #${order_id} for ${customer_name} (${customer_email})`);
-
-    // Check Brevo API key
+    // 2️⃣ Confirm Brevo API key is loaded
     const brevoApiKey = process.env.BREVO_API_KEY;
+    console.log('Brevo key exists:', !!brevoApiKey);
     if (!brevoApiKey) {
       console.error('❌ [Email] BREVO_API_KEY environment variable is not set');
       return NextResponse.json(
@@ -209,59 +203,75 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generate products table HTML
-    console.log('📋 [Email] Generating products table...');
+    // 3️⃣ Prepare email payload
     const productsTable = generateProductsTable(body.products);
     const emailHTML = generateEmailHTML(body, productsTable);
-    console.log('✓ [Email] Email HTML generated successfully');
 
-    console.log('📬 [Email] Sending email via Brevo API:');
-    console.log('   - To:', customer_email);
-    console.log('   - Order ID:', order_id);
-    console.log('   - Subject: Order Confirmation - ' + order_id);
-
-    // Send email via Brevo API
-    const brevoResponse = await fetch('https://api.brevo.com/v3/smtp/email', {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'api-key': brevoApiKey,
+    const emailPayload = {
+      to: [
+        {
+          email: customer_email,
+          name: customer_name,
+        }
+      ],
+      sender: {
+        email: process.env.BREVO_SENDER_EMAIL || 'luqitchycosmetics@gmail.com',
+        name: process.env.BREVO_SENDER_NAME || 'Luqitchy Cosmetics 💖',
       },
-      body: JSON.stringify({
-        to: [
-          {
-            email: customer_email,
-            name: customer_name,
-          }
-        ],
-        sender: {
-          email: process.env.BREVO_SENDER_EMAIL || 'luqitchycosmetics@gmail.com',
-          name: process.env.BREVO_SENDER_NAME || 'Luqitchy Cosmetics 💖',
-        },
-        subject: `Order Confirmation - ${order_id}`,
-        htmlContent: emailHTML,
-        replyTo: {
-          email: 'luqitchycosmetics@gmail.com',
-          name: 'Luqitchy Cosmetics Support',
-        },
-      }),
-    });
+      subject: `Order Confirmation - ${order_id}`,
+      htmlContent: emailHTML,
+      replyTo: {
+        email: 'luqitchycosmetics@gmail.com',
+        name: 'Luqitchy Cosmetics Support',
+      },
+    };
 
-    if (!brevoResponse.ok) {
-      const errorData = await brevoResponse.json();
-      console.error('❌ [Email] Brevo API Error:');
-      console.error('   Status:', brevoResponse.status);
-      console.error('   Error:', errorData);
-      throw new Error(`Brevo API error: ${JSON.stringify(errorData)}`);
+    // 4️⃣ Send email with retry logic
+    let brevoResponse, responseData, lastError;
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      try {
+        console.log(`📬 [Email] Sending email via Brevo API (attempt ${attempt})`);
+        brevoResponse = await fetch('https://api.brevo.com/v3/smtp/email', {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'api-key': brevoApiKey,
+          },
+          body: JSON.stringify(emailPayload),
+        });
+
+        if (brevoResponse.ok) {
+          responseData = await brevoResponse.json();
+          console.log('✅ [Email] Email sent successfully via Brevo!');
+          console.log('   - Message ID:', responseData.messageId);
+          break;
+        } else {
+          const errorData = await brevoResponse.json();
+          lastError = errorData;
+          console.error('❌ [Email] Brevo API Error:');
+          console.error('   Status:', brevoResponse.status);
+          console.error('   Error:', errorData);
+          if (attempt === 2) {
+            throw new Error(`Brevo API error: ${JSON.stringify(errorData)}`);
+          } else {
+            console.warn('🔁 [Email] Retrying Brevo email send...');
+            await new Promise(res => setTimeout(res, 1000));
+          }
+        }
+      } catch (err) {
+        lastError = err;
+        if (attempt === 2) {
+          console.error('❌ [Email] Final Brevo send attempt failed:', err);
+          throw err;
+        } else {
+          console.warn('🔁 [Email] Retrying Brevo email send after error:', err);
+          await new Promise(res => setTimeout(res, 1000));
+        }
+      }
     }
 
-    const responseData = await brevoResponse.json();
-    console.log('✅ [Email] Email sent successfully via Brevo!');
-    console.log('   - Message ID:', responseData.messageId);
-
-    // Save to Excel
-    console.log('📊 [Excel] Saving order to Excel sheet...');
+    // 5️⃣ Save to Excel
     const excelOrderData = {
       order_id: body.order_id,
       product_name: body.products.map(p => p.name).join(', '),
@@ -293,24 +303,23 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(
-      { 
-        success: true, 
+      {
+        success: true,
         message: 'Order confirmation email sent to customer',
         orderId: order_id,
         customerEmail: customer_email,
-        messageId: responseData.messageId,
+        messageId: responseData?.messageId,
       },
       { status: 200 }
     );
   } catch (error: any) {
     console.error('❌ [Email] Error sending email:');
-    console.error('   Message:', error.message);
+    console.error('   Message:', error?.message);
     console.error('   Full error:', error);
-    
     return NextResponse.json(
-      { 
-        error: error.message || 'Failed to send order email',
-        details: process.env.NODE_ENV === 'development' ? error.toString() : undefined
+      {
+        error: error?.message || 'Failed to send order email',
+        details: process.env.NODE_ENV === 'development' ? error?.toString() : undefined,
       },
       { status: 500 }
     );

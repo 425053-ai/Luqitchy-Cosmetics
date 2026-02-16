@@ -56,77 +56,81 @@ export const sendTelegramMessage = async (message: string): Promise<TelegramResp
   }
 };
 
-// دالة إرسال صورة مع الطلب
-export const sendPhotoToTelegram = async (photoUrl: string, caption: string): Promise<TelegramResponse> => {
-  const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendPhoto`;
 
+import FormData from 'form-data';
+
+/**
+ * Send a photo to Telegram using multipart/form-data (Node.js)
+ * @param imageBuffer Buffer of the image
+ * @param mimeType Image MIME type (e.g. 'image/jpeg')
+ * @param caption Caption text
+ * @param filename Optional filename
+ * @returns TelegramResponse
+ */
+export const sendPhotoToTelegram = async (
+  imageBuffer: Buffer,
+  mimeType: string,
+  caption: string,
+  filename = 'payment-proof.jpg'
+): Promise<TelegramResponse> => {
+  const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendPhoto`;
   try {
+    const form = new FormData();
+    form.append('chat_id', TELEGRAM_CHAT_ID);
+    form.append('caption', caption);
+    form.append('parse_mode', 'HTML');
+    form.append('photo', imageBuffer, { filename, contentType: mimeType });
+
     const response = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        chat_id: TELEGRAM_CHAT_ID,
-        photo: photoUrl,
-        caption: caption,
-        parse_mode: 'HTML',
-      }),
+      body: form as any,
+      headers: form.getHeaders(),
     });
-
     const data = await response.json();
-    return data.ok ? { success: true, data } : { success: false, error: data };
-  } catch (error) {
+    if (data.ok) {
+      console.log('✅ [Telegram] Photo sent successfully!');
+      return { success: true, data };
+    } else {
+      console.error('❌ [Telegram] Photo upload error:', data.description || 'Unknown error');
+      console.error('   Error Code:', data.error_code);
+      console.error('   Full Response:', data);
+      return { success: false, error: data };
+    }
+  } catch (error: any) {
+    console.error('Telegram photo upload full error:', error);
     return { success: false, error };
   }
 };
 
-// دالة إرسال صورة التحويل البنكي
-export const sendBankTransferProof = async (imageBase64: string, mimeType: string, caption: string): Promise<TelegramResponse> => {
-  const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendPhoto`;
-
-  try {
-    console.log('📸 Sending bank transfer proof image to Telegram...');
-    
-    // Send message first with details in caption
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        chat_id: TELEGRAM_CHAT_ID,
-        photo: `data:${mimeType};base64,${imageBase64}`,
-        caption: caption,
-        parse_mode: 'HTML',
-      }),
-    });
-
-    const data = await response.json();
-    
-    if (data.ok) {
-      console.log('✅ Bank transfer proof sent successfully to Telegram');
-      return { success: true, data };
-    } else {
-      console.error('❌ Telegram Photo Error:', data.description || 'Unknown error');
-      console.error('Error Code:', data.error_code);
-      console.error('Response:', data);
-      
-      // If photo data URI doesn't work, try sending as caption only
-      console.log('⚠️ Retrying with caption only...');
-      const fallbackResponse = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          chat_id: TELEGRAM_CHAT_ID,
-          text: `📸 <b>Payment Proof Image Received</b>\n\n${caption}\n\n⚠️ Image could not be sent directly, but order details are logged.`,
-          parse_mode: 'HTML',
-        }),
-      });
-      
-      const fallbackData = await fallbackResponse.json();
-      return fallbackData.ok ? { success: true, data: fallbackData } : { success: false, error: data };
+/**
+ * Unified function to send order message and optional payment proof image to Telegram
+ * @param message Text message (order details)
+ * @param imageBuffer Optional Buffer of payment proof image
+ * @param mimeType Optional image MIME type
+ * @param filename Optional image filename
+ * @returns TelegramResponse
+ */
+export const sendOrderToTelegram = async (
+  message: string,
+  imageBuffer?: Buffer,
+  mimeType?: string,
+  filename?: string
+): Promise<TelegramResponse> => {
+  // Always send the message first
+  const textResult = await sendTelegramMessage(message);
+  let photoResult: TelegramResponse | undefined = undefined;
+  if (imageBuffer && mimeType) {
+    photoResult = await sendPhotoToTelegram(imageBuffer, mimeType, message, filename);
+    if (!photoResult.success) {
+      // Log but do not break order flow
+      console.error('⚠️ [Telegram] Photo upload failed, but order message sent. Error:', photoResult.error);
     }
-  } catch (error: any) {
-    console.error('❌ Bank Transfer Proof Send Error:', error.message);
-    return { success: false, error };
   }
+  return {
+    success: textResult.success && (photoResult ? photoResult.success : true),
+    data: { text: textResult.data, photo: photoResult?.data },
+    error: textResult.error || photoResult?.error,
+  };
 };
 
 // واجهة بيانات المنتج
