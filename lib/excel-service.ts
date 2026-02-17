@@ -44,6 +44,26 @@ interface BulkOrderData {
   status?: string;
 }
 
+// Get the correct Excel file path
+function getExcelPath(): string {
+  // On Vercel (production), filesystem is read-only - return fallback path
+  if (process.env.VERCEL || process.env.VERCEL_ENV) {
+    console.log('☁️ [Excel] Running on Vercel - filesystem is read-only, Excel save will be skipped');
+    return ''; // Signal that Excel save should be skipped
+  }
+  
+  // Local development - save to Desktop "Luqitchy Orders.xlsx"
+  const desktopPath = path.join(
+    process.env.USERPROFILE || process.env.HOME || 'C:\\Users\\dell',
+    'OneDrive - Obour Institute',
+    'Desktop',
+    'Luqitchy Orders.xlsx'
+  );
+  
+  console.log('📂 [Excel] Target path:', desktopPath);
+  return desktopPath;
+}
+
 // Save single product order to Excel
 export async function saveOrderToExcel(orderData: OrderData) {
   try {
@@ -54,9 +74,15 @@ export async function saveOrderToExcel(orderData: OrderData) {
       total_amount: orderData.total_amount,
     });
 
-    // Use public folder to store the Excel file
-    const excelDir = path.join(process.cwd(), 'public', 'data');
-    const excelPath = path.join(excelDir, 'orders.xlsx');
+    const excelPath = getExcelPath();
+    
+    // Skip if on Vercel (no writable filesystem)
+    if (!excelPath) {
+      console.log('⏭️ [Excel] Skipping Excel save - running on Vercel (use Google Sheets instead)');
+      return { success: true, message: 'Skipped on Vercel - saved via Google Sheets' };
+    }
+    
+    const excelDir = path.dirname(excelPath);
 
     console.log('📂 [Excel] Excel path:', excelPath);
 
@@ -194,8 +220,15 @@ export async function saveBulkOrderToExcel(bulkOrderData: BulkOrderData) {
       total_amount: bulkOrderData.total_amount,
     });
 
-    const excelDir = path.join(process.cwd(), 'public', 'data');
-    const excelPath = path.join(excelDir, 'orders.xlsx');
+    const excelPath = getExcelPath();
+    
+    // Skip if on Vercel (no writable filesystem)
+    if (!excelPath) {
+      console.log('⏭️ [Excel Bulk] Skipping Excel save - running on Vercel (use Google Sheets instead)');
+      return { success: true, message: 'Skipped on Vercel - saved via Google Sheets' };
+    }
+    
+    const excelDir = path.dirname(excelPath);
 
     // Ensure directory exists
     if (!fs.existsSync(excelDir)) {
