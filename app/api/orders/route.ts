@@ -617,38 +617,42 @@ export async function POST(request: NextRequest) {
     console.log('🤖 [Order Flow] STEP 2: Sending Telegram notification...');
     
     // Unified Telegram message for both single and cart orders
-    const productsText = products
-      .map((p) => `• ${p.name} × ${p.quantity} = ${p.quantity * p.price} ج.م`)
+    const productsTable = products
+      .map((p, i) => `  ${i + 1}. ${p.name}\n     Qty: ${p.quantity} | Price: ${p.price} EGP | Subtotal: ${p.quantity * p.price} EGP`)
       .join('\n');
 
+    const totalItems = products.reduce((sum, p) => sum + p.quantity, 0);
+
     const telescopeMessage = `
-<b>🛒 طلب جديد من Luqitchy Cosmetics</b>
+━━━━━━━━━━━━━━━━━━━━━━
+🛒 <b>NEW ORDER — Luqitchy Cosmetics</b>
+━━━━━━━━━━━━━━━━━━━━━━
 
-<b>رقم الطلب:</b> <code>${order_id}</code>
+📋 <b>Order Info</b>
+├ Order ID: <code>${order_id}</code>
+├ Date: ${order_date}
+└ Type: ${order_type === 'cart' ? 'Cart' : 'Single Product'}
 
-<b>👤 بيانات العميل:</b>
-اسم: ${customer_name}
-البريد: ${customer_email}
-تليفون: ${phone}
+👤 <b>Customer</b>
+├ Name: ${customer_name}
+├ Email: ${customer_email}
+├ Phone: ${phone}
+└ WhatsApp: ${whatsapp || phone}
 
-<b>📦 المنتجات:</b>
-${productsText}
+📦 <b>Products (${totalItems} item${totalItems > 1 ? 's' : ''})</b>
+${productsTable}
 
-<b>💰 الإجمالي: ${total_amount} ج.م</b>
+💰 <b>TOTAL: ${total_amount} EGP</b>
 
-<b>📍 عنوان التسليم:</b>
-المحافظة: ${governorate}
-المدينة: ${city}
-العنوان: ${street}
-${landmark ? `المعلم: ${landmark}` : ''}
+📍 <b>Delivery Address</b>
+├ Governorate: ${governorate}
+├ City: ${city}
+├ Street: ${street}${landmark ? `\n├ Landmark: ${landmark}` : ''}
+└ ━━━━━━━━━━━━━━━━━━━━
 
-<b>💳 طريقة الدفع:</b>
-${payment_method}
-
-<b>⏰ وقت الطلب:</b>
-${order_date}
-
-${notes ? `<b>📝 ملاحظات:</b>\n${notes}` : ''}
+💳 <b>Payment: ${payment_method}</b>
+${notes ? `\n📝 <b>Notes:</b> ${notes}` : ''}
+━━━━━━━━━━━━━━━━━━━━━━
     `.trim();
 
     const telegramResult = await sendTelegramNotification({
