@@ -90,7 +90,7 @@ function generateAdminOrderHTML(data: {
 }): string {
   const productsRows = data.products.map(p => `
     <tr>
-      <td style="padding: 10px; border: 1px solid #d5c4e0; text-align: right;">${p.name}</td>
+      <td style="padding: 10px; border: 1px solid #d5c4e0; text-align: left;">${p.name}</td>
       <td style="padding: 10px; border: 1px solid #d5c4e0; text-align: center;">${p.quantity}</td>
       <td style="padding: 10px; border: 1px solid #d5c4e0; text-align: center;">${p.price} EGP</td>
       <td style="padding: 10px; border: 1px solid #d5c4e0; text-align: center; font-weight: bold;">${p.price * p.quantity} EGP</td>
@@ -99,24 +99,24 @@ function generateAdminOrderHTML(data: {
 
   return `
     <!DOCTYPE html>
-    <html dir="rtl" lang="ar">
+    <html dir="ltr" lang="en">
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <style>
-        body { font-family: 'Segoe UI', Tahoma, Arial, sans-serif; background-color: #f4f0ff; margin: 0; padding: 20px; direction: rtl; }
+        body { font-family: 'Segoe UI', Tahoma, Arial, sans-serif; background-color: #f4f0ff; margin: 0; padding: 20px; }
         .container { max-width: 640px; margin: 0 auto; background-color: #fff; padding: 30px; border-radius: 12px; border: 2px solid #9b59b6; box-shadow: 0 4px 12px rgba(155,89,182,0.15); }
         .header { background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%); color: white; padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 20px; }
         .header h1 { margin: 0; font-size: 24px; }
         .header .order-id { font-size: 18px; margin-top: 8px; background: rgba(255,255,255,0.2); display: inline-block; padding: 4px 16px; border-radius: 20px; }
-        .section { margin-bottom: 18px; padding: 15px; background-color: #faf8ff; border-right: 4px solid #9b59b6; border-radius: 6px; }
+        .section { margin-bottom: 18px; padding: 15px; background-color: #faf8ff; border-left: 4px solid #9b59b6; border-radius: 6px; }
         .section h2 { color: #8e44ad; margin-top: 0; font-size: 16px; border-bottom: 1px solid #e8daf5; padding-bottom: 8px; }
         .info-row { display: flex; justify-content: space-between; margin: 6px 0; padding-bottom: 6px; border-bottom: 1px solid #f0eaf5; }
         .info-label { font-weight: bold; color: #555; font-size: 14px; }
         .info-value { color: #222; font-size: 14px; }
         table { width: 100%; border-collapse: collapse; margin: 10px 0; }
-        th { background-color: #9b59b6; color: white; padding: 10px; text-align: right; border: 1px solid #8e44ad; font-size: 13px; }
-        td { padding: 10px; border: 1px solid #d5c4e0; font-size: 13px; text-align: right; }
+        th { background-color: #9b59b6; color: white; padding: 10px; text-align: left; border: 1px solid #8e44ad; font-size: 13px; }
+        td { padding: 10px; border: 1px solid #d5c4e0; font-size: 13px; text-align: left; }
         tr:nth-child(even) { background-color: #f9f5ff; }
         .total-box { background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%); color: white; padding: 15px; border-radius: 10px; text-align: center; margin: 15px 0; }
         .total-box .amount { font-size: 28px; font-weight: bold; }
@@ -130,39 +130,39 @@ function generateAdminOrderHTML(data: {
     <body>
       <div class="container">
         <div class="header">
-          <h1>🛒 أوردر جديد!</h1>
+          <h1>🛒 New Order!</h1>
           <div class="order-id">${data.order_id}</div>
         </div>
 
         <div class="section">
-          <h2>👤 بيانات العميل</h2>
+          <h2>👤 Customer Information</h2>
           <div class="info-row">
-            <span class="info-label">الاسم:</span>
+            <span class="info-label">Name:</span>
             <span class="info-value">${data.customer_name}</span>
           </div>
           <div class="info-row">
-            <span class="info-label">الإيميل:</span>
+            <span class="info-label">Email:</span>
             <span class="info-value">${data.customer_email}</span>
           </div>
           <div class="info-row">
-            <span class="info-label">الموبايل:</span>
+            <span class="info-label">Phone:</span>
             <span class="info-value"><a href="tel:${data.phone}" style="color: #9b59b6; text-decoration: none;">${data.phone || 'N/A'}</a></span>
           </div>
           <div class="info-row">
-            <span class="info-label">واتساب:</span>
+            <span class="info-label">WhatsApp:</span>
             <span class="info-value"><a href="https://wa.me/${(data.whatsapp || data.phone || '').replace(/[^0-9]/g, '')}" style="color: #25d366; text-decoration: none;">${data.whatsapp || data.phone || 'N/A'}</a></span>
           </div>
         </div>
 
         <div class="section">
-          <h2>📦 المنتجات</h2>
+          <h2>📦 Products</h2>
           <table>
             <thead>
               <tr>
-                <th>المنتج</th>
-                <th>الكمية</th>
-                <th>السعر</th>
-                <th>الإجمالي</th>
+                <th>Product</th>
+                <th>Qty</th>
+                <th>Price</th>
+                <th>Subtotal</th>
               </tr>
             </thead>
             <tbody>
@@ -172,49 +172,49 @@ function generateAdminOrderHTML(data: {
         </div>
 
         <div class="total-box">
-          <div style="font-size: 14px; margin-bottom: 5px;">💰 إجمالي الأوردر</div>
+          <div style="font-size: 14px; margin-bottom: 5px;">💰 Order Total</div>
           <div class="amount">${data.total_amount} EGP</div>
         </div>
 
         <div class="section">
-          <h2>🏘️ عنوان التوصيل</h2>
+          <h2>🏘️ Delivery Address</h2>
           <div class="info-row">
-            <span class="info-label">المحافظة:</span>
+            <span class="info-label">Governorate:</span>
             <span class="info-value">${data.governorate}</span>
           </div>
           <div class="info-row">
-            <span class="info-label">المدينة:</span>
+            <span class="info-label">City:</span>
             <span class="info-value">${data.city}</span>
           </div>
           <div class="info-row">
-            <span class="info-label">الشارع:</span>
+            <span class="info-label">Street:</span>
             <span class="info-value">${data.street}</span>
           </div>
-          ${data.landmark ? `<div class="info-row"><span class="info-label">علامة مميزة:</span><span class="info-value">${data.landmark}</span></div>` : ''}
-          ${data.notes ? `<div class="info-row"><span class="info-label">ملاحظات:</span><span class="info-value">${data.notes}</span></div>` : ''}
+          ${data.landmark ? `<div class="info-row"><span class="info-label">Landmark:</span><span class="info-value">${data.landmark}</span></div>` : ''}
+          ${data.notes ? `<div class="info-row"><span class="info-label">Notes:</span><span class="info-value">${data.notes}</span></div>` : ''}
         </div>
 
         <div class="section">
-          <h2>💳 طريقة الدفع</h2>
+          <h2>💳 Payment Method</h2>
           <span class="payment-badge ${data.payment_method === 'الدفع عند الاستلام' || data.payment_method === 'Cash on Delivery' ? 'payment-cod' : data.payment_method.includes('تحويل') || data.payment_method.includes('Transfer') ? 'payment-transfer' : 'payment-card'}">${data.payment_method}</span>
         </div>
 
         <div class="section">
-          <h2>📅 تفاصيل الأوردر</h2>
+          <h2>📅 Order Details</h2>
           <div class="info-row">
-            <span class="info-label">تاريخ الأوردر:</span>
+            <span class="info-label">Order Date:</span>
             <span class="info-value">${data.order_date}</span>
           </div>
           <div class="info-row">
-            <span class="info-label">عدد المنتجات:</span>
-            <span class="info-value">${data.products.reduce((sum, p) => sum + p.quantity, 0)} قطعة</span>
+            <span class="info-label">Total Items:</span>
+            <span class="info-value">${data.products.reduce((sum, p) => sum + p.quantity, 0)} item(s)</span>
           </div>
-          ${data.order_type ? `<div class="info-row"><span class="info-label">نوع الأوردر:</span><span class="info-value">${data.order_type === 'cart' ? 'سلة تسوق' : 'منتج واحد'}</span></div>` : ''}
+          ${data.order_type ? `<div class="info-row"><span class="info-label">Order Type:</span><span class="info-value">${data.order_type === 'cart' ? 'Cart' : 'Single Product'}</span></div>` : ''}
         </div>
 
         <div class="footer">
           <p>Luqitchy Cosmetics - Admin Order Notification</p>
-          <p style="color: #bbb; font-size: 10px;">هذا الإيميل مُرسل تلقائياً عند كل أوردر جديد</p>
+          <p style="color: #bbb; font-size: 10px;">This email is sent automatically for every new order</p>
         </div>
       </div>
     </body>
@@ -745,7 +745,7 @@ ${notes ? `<b>📝 ملاحظات:</b>\n${notes}` : ''}
         const adminEmailPayload = {
           to: [{ email: ADMIN_EMAIL, name: 'Luqitchy Admin' }],
           sender: { email: ADMIN_SENDER_EMAIL, name: ADMIN_SENDER_NAME },
-          subject: `🛒 أوردر جديد - ${order_id} - ${customer_name}`,
+          subject: `🛒 New Order - ${order_id} - ${customer_name}`,
           htmlContent: generateAdminOrderHTML({
             order_id,
             order_date,
