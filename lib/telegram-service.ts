@@ -3,13 +3,17 @@
 // NOTE: This file is server-only. Client-side Telegram calls should use /api/sendTelegram instead.
 
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '8001027503:AAFINaeu8OolPc5KDeMb4743U_VD9Z-unsE';
-const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || '1143952317';
+const TELEGRAM_CHAT_ID_MO = '8312018744';
+const TELEGRAM_CHAT_IDS = [
+  process.env.TELEGRAM_CHAT_ID || '1143952317',
+  TELEGRAM_CHAT_ID_MO,
+];
 
 // Verify tokens on startup
 if (typeof window === 'undefined') {
   console.log('🤖 Telegram Service Initialized:');
   console.log('- Bot Token:', TELEGRAM_BOT_TOKEN ? '✓ Configured' : '✗ Missing');
-  console.log('- Chat ID:', TELEGRAM_CHAT_ID ? '✓ Configured' : '✗ Missing');
+  console.log('- Chat ID:', TELEGRAM_CHAT_IDS ? '✓ Configured' : '✗ Missing');
 }
 
 interface TelegramResponse {
@@ -21,37 +25,38 @@ interface TelegramResponse {
 // دالة إرسال رسالة بسيطة
 export const sendTelegramMessage = async (message: string): Promise<TelegramResponse> => {
   const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
-
-  try {
-    console.log('📤 Sending Telegram message...');
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        chat_id: TELEGRAM_CHAT_ID,
-        text: message,
-        parse_mode: 'HTML',
-      }),
-    });
-
-    const data = await response.json();
-
-    if (data.ok) {
-      console.log('✅ تم إرسال الرسالة بنجاح');
-      return { success: true, data }
-    } else {
-      console.error('❌ Telegram Error:', data.description || 'Unknown error');
-      console.error('Error Code:', data.error_code);
-      console.error('Bot Token Status:', TELEGRAM_BOT_TOKEN ? '✓ Set' : '✗ Missing');
-      console.error('Chat ID Status:', TELEGRAM_CHAT_ID ? '✓ Set' : '✗ Missing');
-      return { success: false, error: data }
+  let allSuccess = true;
+  let results: any[] = [];
+  for (const chatId of TELEGRAM_CHAT_IDS) {
+    try {
+      console.log(`📤 Sending Telegram message to chat_id: ${chatId}...`);
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          chat_id: chatId,
+          text: message,
+          parse_mode: 'HTML',
+        }),
+      });
+      const data = await response.json();
+      results.push({ chatId, data });
+      if (data.ok) {
+        console.log(`✅ تم إرسال الرسالة بنجاح إلى ${chatId}`);
+      } else {
+        allSuccess = false;
+        console.error(`❌ Telegram Error for chat_id ${chatId}:`, data.description || 'Unknown error');
+        console.error('Error Code:', data.error_code);
+      }
+    } catch (error: any) {
+      allSuccess = false;
+      console.error(`❌ Telegram Connection Error for chat_id ${chatId}:`, error.message);
+      results.push({ chatId, error });
     }
-  } catch (error: any) {
-    console.error('❌ Telegram Connection Error:', error.message);
-    return { success: false, error }
   }
+  return { success: allSuccess, data: results };
 };
 
 /**
@@ -71,38 +76,45 @@ export const sendPhotoToTelegram = async (
   const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendPhoto`;
   try {
     console.log(`📸 [Telegram] Uploading photo: ${filename} (${imageBuffer.length} bytes, ${mimeType})`);
-
-    // Use Web API FormData + Blob (works natively with fetch in Node.js 18+/Next.js)
     const blob = new Blob([imageBuffer], { type: mimeType });
     const form = new FormData();
-    form.append('chat_id', TELEGRAM_CHAT_ID);
     form.append('caption', caption.substring(0, 1024)); // Telegram caption limit
     form.append('parse_mode', 'HTML');
     form.append('photo', blob, filename);
-
-    const response = await fetch(url, {
-      method: 'POST',
-      body: form,
-    });
-
-    const responseText = await response.text();
-    console.log('📬 [Telegram] Photo API response status:', response.status);
-
-    let data;
-    try {
-      data = JSON.parse(responseText);
-    } catch {
-      console.error('❌ [Telegram] Non-JSON response:', responseText.substring(0, 500));
-      return { success: false, error: `Non-JSON response: ${responseText.substring(0, 200)}` };
+    // Send the photo to all chat IDs
+    let allSuccess = true;
+    let results: any[] = [];
+    for (const chatId of TELEGRAM_CHAT_IDS) {
+      form.set('chat_id', chatId);
+      const response = await fetch(url, {
+        method: 'POST',
+        body: form,
+      });
+      const responseText = await response.text();
+      console.log('📬 [Telegram] Photo API response status:', response.status, 'for chat_id:', chatId);
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch {
+        console.error('❌ [Telegram] Non-JSON response:', responseText.substring(0, 500));
+        allSuccess = false;
+        results.push({ chatId, error: `Non-JSON response: ${responseText.substring(0, 200)}` });
+        continue;
+      }
+      if (data.ok) {
+        console.log(`✅ [Telegram] Photo sent successfully to ${chatId}!`);
+        results.push({ chatId, data });
+      } else {
+        allSuccess = false;
+        console.error(`❌ [Telegram] Photo upload error for chat_id ${chatId}:`, data.description || 'Unknown error');
+        console.error('   Error Code:', data.error_code);
+        results.push({ chatId, error: data });
+      }
     }
-
-    if (data.ok) {
-      console.log('✅ [Telegram] Photo sent successfully!');
-      return { success: true, data };
+    if (allSuccess) {
+      return { success: true, data: results };
     } else {
-      console.error('❌ [Telegram] Photo upload error:', data.description || 'Unknown error');
-      console.error('   Error Code:', data.error_code);
-      return { success: false, error: data };
+      return { success: false, error: results };
     }
   } catch (error: any) {
     console.error('Telegram photo upload full error:', error);

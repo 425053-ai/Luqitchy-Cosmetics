@@ -25,7 +25,7 @@ export default function CartPage() {
     streetAddress: "",
     landmark: "",
     notes: "",
-    paymentMethod: "vodafone",
+    paymentMethod: "vodafone_instapay",
   })
   const [submitted, setSubmitted] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -144,7 +144,7 @@ export default function CartPage() {
           street: formData.streetAddress,
           landmark: formData.landmark,
           notes: formData.notes || 'بدون ملاحظات',
-          payment_method: 'Vodafone Cash',
+          payment_method: 'Vodafone Cash Wallet & InstaPay',
           imageData,
           transferImageMime: imageMime,
         }),
@@ -174,7 +174,7 @@ export default function CartPage() {
           deliveryAddress: fullAddress,
           orderDate: new Date().toISOString(),
           status: 'pending_payment',
-          paymentMethod: 'vodafone',
+          paymentMethod: 'vodafone_instapay',
         })
       }
 
@@ -857,124 +857,108 @@ export default function CartPage() {
                   />
                 </div>
 
-                {/* Payment Method - Vodafone Cash Only */}
+                {/* Payment Method - Vodafone Cash & InstaPay */}
                 <div className="space-y-3 pt-3 border-t border-border">
-                  <h4 className="font-medium text-xs pt-2">💳 Payment Method</h4>
-                  <p className="text-xs text-muted-foreground font-semibold">📱 Vodafone Cash Wallet</p>
+                  <div className="flex flex-col items-start gap-1 pt-2">
+                    <span className="text-2xl">💳</span>
+                    <h4 className="font-medium text-base">Payment Method</h4>
+                    <span className="text-accent text-lg">*</span>
+                  </div>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="text-2xl">💳</span>
+                    <p className="text-sm text-muted-foreground font-semibold">Vodafone Cash Wallet & InstaPay</p>
+                  </div>
+                  <p className="text-xs sm:text-sm text-muted-foreground mt-2 mb-2">Send payment to Vodafone Cash wallet or InstaPay and attach the payment confirmation screenshot</p>
+                  <div className="bg-white/30 dark:bg-black/30 rounded-lg p-3 mb-3 border border-red-500/20">
+                    <p className="text-xs sm:text-sm text-muted-foreground mb-1">Vodafone Cash / InstaPay Number:</p>
+                    <p className="text-base font-mono font-bold text-lg text-red-600 dark:text-red-400 flex items-center gap-2">💳 <span dir="ltr">01012622315</span></p>
+                  </div>
+                  <ul className="text-xs space-y-1 text-muted-foreground mb-3">
+                    <li>✅ Secure wallet or bank payment</li>
+                    <li>✅ Instant confirmation</li>
+                    <li>✅ Protected transaction</li>
+                  </ul>
 
-                  <div className="space-y-4 pt-3 border-t border-border/50">
-                    {/* Vodafone Cash Wallet Card */}
-                    <div className="premium-card rounded-xl sm:rounded-2xl p-4 sm:p-5 md:p-6 bg-gradient-to-br from-red-500/10 to-pink-500/10 border-2 border-red-500/30">
-                        <div className="flex items-start gap-4">
-                          <div className="text-4xl">📱</div>
-                          <div className="flex-1">
-                            <h3 className="font-bold text-lg mb-2">Vodafone Cash Wallet</h3>
-                            <p className="text-sm text-muted-foreground mb-3">Send payment to Vodafone Cash wallet and attach the payment confirmation screenshot</p>
-                            <div className="bg-white/30 dark:bg-black/30 rounded-lg p-3 mb-3 border border-red-500/20">
-                              <p className="text-sm text-muted-foreground mb-1">Vodafone Cash Wallet:</p>
-                              <p className="text-sm font-mono font-bold text-lg text-red-600 dark:text-red-400">📱 <span dir="ltr">01012622315</span></p>
+                  {/* Transfer Image Upload */}
+                  <div className="space-y-3">
+                    <label className="text-sm font-semibold flex items-center gap-2">
+                      <span>📸</span> Attach Payment Confirmation <span className="text-accent">*</span>
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="file"
+                        id="transferImage"
+                        onChange={handleImageChange}
+                        accept="image/*"
+                        required
+                        className="hidden"
+                      />
+                      <label 
+                        htmlFor="transferImage"
+                        className="block w-full p-4 rounded-xl border-2 border-dashed border-accent/50 hover:border-accent bg-accent/5 hover:bg-accent/10 cursor-pointer transition-all duration-300 text-center"
+                      >
+                        {imagePreview ? (
+                          <div className="space-y-2">
+                            <div className="relative w-24 h-24 mx-auto rounded-lg overflow-hidden border border-accent/30">
+                              <img src={imagePreview} alt="Payment confirmation" className="w-full h-full object-cover" />
                             </div>
-                            <ul className="text-xs space-y-1 text-muted-foreground">
-                              <li>✅ Secure wallet payment</li>
-                              <li>✅ Instant confirmation</li>
-                              <li>✅ Protected transaction</li>
-                            </ul>
+                            <p className="text-sm font-medium text-accent">✅ Screenshot attached</p>
+                            <p className="text-xs text-muted-foreground">{transferImage?.name}</p>
                           </div>
-                        </div>
-                      </div>
-
-                      {/* Transfer Image Upload */}
-                      <div className="space-y-3">
-                        <label className="text-sm font-semibold flex items-center gap-2">
-                          <span>📸</span> Attach Payment Confirmation <span className="text-accent">*</span>
-                        </label>
-                        
-                        <div className="relative">
-                          <input
-                            type="file"
-                            id="transferImage"
-                            onChange={handleImageChange}
-                            accept="image/*"
-                            required
-                            className="hidden"
-                          />
-                          
-                          <label 
-                            htmlFor="transferImage"
-                            className="block w-full p-4 rounded-xl border-2 border-dashed border-accent/50 hover:border-accent bg-accent/5 hover:bg-accent/10 cursor-pointer transition-all duration-300 text-center"
-                          >
-                            {imagePreview ? (
-                              <div className="space-y-2">
-                                <div className="relative w-24 h-24 mx-auto rounded-lg overflow-hidden border border-accent/30">
-                                  <img src={imagePreview} alt="Payment confirmation" className="w-full h-full object-cover" />
-                                </div>
-                                <p className="text-sm font-medium text-accent">✅ Screenshot attached</p>
-                                <p className="text-xs text-muted-foreground">{transferImage?.name}</p>
-                              </div>
-                            ) : (
-                              <div className="space-y-2 py-6">
-                                <p className="text-3xl">📸</p>
-                                <p className="text-sm font-medium">Click to select payment confirmation screenshot</p>
-                                <p className="text-xs text-muted-foreground">or drag screenshot here</p>
-                              </div>
-                            )}
-                          </label>
-
-                          {transferImage && (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setTransferImage(null)
-                                setImagePreview("")
-                              }}
-                              className="absolute top-2 right-2 bg-destructive text-white p-1 rounded-full hover:bg-destructive/90 transition-colors"
-                            >
-                              ✕
-                            </button>
-                          )}
-                        </div>
-
-                        <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3">
-                          <div className="text-xs text-amber-700 dark:text-amber-400 flex items-start gap-2">
-                            <span>ℹ️</span>
-                            <div>
-                              <p className="mb-2">Screenshot must be clear and show:</p>
-                              <ul className="list-disc list-inside space-y-0.5">
-                                <li>Your Vodafone Cash wallet transaction</li>
-                                <li>Amount paid</li>
-                                <li>Payment status (Completed/Success)</li>
-                                <li>Receiver number (01012622315)</li>
-                              </ul>
-                            </div>
+                        ) : (
+                          <div className="space-y-2 py-6">
+                            <p className="text-3xl">📸</p>
+                            <p className="text-sm font-medium">Click to select payment confirmation screenshot</p>
+                            <p className="text-xs text-muted-foreground">or drag screenshot here</p>
                           </div>
-                        </div>
-
-
-                      </div>
+                        )}
+                      </label>
+                      {transferImage && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setTransferImage(null)
+                            setImagePreview("")
+                          }}
+                          className="absolute top-2 right-2 bg-destructive text-white p-1 rounded-full hover:bg-destructive/90 transition-colors"
+                        >
+                          ✕
+                        </button>
+                      )}
                     </div>
-
-                </div>
-
-                <Button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full h-14 bg-gradient-to-r from-accent to-accent/80 hover:from-accent/90 hover:to-accent/70 text-lg rounded-xl transition-all duration-300 shadow-lg shadow-accent/30"
-                >
-                  {isSubmitting ? (
-                    <>Processing...</>
-                  ) : (
-                    <>
-                      <ShoppingCart className="w-5 h-5 ml-2" />
-                      Complete Order ({totalPrice} EGP)
-                    </>
-                  )}
-                </Button>
-              </form>
+                    <div className="mt-2 text-xs text-muted-foreground flex items-start gap-2">
+                      <span className="text-lg">ℹ️</span>
+                      <span>
+                        Screenshot must be clear and show:<br />
+                        <ul className="list-disc list-inside mt-1">
+                          <li>Your Vodafone Cash wallet transaction</li>
+                          <li>Amount paid</li>
+                          <li>Payment status (Completed/Success)</li>
+                          <li>Receiver number (01012622315)</li>
+                        </ul>
+                      </span>
+                    </div>
+                  </div>
+                  <Button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full h-14 bg-gradient-to-r from-accent to-accent/80 hover:from-accent/90 hover:to-accent/70 text-lg rounded-xl transition-all duration-300 shadow-lg shadow-accent/30"
+                  >
+                    {isSubmitting ? (
+                      <>Processing...</>
+                    ) : (
+                      <>
+                        <ShoppingCart className="w-5 h-5 ml-2" />
+                        Complete Order ({totalPrice} EGP)
+                      </>
+                    )}
+                  </Button>
+                </form>
+              </div>
             </div>
           </div>
         </div>
+        <Footer />
       </div>
-      <Footer />
-    </div>
-  )
+    )
 }

@@ -406,24 +406,39 @@ export function ProductsSection() {
 
                   <p className="text-xs sm:text-sm text-muted-foreground mb-4 sm:mb-5 line-clamp-2 leading-relaxed">{product.description}</p>
 
-                  {/* Action Button */}
-                  <Link href={`/order/${product.id}`} className="block">
-                    <motion.div
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                    >
+                  {/* Price and Add to Cart */}
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-lg font-bold text-accent">{product.price} <span className="text-sm text-muted-foreground">EGP</span></span>
+                    </div>
+                    <div className="flex gap-2 w-full">
                       <Button
-                        className="w-full bg-accent hover:bg-accent/90 text-white rounded-xl sm:rounded-2xl shadow-lg transition-all duration-300 group/btn h-10 sm:h-12 text-sm sm:text-base btn-kawaii animate-glow-soft"
+                        className="w-1/2 bg-accent hover:bg-accent/90 text-white rounded-xl sm:rounded-2xl shadow-lg transition-all duration-300 group/btn h-10 sm:h-12 text-xs sm:text-base btn-kawaii animate-glow-soft"
                         size="default"
+                        onClick={() => {
+                          window.location.href = `/order/${product.id}`
+                        }}
+                      >
+                        <span className="animate-wiggle mr-1">⚡</span>
+                        <ArrowRight className="w-4 h-4 mr-2 group-hover/btn:animate-bounce" />
+                        <span>Order Now</span>
+                      </Button>
+                      <Button
+                        className="w-1/2 bg-accent hover:bg-accent/90 text-white rounded-xl sm:rounded-2xl shadow-lg transition-all duration-300 group/btn h-10 sm:h-12 text-xs sm:text-base btn-kawaii animate-glow-soft"
+                        size="default"
+                        onClick={() => addToCart({
+                          ...product,
+                          price: product.price,
+                          quantity: 1
+                        })}
                       >
                         <span className="animate-wiggle mr-1">🛒</span>
                         <ShoppingBag className="w-4 h-4 mr-2 group-hover/btn:animate-bounce" />
-                        <span>Order Now</span>
-                        <ArrowRight className="w-4 h-4 ml-2 opacity-0 group-hover/btn:opacity-100 group-hover/btn:translate-x-1 transition-all" />
+                        <span>Add to Cart</span>
                         <span className="ml-1 animate-heart-pop">💖</span>
                       </Button>
-                    </motion.div>
-                  </Link>
+                    </div>
+                  </div>
                 </div>
               </div>
             </motion.article>

@@ -125,21 +125,7 @@ export function BrandStory() {
               transition={{ delay: 0.6 }}
               className="mt-10 pt-8 border-t border-border/50"
             >
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-full overflow-hidden ring-2 ring-accent/30 shadow-lg">
-                  <Image
-                    src="/images/logo.jpeg"
-                    alt="Luqitchy Logo"
-                    width={56}
-                    height={56}
-                    className="object-cover w-full h-full"
-                  />
-                </div>
-                <div>
-                  <div className="font-serif text-lg font-bold text-foreground">Luqitchy Team</div>
-                  <div className="text-sm text-muted-foreground">Founder & Creative Director</div>
-                </div>
-              </div>
+              {/* Founder info removed as per request */}
             </motion.div>
           </motion.div>
 

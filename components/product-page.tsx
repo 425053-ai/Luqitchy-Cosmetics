@@ -792,24 +792,23 @@ export function ProductPage({ product }: ProductPageProps) {
                   />
                 </div>
 
-                {/* Payment Method - Vodafone Cash Wallet Only */}
+                {/* Payment Method - Vodafone Cash Wallet & InstaPay */}
                 <div className="space-y-4 pt-4 border-t border-border/50">
                   <div className="flex items-center gap-2 text-sm font-semibold">
-                    <span className="text-lg">📱</span> Payment Method <span className="text-accent">*</span>
+                    <span className="text-lg">💳</span> Payment Method <span className="text-accent">*</span>
                   </div>
-                  
                   <div className="premium-card rounded-xl sm:rounded-2xl p-4 sm:p-5 md:p-6 bg-gradient-to-br from-red-500/10 to-pink-500/10 border-2 border-red-500/30">
                     <div className="flex items-start gap-4">
-                      <div className="text-4xl">📱</div>
+                      <div className="text-4xl">💳</div>
                       <div className="flex-1">
-                        <h3 className="font-bold text-lg mb-2">Vodafone Cash Wallet</h3>
-                        <p className="text-sm text-muted-foreground mb-3">Send payment to Vodafone Cash wallet and attach the payment confirmation screenshot</p>
+                        <h3 className="font-bold text-lg mb-2">Vodafone Cash Wallet & InstaPay</h3>
+                        <p className="text-sm text-muted-foreground mb-3">Send payment to <b>Vodafone Cash wallet</b> or <b>InstaPay</b> and attach the payment confirmation screenshot</p>
                         <div className="bg-white/30 dark:bg-black/30 rounded-lg p-3 mb-3 border border-red-500/20">
-                          <p className="text-sm text-muted-foreground mb-1">Vodafone Cash Wallet:</p>
-                          <p className="text-sm font-mono font-bold text-lg text-red-600 dark:text-red-400">📱 <span dir="ltr">01012622315</span></p>
+                          <p className="text-sm text-muted-foreground mb-1">Vodafone Cash / InstaPay Number:</p>
+                          <p className="text-sm font-mono font-bold text-lg text-red-600 dark:text-red-400">💳 <span dir="ltr">01012622315</span></p>
                         </div>
                         <ul className="text-xs space-y-1 text-muted-foreground">
-                          <li>✅ Secure wallet payment</li>
+                          <li>✅ Secure wallet or bank payment</li>
                           <li>✅ Instant confirmation</li>
                           <li>✅ Protected transaction</li>
                         </ul>

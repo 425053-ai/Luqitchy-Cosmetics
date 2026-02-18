@@ -19,8 +19,8 @@ const reasons = [
   },
   {
     icon: Leaf,
-    title: "Natural & Cruelty-Free",
-    description: "100% cruelty-free products with natural ingredients. Beauty without compromise.",
+    title: "Never tested on animals",
+    description: "We never test on animals. Beauty with compassion.",
     emoji: "🌿",
     gradient: "from-green-500 to-emerald-500",
     animation: "animate-swing",

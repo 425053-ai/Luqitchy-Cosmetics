@@ -185,14 +185,7 @@ export function Footer() {
             
             {/* Trust Badge */}
             <div className="mt-4 sm:mt-6 p-3 sm:p-4 bg-background/5 rounded-lg sm:rounded-xl border border-background/10">
-              <div className="flex items-center gap-1.5 sm:gap-2 justify-center sm:justify-start text-[10px] sm:text-xs text-background/50">
-                <span className="text-green-400 animate-sparkle">✓</span>
-                100% Cruelty-Free
-              </div>
-              <div className="flex items-center gap-1.5 sm:gap-2 justify-center sm:justify-start text-[10px] sm:text-xs text-background/50 mt-1">
-                <span className="text-green-400 animate-sparkle" style={{ animationDelay: '0.5s' }}>✓</span>
-                Premium Quality Products
-              </div>
+              {/* Cruelty-Free and Premium Quality removed as per request */}
             </div>
           </div>
         </div>
@@ -200,14 +193,13 @@ export function Footer() {
         {/* Bottom Bar */}
         <div className="border-t border-background/10 pt-6 sm:pt-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-3 sm:gap-4">
-            <p className="text-xs sm:text-sm text-background/60 flex items-center gap-2">
-              Made with <span className="text-red-500 animate-heart-pop inline-block">❤️</span> by Lingo for Luqitchy
-              <span className="animate-sparkle">✨</span>
-            </p>
-            <p className="text-[10px] sm:text-xs text-background/40 flex items-center gap-1">
-              © {currentYear} Luqitchy Cosmetics. All rights reserved. 
+            {/* Made with love by Lingo removed as per request */}
+            <p className="text-[10px] sm:text-xs text-background/40 flex items-center gap-1 flex-wrap justify-center md:justify-start">
+              © {currentYear} Luqitchy Cosmetics. All rights reserved.
               <span className="animate-glitter">✨</span>
               <span className="animate-heart-pop">💖</span>
+              <span className="mx-2">|</span>
+              <span className="text-background/60">Made with <span className="animate-heart-pop">💖</span> by <span className="font-bold">Lingo</span> for <span className="font-bold">Luqitchy</span> <span className="animate-sparkle">✨</span></span>
             </p>
           </div>
           
@@ -233,15 +225,7 @@ export function Footer() {
           </div>
         </div>
 
-        {/* Made with love section */}
-        <div className="border-t border-background/20 pt-6 sm:pt-8 md:pt-10 mt-8 sm:mt-10 md:mt-12 text-center">
-          <p className="text-background/70 text-xs sm:text-sm font-medium flex items-center justify-center gap-2">
-            Made with
-            <span className="text-primary animate-heart-pop">❤️</span>
-            by Lingo for Luqitchy
-            <span className="animate-sparkle">✨</span>
-          </p>
-        </div>
+        {/* Made with love section removed as per request */}
       </div>
     </footer>
   )

@@ -141,9 +141,7 @@ export function CustomerReviews() {
             <span className="text-muted-foreground">({reviews.length} reviews)</span>
           </div>
           
-          <p className="text-muted-foreground">
-            Join thousands of happy customers! 💕
-          </p>
+          {/* Happy customers line removed as per request */}
         </motion.div>
 
         {/* Featured Review Carousel */}

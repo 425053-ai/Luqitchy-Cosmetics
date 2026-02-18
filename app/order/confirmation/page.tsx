@@ -51,12 +51,12 @@ const paymentMethodInfo: Record<string, { icon: React.ReactNode; label: string; 
     bgColor: "bg-blue-50 dark:bg-blue-950/30 border-blue-200/50 dark:border-blue-800/30",
     description: "Payment completed securely via card"
   },
-  vodafone: {
+  vodafone_instapay: {
     icon: <Smartphone className="w-6 h-6" />,
-    label: "📱 Vodafone Cash",
+    label: "💳 Vodafone Cash & InstaPay",
     color: "text-red-600",
     bgColor: "bg-red-50 dark:bg-red-950/30 border-red-200/50 dark:border-red-800/30",
-    description: "Check your phone for payment confirmation"
+    description: "Check your phone or bank app for payment confirmation"
   },
   paypal: {
     icon: <CreditCard className="w-6 h-6" />,

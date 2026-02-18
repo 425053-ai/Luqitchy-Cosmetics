@@ -172,33 +172,7 @@ export function HeroSectionPremium() {
               <SkinTypeQuiz />
             </motion.div>
 
-            {/* Trust Badges */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.7, duration: 0.8 }}
-              className="flex flex-wrap items-center gap-2 sm:gap-4 md:gap-6 mt-8 sm:mt-12 justify-center lg:justify-start"
-            >
-              {[
-                { icon: Award, label: "Premium", value: "100%" },
-                { icon: Shield, label: "Secure", value: "Safe" },
-                { icon: Truck, label: "Delivery", value: "Fast" },
-              ].map((item, index) => (
-                <motion.div
-                  key={item.label}
-                  whileHover={{ y: -5, borderColor: "rgba(236, 72, 153, 0.5)" }}
-                  className="flex items-center gap-2 sm:gap-3 bg-card/50 backdrop-blur-sm px-3 sm:px-4 py-2 sm:py-3 rounded-xl sm:rounded-2xl border border-border/50 transition-all duration-300"
-                >
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-accent/10 flex items-center justify-center">
-                    <item.icon className="w-4 h-4 sm:w-5 sm:h-5 text-accent" />
-                  </div>
-                  <div className="text-left">
-                    <div className="text-[10px] sm:text-xs text-muted-foreground">{item.label}</div>
-                    <div className="text-xs sm:text-sm font-bold text-foreground">{item.value}</div>
-                  </div>
-                </motion.div>
-              ))}
-            </motion.div>
+            {/* Trust Badges removed as per request */}
           </div>
 
           {/* Right: Hero Image */}

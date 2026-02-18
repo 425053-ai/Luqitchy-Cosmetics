@@ -29,7 +29,7 @@ const features = [
 
 const stats = [
   { value: "8", label: "Products", icon: "💄", animation: "animate-dance" },
-  { value: "100%", label: "Cruelty-Free", icon: "🐰", animation: "animate-kawaii-bounce" },
+  { value: "Never tested on animals", label: "", icon: "🐰", animation: "animate-kawaii-bounce" },
   { value: "24-48h", label: "Delivery", icon: "🚚", animation: "animate-wiggle" },
   { value: "5.0", label: "Rating", icon: "⭐", animation: "animate-star-twirl" },
 ]

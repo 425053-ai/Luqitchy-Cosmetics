@@ -115,30 +115,7 @@ export function HeroSection() {
               <SkinTypeQuiz />
             </div>
 
-            {/* Trust Badges */}
-            <div
-              className="flex flex-wrap items-center gap-3 sm:gap-4 md:gap-6 mt-8 sm:mt-10 md:mt-12 justify-center lg:justify-start animate-slide-up opacity-0"
-              style={{ animationDelay: "0.5s" }}
-            >
-              {[
-                { icon: Award, label: "Premium Quality", value: "100%" },
-                { icon: Shield, label: "Secure Checkout", value: "Safe" },
-                { icon: Truck, label: "Fast Delivery", value: "24-48h" },
-              ].map((item, index) => (
-                <div 
-                  key={item.label} 
-                  className="flex items-center gap-2 sm:gap-3 bg-card/50 backdrop-blur-sm px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl border border-border/50 hover:border-accent/30 transition-all duration-300 group"
-                >
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-accent/10 flex items-center justify-center group-hover:bg-accent/20 transition-colors flex-shrink-0">
-                    <item.icon className="w-4 h-4 sm:w-5 sm:h-5 text-accent" />
-                  </div>
-                  <div className="text-left">
-                    <div className="text-[10px] sm:text-xs text-muted-foreground">{item.label}</div>
-                    <div className="text-xs sm:text-sm font-bold text-foreground">{item.value}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
+            {/* Trust Badges removed as per request */}
           </div>
 
           {/* Hero Image Section */}

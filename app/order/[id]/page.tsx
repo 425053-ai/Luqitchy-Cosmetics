@@ -184,21 +184,7 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
                 ))}
               </div>
 
-              {/* Trust badges */}
-              <div className="flex flex-wrap gap-4 mb-8">
-                <div className="flex items-center gap-2 bg-secondary/50 px-4 py-2 rounded-full">
-                  <Shield className="w-4 h-4 text-accent" />
-                  <span className="text-sm font-medium">Quality Guaranteed</span>
-                </div>
-                <div className="flex items-center gap-2 bg-secondary/50 px-4 py-2 rounded-full">
-                  <Truck className="w-4 h-4 text-accent" />
-                  <span className="text-sm font-medium">Fast Delivery</span>
-                </div>
-                <div className="flex items-center gap-2 bg-secondary/50 px-4 py-2 rounded-full">
-                  <Heart className="w-4 h-4 text-accent" />
-                  <span className="text-sm font-medium">Made with Love</span>
-                </div>
-              </div>
+              {/* Trust badges removed as per request */}
             </div>
 
             {/* Order Form */}
