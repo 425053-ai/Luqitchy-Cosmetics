@@ -111,6 +111,22 @@ export function HeroSection() {
                   <span className="ml-2 group-hover:translate-x-1 transition-transform">→</span>
                   <span className="animate-heart-pop ml-1">💖</span>
                 </Button>
+                          {/* Mobile Sticky Bar for Shop Collection & Shade Finder */}
+                          <div className="fixed bottom-0 left-0 w-full z-50 flex sm:hidden bg-background/90 border-t border-border shadow-lg backdrop-blur supports-[backdrop-filter]:bg-background/80">
+                            <div className="flex-1 flex justify-center gap-2 py-2">
+                              <Link href="#products" className="flex-1">
+                                <Button size="lg" className="w-full bg-accent text-accent-foreground rounded-full font-semibold">
+                                  <span className="mr-2">✨</span>Shop Collection
+                                </Button>
+                              </Link>
+                              <div className="flex-1 flex justify-center">
+                                <div className="w-full">
+                                  {/* Import and use SkinTypeQuiz button only */}
+                                  <SkinTypeQuiz mobileOnly />
+                                </div>
+                              </div>
+                            </div>
+                          </div>
               </Link>
               <SkinTypeQuiz />
             </div>

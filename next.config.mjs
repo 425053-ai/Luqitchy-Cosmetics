@@ -18,13 +18,13 @@ const nextConfig = {
   // Production optimizations
   compress: true,
   productionBrowserSourceMaps: false,
-  swcMinify: true,
+  // swcMinify: true, // Removed: not supported in Next.js 14
   // Next.js 13+ optimizations
   reactStrictMode: false,
   // Incremental static regeneration
-  experimental: {
-    optimizeServerSideProps: true,
-  },
+  // experimental: {
+  //   optimizeServerSideProps: true, // Removed: not supported in Next.js 14
+  // },
 }
 
 export default nextConfig

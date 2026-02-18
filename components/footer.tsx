@@ -200,10 +200,7 @@ export function Footer() {
         {/* Bottom Bar */}
         <div className="border-t border-background/10 pt-6 sm:pt-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-3 sm:gap-4">
-            <p className="text-xs sm:text-sm text-background/60 flex items-center gap-2">
-              Made with <span className="text-red-500 animate-heart-pop inline-block">❤️</span> by Lingo for Luqitchy
-              <span className="animate-sparkle">✨</span>
-            </p>
+            {/* Made with ❤️ by Lingo for Luqitchy removed as requested */}
             <p className="text-[10px] sm:text-xs text-background/40 flex items-center gap-1">
               © {currentYear} Luqitchy Cosmetics. All rights reserved. 
               <span className="animate-glitter">✨</span>

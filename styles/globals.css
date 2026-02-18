@@ -122,4 +122,38 @@
   body {
     @apply bg-background text-foreground;
   }
+  /* تحسين تجربة الموبايل */
+  html {
+    font-size: 16px;
+  }
+  @media (max-width: 600px) {
+    html {
+      font-size: 15px;
+    }
+    body {
+      -webkit-tap-highlight-color: transparent;
+      font-family: 'Tajawal', 'Cairo', 'Arial', sans-serif;
+    }
+    button, .btn, .Button {
+      min-height: 44px;
+      min-width: 44px;
+      font-size: 1rem;
+      border-radius: 0.75rem;
+      padding: 0.75rem 1.25rem;
+    }
+    input, .Input {
+      min-height: 44px;
+      font-size: 1rem;
+      border-radius: 0.75rem;
+    }
+    .emoji, .twemoji {
+      font-size: 1.5em !important;
+      vertical-align: middle;
+      image-rendering: -webkit-optimize-contrast;
+    }
+    /* تعطيل الأنيميشنز الثقيلة */
+    .confetti-effect, .floating-decorations, .luxury-cursor, .kawaii-mascot, .spin-wheel, .page-transition, .loading-screen, .scroll-animations, .animations-3d {
+      display: none !important;
+    }
+  }
 }
