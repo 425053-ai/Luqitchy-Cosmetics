@@ -797,22 +797,43 @@ export function ProductPage({ product }: ProductPageProps) {
                   <div className="flex items-center gap-2 text-sm font-semibold">
                     <span className="text-lg">📱</span> Payment Method <span className="text-accent">*</span>
                   </div>
-                  
-                  <div className="premium-card rounded-xl sm:rounded-2xl p-4 sm:p-5 md:p-6 bg-gradient-to-br from-red-500/10 to-pink-500/10 border-2 border-red-500/30">
-                    <div className="flex items-start gap-4">
-                      <div className="text-4xl">📱</div>
-                      <div className="flex-1">
-                        <h3 className="font-bold text-lg mb-2">Vodafone Cash Wallet</h3>
-                        <p className="text-sm text-muted-foreground mb-3">Send payment to Vodafone Cash wallet and attach the payment confirmation screenshot</p>
-                        <div className="bg-white/30 dark:bg-black/30 rounded-lg p-3 mb-3 border border-red-500/20">
-                          <p className="text-sm text-muted-foreground mb-1">Vodafone Cash Wallet:</p>
-                          <p className="text-sm font-mono font-bold text-lg text-red-600 dark:text-red-400">📱 <span dir="ltr">01012622315</span></p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* Vodafone Cash */}
+                    <div className="premium-card rounded-xl p-4 bg-gradient-to-br from-red-500/10 to-pink-500/10 border-2 border-red-500/30">
+                      <div className="flex items-start gap-4">
+                        <div className="text-3xl">📱</div>
+                        <div className="flex-1">
+                          <h3 className="font-bold text-base mb-1">Vodafone Cash Wallet</h3>
+                          <p className="text-xs text-muted-foreground mb-2">Send payment to Vodafone Cash wallet and attach the payment confirmation screenshot</p>
+                          <div className="bg-white/30 dark:bg-black/30 rounded-lg p-2 mb-2 border border-red-500/20">
+                            <p className="text-xs text-muted-foreground mb-0.5">Wallet Number:</p>
+                            <p className="text-sm font-mono font-bold text-red-600 dark:text-red-400">01012622315</p>
+                          </div>
+                          <ul className="text-xs space-y-1 text-muted-foreground">
+                            <li>✅ Secure wallet payment</li>
+                            <li>✅ Instant confirmation</li>
+                            <li>✅ Protected transaction</li>
+                          </ul>
                         </div>
-                        <ul className="text-xs space-y-1 text-muted-foreground">
-                          <li>✅ Secure wallet payment</li>
-                          <li>✅ Instant confirmation</li>
-                          <li>✅ Protected transaction</li>
-                        </ul>
+                      </div>
+                    </div>
+                    {/* InstaPay */}
+                    <div className="premium-card rounded-xl p-4 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border-2 border-blue-500/30">
+                      <div className="flex items-start gap-4">
+                        <div className="text-3xl">🏦</div>
+                        <div className="flex-1">
+                          <h3 className="font-bold text-base mb-1">InstaPay</h3>
+                          <p className="text-xs text-muted-foreground mb-2">Send payment using InstaPay app to the same number.</p>
+                          <div className="bg-white/30 dark:bg-black/30 rounded-lg p-2 mb-2 border border-blue-500/20">
+                            <p className="text-xs text-muted-foreground mb-0.5">Account Number:</p>
+                            <p className="text-sm font-mono font-bold text-blue-600 dark:text-blue-400">01012622315</p>
+                          </div>
+                          <ul className="text-xs space-y-1 text-muted-foreground">
+                            <li>✅ Secure bank transfer</li>
+                            <li>✅ Instant confirmation</li>
+                            <li>✅ Protected transaction</li>
+                          </ul>
+                        </div>
                       </div>
                     </div>
                   </div>

@@ -15,31 +15,54 @@ interface TransferProof {
   verified?: boolean
 }
 
+
 export default function AdminDashboard() {
   const [transferProofs, setTransferProofs] = useState<TransferProof[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('all')
   const [selectedImage, setSelectedImage] = useState<TransferProof | null>(null)
+  const [verifying, setVerifying] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
+  // Fetch transfer proofs from API
   useEffect(() => {
-    // Load from localStorage
-    const savedProofs = localStorage.getItem('transfer-proofs')
-    if (savedProofs) {
-      try {
-        setTransferProofs(JSON.parse(savedProofs))
-      } catch (e) {
-        console.error('Failed to load proofs:', e)
-      }
-    }
-    setLoading(false)
+    setLoading(true);
+    fetch('/api/bankTransfer')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setTransferProofs(data.transfers || [])
+        } else {
+          setError(data.error || 'فشل تحميل التحويلات')
+        }
+        setLoading(false)
+      })
+      .catch(() => {
+        setError('فشل تحميل التحويلات')
+        setLoading(false)
+      })
   }, [])
 
-  const handleVerify = (orderId: string) => {
-    const updated = transferProofs.map(p =>
-      p.orderId === orderId ? { ...p, verified: true } : p
-    )
-    setTransferProofs(updated)
-    localStorage.setItem('transfer-proofs', JSON.stringify(updated))
+  // Confirm transfer (update status in Google Sheets)
+  const handleVerify = async (orderId: string) => {
+    setVerifying(orderId)
+    setError(null)
+    try {
+      const res = await fetch('/api/bankTransfer', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId, status: 'confirmed' })
+      })
+      const data = await res.json()
+      if (data.success) {
+        setTransferProofs(prev => prev.map(p => p.orderId === orderId ? { ...p, verified: true } : p))
+      } else {
+        setError(data.error || 'فشل تأكيد التحويل')
+      }
+    } catch {
+      setError('فشل تأكيد التحويل')
+    }
+    setVerifying(null)
   }
 
   const filteredProofs =

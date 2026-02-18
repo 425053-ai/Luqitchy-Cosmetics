@@ -88,6 +88,7 @@ export function BrandStory() {
             </h2>
 
             {/* Story Paragraphs */}
+
             <div className="space-y-6 text-lg text-muted-foreground leading-relaxed">
               <motion.p
                 initial={{ opacity: 0, y: 20 }}
@@ -116,32 +117,7 @@ export function BrandStory() {
                 From our signature lip glosses to our luxurious body care line, every Luqitchy product is a celebration of <span className="text-accent font-semibold">self-expression and self-love</span>.
               </motion.p>
             </div>
-
-            {/* Founder Signature */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.6 }}
-              className="mt-10 pt-8 border-t border-border/50"
-            >
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-full overflow-hidden ring-2 ring-accent/30 shadow-lg">
-                  <Image
-                    src="/images/logo.jpeg"
-                    alt="Luqitchy Logo"
-                    width={56}
-                    height={56}
-                    className="object-cover w-full h-full"
-                  />
-                </div>
-                <div>
-                  <div className="font-serif text-lg font-bold text-foreground">Luqitchy Team</div>
-                  <div className="text-sm text-muted-foreground">Founder & Creative Director</div>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
+            {/* Founder Signature removed as requested */}
 
           {/* Right: Visual Elements */}
           <motion.div
@@ -219,24 +195,24 @@ export function BrandStory() {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
                 </motion.div>
-              </div>
-            </div>
+              {/* End of image grid */}
+              {/* Floating Emojis */}
 
-            {/* Floating Emojis */}
-            <motion.span
-              className="absolute -top-4 -left-4 text-4xl"
-              animate={{ y: [0, -10, 0], rotate: [0, 10, 0] }}
-              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-            >
-              ✨
-            </motion.span>
-            <motion.span
-              className="absolute -bottom-4 -right-4 text-4xl"
-              animate={{ y: [0, 10, 0], rotate: [0, -10, 0] }}
-              transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-            >
-              💖
-            </motion.span>
+              <motion.span
+                className="absolute -top-4 -left-4 text-4xl"
+                animate={{ y: [0, -10, 0], rotate: [0, 10, 0] }}
+                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+              >
+                ✨
+              </motion.span>
+              <motion.span
+                className="absolute -bottom-4 -right-4 text-4xl"
+                animate={{ y: [0, 10, 0], rotate: [0, -10, 0] }}
+                transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+              >
+                💖
+              </motion.span>
+            </div>
           </motion.div>
         </div>
       </div>

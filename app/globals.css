@@ -71,15 +71,64 @@ body {
   backface-visibility: hidden;
 }
 
-/* Disable heavy animations on mobile for better performance */
-@media (max-width: 768px) {
+
+/* Disable ALL heavy animations & effects on mobile for best performance */
+@media (max-width: 900px) {
   .animate-morph,
-  .animate-rotate-slow {
+  .animate-rotate-slow,
+  .animate-float,
+  .animate-float-3d,
+  .animate-slide-up,
+  .animate-slide-in-left,
+  .animate-slide-in-right,
+  .animate-sparkle,
+  .animate-sparkle-burst,
+  .animate-heartbeat,
+  .animate-bounce-rotate,
+  .animate-wiggle,
+  .animate-star-twirl,
+  .confetti-effect,
+  .luxury-cursor,
+  .kawaii-elements,
+  .confetti,
+  .floating-decorations {
     animation: none !important;
+    transition: none !important;
+    filter: none !important;
+    will-change: auto !important;
   }
-  
   .blur-3xl {
-    filter: blur(32px) !important;
+    filter: blur(16px) !important;
+  }
+  /* Disable hover effects on mobile */
+  a:hover, button:hover, .hover\:bg-accent:hover, .hover\:scale-105:hover {
+    background: inherit !important;
+    box-shadow: none !important;
+    transform: none !important;
+  }
+}
+
+/* Emoji rendering: make emoji font consistent and larger on mobile */
+@media (max-width: 900px) {
+  .emoji, [class*="emoji-"] {
+    font-family: 'Twemoji', 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif !important;
+    font-size: 1.5em !important;
+    line-height: 1.2 !important;
+    vertical-align: middle !important;
+    letter-spacing: 0 !important;
+    filter: none !important;
+    text-shadow: none !important;
+  }
+}
+
+/* Images: force lazy loading for all images on mobile */
+@media (max-width: 900px) {
+  img, .next-image, .product-image, .cart-image {
+    loading: lazy !important;
+    max-width: 100%;
+    height: auto;
+    object-fit: cover;
+    border-radius: 0.75rem;
   }
 }
 

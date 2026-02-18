@@ -1,7 +1,6 @@
 'use client';
 import { Header } from "@/components/header"
 import { HeroSectionPremium } from "@/components/hero-section-premium"
-import { TrustBadges } from "@/components/trust-badges"
 import { AboutSection } from "@/components/about-section"
 import { ProductsSection } from "@/components/products-section"
 import { BrandStory } from "@/components/brand-story"
