@@ -207,7 +207,7 @@ export async function POST(request: NextRequest) {
         email: ADMIN_SENDER_EMAIL,
         name: ADMIN_SENDER_NAME,
       },
-      subject: `🛒 New Order - ${order_id} - ${customer_name}`,
+      subject: `New Order - ${order_id} - ${customer_name}`,
       htmlContent: adminEmailHTML,
     };
 

@@ -118,28 +118,12 @@ export function PoliciesSection() {
           <div className="premium-card p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl">
             <div className="flex flex-col md:flex-row items-center justify-between gap-4 sm:gap-5 md:gap-6">
               <div className="flex items-center gap-3 sm:gap-4">
-                <div className="w-10 h-10 sm:w-11 sm:h-11 md:w-12 md:h-12 bg-gradient-to-br from-accent to-primary rounded-xl sm:rounded-2xl flex items-center justify-center flex-shrink-0">
-                  <Package className="w-5 h-5 sm:w-5 sm:h-5 md:w-6 md:h-6 text-white" />
-                </div>
-                <div className="text-center md:text-left">
-                  <h3 className="font-semibold text-sm sm:text-base text-foreground">Need Help?</h3>
-                  <p className="text-xs sm:text-sm text-muted-foreground">Contact us on Instagram for any questions</p>
-                </div>
-              </div>
-              <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-xs sm:text-sm text-muted-foreground">
-                <div className="flex items-center gap-1.5 sm:gap-2">
-                  <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-accent" />
-                  <span>24-48h Delivery</span>
-                </div>
-                <div className="flex items-center gap-1.5 sm:gap-2">
-                  <Heart className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-accent" />
-                  <span>Premium Quality</span>
-                </div>
-              </div>
+              {/* Help, delivery, and quality info removed as requested */}
             </div>
           </div>
         </div>
       </div>
+
     </section>
   )
 }
