@@ -1,3 +1,58 @@
+// ====== Bank Transfer Management ======
+/**
+ * Fetch all bank transfer proofs from Google Sheets
+ */
+export async function fetchBankTransfers(): Promise<{ success: boolean; transfers?: any[]; error?: string }> {
+  try {
+    const response = await fetch(`${GOOGLE_SHEETS_WEBHOOK_URL}?action=getBankTransfers`, {
+      method: 'GET',
+      headers: { 'Accept': 'application/json' },
+    });
+    const text = await response.text();
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      return { success: false, error: 'Invalid response from Google Sheets' };
+    }
+    if (data.success !== false && data.transfers) {
+      return { success: true, transfers: data.transfers };
+    } else if (Array.isArray(data)) {
+      return { success: true, transfers: data };
+    } else {
+      return { success: false, error: data.error || 'Failed to fetch transfers' };
+    }
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Update transfer status (e.g., confirm payment) in Google Sheets
+ */
+export async function updateTransferStatus(orderId: string, status: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const response = await fetch(GOOGLE_SHEETS_WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'updateTransferStatus', orderId, status }),
+    });
+    const text = await response.text();
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      data = { success: true };
+    }
+    if (data.success !== false) {
+      return { success: true };
+    } else {
+      return { success: false, error: data.error };
+    }
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
 /**
  * Google Sheets Service - sends order data to Google Sheets via Apps Script webhook
  * Works from both localhost and Vercel (mobile + desktop)

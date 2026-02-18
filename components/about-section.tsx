@@ -1,4 +1,5 @@
 import { Heart, Star, Crown, Sparkles, Award, Leaf } from "lucide-react"
+import { Emoji } from './ui/emoji'
 
 const features = [
   {
@@ -29,7 +30,7 @@ const features = [
 
 const stats = [
   { value: "8", label: "Products", icon: "💄", animation: "animate-dance" },
-  { value: "100%", label: "Cruelty-Free", icon: "🐰", animation: "animate-kawaii-bounce" },
+  { value: "100%", label: "Never tested on animals.", icon: "🐰", animation: "animate-kawaii-bounce" },
   { value: "24-48h", label: "Delivery", icon: "🚚", animation: "animate-wiggle" },
   { value: "5.0", label: "Rating", icon: "⭐", animation: "animate-star-twirl" },
 ]
@@ -60,8 +61,8 @@ export function AboutSection() {
             <div className="inline-flex items-center gap-2 sm:gap-3 bg-card/80 backdrop-blur-sm px-4 sm:px-5 md:px-6 py-2 sm:py-2.5 md:py-3 rounded-full border border-primary/30 mb-5 sm:mb-6 md:mb-8 shadow-lg shadow-primary/10 animate-slide-up opacity-0 hover-jelly">
               <Heart className="w-3 h-3 sm:w-4 sm:h-4 text-accent animate-heart-pop" />
               <span className="text-xs sm:text-sm font-bold text-foreground uppercase tracking-wider">Our Story</span>
-              <span className="animate-sparkle-burst text-sm sm:text-base">✨</span>
-              <span className="animate-dance text-sm">🎀</span>
+              <Emoji emoji="✨" className="animate-sparkle-burst text-sm sm:text-base" />
+              <Emoji emoji="🎀" className="animate-dance text-sm" />
             </div>
 
             <h2 
@@ -72,7 +73,7 @@ export function AboutSection() {
               <span className="absolute -top-4 -left-4 text-xl animate-float-rotate">🌸</span>
               About <span className="rainbow-text sparkle-decoration">Luqitchy</span>
               <span className="absolute -top-2 -right-4 text-xl animate-star-twirl">⭐</span>
-              <span className="absolute -bottom-2 right-1/4 text-lg animate-kawaii-bounce">💖</span>
+              <Emoji emoji="💖" className="absolute -bottom-2 right-1/4 text-lg animate-kawaii-bounce" />
             </h2>
 
             <p 
@@ -84,7 +85,7 @@ export function AboutSection() {
               <span className="text-accent font-semibold">Luqitchy Cosmetics</span> brings you premium beauty products
               that celebrate femininity with a playful twist. We believe every person deserves to feel
               <span className="text-shimmer font-semibold"> glamorous, confident, and utterly beautiful</span>
-              <span className="inline-block animate-sparkle ml-1">✨</span>
+              <Emoji emoji="✨" className="inline-block animate-sparkle ml-1" />
             </p>
 
             {/* Stats Row */}
@@ -123,7 +124,7 @@ export function AboutSection() {
                     {/* Icon container */}
                     <div className={`relative w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 bg-gradient-to-br ${feature.gradient} rounded-xl sm:rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-5 md:mb-6 shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300 animate-glow-soft`}>
                       <feature.icon className="w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 text-white animate-pulse-glow" />
-                      <span className={`absolute -top-1 -right-1 sm:-top-2 sm:-right-2 text-lg sm:text-xl md:text-2xl ${feature.animation}`}>{feature.emoji}</span>
+                        <Emoji emoji={feature.emoji} className={`absolute -top-1 -right-1 sm:-top-2 sm:-right-2 text-lg sm:text-xl md:text-2xl ${feature.animation}`} />
                     </div>
 
                     <h3 className="font-serif text-lg sm:text-xl md:text-2xl font-bold text-foreground mb-2 sm:mb-3 md:mb-4 text-center group-hover:text-accent transition-colors">
@@ -142,10 +143,10 @@ export function AboutSection() {
             style={{ animationDelay: "0.7s" }}
           >
             <div className="inline-flex flex-col sm:flex-row items-center gap-2 sm:gap-4 bg-accent/5 border border-accent/20 rounded-xl sm:rounded-2xl px-4 sm:px-6 md:px-8 py-3 sm:py-4 hover-jelly">
-              <span className="animate-float">🌿</span>
+                <Emoji emoji="🌿" className="animate-float" />
               <Leaf className="w-4 h-4 sm:w-5 sm:h-5 text-green-500" />
-              <span className="text-xs sm:text-sm font-medium text-center">All our products are cruelty-free and made with natural ingredients</span>
-              <span className="animate-heart-pop">💖</span>
+              <span className="text-xs sm:text-sm font-medium text-center">Never tested on animals. Made with natural ingredients.</span>
+                <Emoji emoji="💖" className="animate-heart-pop" />
               <Award className="hidden sm:block w-5 h-5 text-accent" />
             </div>
           </div>
