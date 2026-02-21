@@ -156,7 +156,7 @@ function generateEmailHTML(data: SendOrderRequest, productsTable: string): strin
         </div>
 
         <div class="footer">
-          <p>Need help? Contact us on WhatsApp: <strong>+201012622315</strong></p>
+          <p>Need help? Contact us on WhatsApp: <strong>01105003495</strong></p>
           <p>Email: <strong>luqitchycosmetics@gmail.com</strong></p>
           <p style="margin-top: 15px; border-top: 1px solid #ffe0ec; padding-top: 15px;">
             © 2026 Luqitchy Cosmetics. All rights reserved.

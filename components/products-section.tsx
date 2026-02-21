@@ -11,6 +11,8 @@ import { useWishlist } from "@/context/WishlistContext"
 import { useToast } from "@/components/ui/toast"
 
 const products = [
+// ...existing products...
+    // ...existing products...
   {
     id: "burgundy",
     name: "Burgundy",
@@ -18,7 +20,7 @@ const products = [
     image: "/images/burgundy.jpeg",
     color: "from-red-800 to-red-950",
     accent: "bg-red-800",
-    price: 100,
+    price: 99,
     isNew: false,
     imageClass: "object-cover object-top",
     containerBg: "bg-gradient-to-br from-red-50 to-rose-50 dark:from-red-950/30 dark:to-rose-950/30",
@@ -30,7 +32,7 @@ const products = [
     image: "/images/mocha.jpeg",
     color: "from-amber-800 to-amber-950",
     accent: "bg-amber-800",
-    price: 100,
+    price: 99,
     isNew: false,
     imageClass: "object-cover object-top",
     containerBg: "bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30",
@@ -42,7 +44,7 @@ const products = [
     image: "/images/strawberry-milk.jpeg",
     color: "from-pink-400 to-pink-600",
     accent: "bg-pink-400",
-    price: 100,
+    price: 99,
     isNew: false,
     imageClass: "object-cover object-top",
     containerBg: "bg-gradient-to-br from-pink-50 to-rose-50 dark:from-pink-950/30 dark:to-rose-950/30",
@@ -54,7 +56,7 @@ const products = [
     image: "/images/black-honey.jpeg",
     color: "from-amber-700 to-amber-900",
     accent: "bg-amber-600",
-    price: 100,
+    price: 99,
     isNew: false,
     // Mobile: cover with top focus, Desktop: cover
     imageClass: "object-cover object-top",
@@ -79,7 +81,7 @@ const products = [
         image: "/images/lip-balm.jpeg",
         color: "from-rose-500 to-pink-500",
         accent: "bg-rose-500",
-        price: 80,
+        price: 65,
         isNew: true,
         imageClass: "object-cover object-top",
         containerBg: "bg-gradient-to-br from-pink-50 to-rose-50 dark:from-pink-950/30 dark:to-rose-950/30",
@@ -108,6 +110,34 @@ const products = [
     isNew: true,
     imageClass: "object-cover object-center",
     containerBg: "bg-gradient-to-br from-pink-50 to-orange-50 dark:from-pink-950/30 dark:to-orange-950/30",
+  },
+  {
+    id: "lotion-splash-travel",
+    name: "Lotion & Splash travel Size",
+    description: "Mixed scent dupe Burberry Her and Strawberry Bound Cake. Strawberry and berry mix to give you the feeling of refreshment after showering. Stability for 8 hours.",
+    image: "/images/lotion-splash-travel.jpeg",
+    color: "from-pink-300 to-purple-400",
+    accent: "bg-pink-400",
+    price: 175,
+    isNew: true,
+    imageClass: "object-cover object-center",
+    containerBg: "bg-gradient-to-br from-pink-50 to-purple-50 dark:from-pink-950/30 dark:to-purple-950/30",
+    originalPrice: 250,
+    discount: 75,
+  },
+  {
+    id: "eyebrow-gel",
+    name: "Eyebrow Gel",
+    description: "20g. Brow gel for natural shaping and all-day hold.",
+    image: "/images/eyebrow-gel.jpeg",
+    color: "from-gray-300 to-gray-500",
+    accent: "bg-gray-500",
+    price: 115,
+    isNew: true,
+    imageClass: "object-cover object-center",
+    containerBg: "bg-gradient-to-br from-gray-50 to-gray-200 dark:from-gray-900/30 dark:to-gray-700/30",
+    originalPrice: 0,
+    discount: 0,
   },
 ]
 
@@ -374,6 +404,27 @@ export function ProductsSection() {
                   >
                     <span className="text-lg font-bold text-accent">{product.price}</span>
                     <span className="text-sm text-muted-foreground ml-1">EGP</span>
+                    {/* Discount for Lip Gloss */}
+                    {["black-honey", "burgundy", "wine", "mocha", "strawberry-milk"].includes(product.id) && (
+                      <>
+                        <span className="text-xs sm:text-sm text-muted-foreground line-through ml-2">150 EGP</span>
+                        <span className="bg-green-500/10 text-green-600 dark:text-green-400 text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full ml-2">Save 51 EGP</span>
+                      </>
+                    )}
+                    {/* Discount for Lip Balm */}
+                    {product.id === "lip-balm" && (
+                      <>
+                        <span className="text-xs sm:text-sm text-muted-foreground line-through ml-2">100 EGP</span>
+                        <span className="bg-green-500/10 text-green-600 dark:text-green-400 text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full ml-2">Save 35 EGP</span>
+                      </>
+                    )}
+                    {/* Discount for Lotion & Splash travel Size */}
+                    {product.id === "lotion-splash-travel" && (
+                      <>
+                        <span className="text-xs sm:text-sm text-muted-foreground line-through ml-2">250 EGP</span>
+                        <span className="bg-green-500/10 text-green-600 dark:text-green-400 text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full ml-2">Save 75 EGP</span>
+                      </>
+                    )}
                   </motion.div>
                 </div>
 
@@ -410,6 +461,27 @@ export function ProductsSection() {
                   <div className="flex flex-col gap-2">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-lg font-bold text-accent">{product.price} <span className="text-sm text-muted-foreground">EGP</span></span>
+                      {/* Discount for Lip Gloss */}
+                      {["black-honey", "burgundy", "wine", "mocha", "strawberry-milk"].includes(product.id) && (
+                        <>
+                          <span className="text-xs sm:text-sm text-muted-foreground line-through ml-2">150 EGP</span>
+                          <span className="bg-green-500/10 text-green-600 dark:text-green-400 text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full ml-2">Save 51 EGP</span>
+                        </>
+                      )}
+                      {/* Discount for Lip Balm */}
+                      {product.id === "lip-balm" && (
+                        <>
+                          <span className="text-xs sm:text-sm text-muted-foreground line-through ml-2">100 EGP</span>
+                          <span className="bg-green-500/10 text-green-600 dark:text-green-400 text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full ml-2">Save 35 EGP</span>
+                        </>
+                      )}
+                      {/* Discount for Lotion & Splash travel Size */}
+                      {product.id === "lotion-splash-travel" && (
+                        <>
+                          <span className="text-xs sm:text-sm text-muted-foreground line-through ml-2">250 EGP</span>
+                          <span className="bg-green-500/10 text-green-600 dark:text-green-400 text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full ml-2">Save 75 EGP</span>
+                        </>
+                      )}
                     </div>
                     <div className="flex gap-2 w-full">
                       <Button

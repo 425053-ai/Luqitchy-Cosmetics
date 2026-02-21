@@ -6,10 +6,10 @@ import Image from "next/image"
 import Link from "next/link"
 
 const products = [
-  { id: "black-honey", name: "Black Honey", price: 100, image: "/images/black-honey.jpeg", category: "Lip Gloss" },
-  { id: "burgundy", name: "Burgundy", price: 100, image: "/images/burgundy.jpeg", category: "Lip Gloss" },
-  { id: "wine", name: "Wine", price: 100, image: "/images/wine.jpeg", category: "Lip Gloss" },
-  { id: "mocha", name: "Mocha", price: 100, image: "/images/mocha.jpeg", category: "Lip Gloss" },
+  { id: "black-honey", name: "Black Honey", price: 99, image: "/images/black-honey.jpeg", category: "Lip Gloss" },
+  { id: "burgundy", name: "Burgundy", price: 99, image: "/images/burgundy.jpeg", category: "Lip Gloss" },
+  { id: "wine", name: "Wine", price: 99, image: "/images/wine.jpeg", category: "Lip Gloss" },
+  { id: "mocha", name: "Mocha", price: 99, image: "/images/mocha.jpeg", category: "Lip Gloss" },
   { id: "strawberry-milk", name: "Strawberry Milk", price: 100, image: "/images/strawberry-milk.jpeg", category: "Lip Gloss" },
   { id: "lip-balm", name: "Lip Balm", price: 100, image: "/images/lip-balm.jpeg", category: "Lip Care" },
   { id: "body-lotion-splash-mulberry", name: "Body Lotion Bundle - Mulberry", price: 300, image: "/images/body-lotion-splash-mulberry.png", category: "Body Care" },

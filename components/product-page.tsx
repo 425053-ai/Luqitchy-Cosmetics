@@ -505,10 +505,21 @@ export function ProductPage({ product }: ProductPageProps) {
               <div className="flex flex-wrap items-baseline gap-2 sm:gap-4 mb-4 sm:mb-6">
                 <span className="text-3xl sm:text-4xl md:text-5xl font-bold text-accent">{product.price}</span>
                 <span className="text-lg sm:text-xl md:text-2xl font-semibold text-accent">EGP</span>
-                <span className="text-base sm:text-lg md:text-xl text-muted-foreground line-through">{product.price + 50} EGP</span>
-                <span className="bg-green-500/10 text-green-600 dark:text-green-400 text-xs sm:text-sm font-bold px-2 sm:px-3 py-0.5 sm:py-1 rounded-full">
-                  Save {50} EGP
-                </span>
+                {product.id === "lip-balm" ? (
+                  <>
+                    <span className="text-base sm:text-lg md:text-xl text-muted-foreground line-through">100 EGP</span>
+                    <span className="bg-green-500/10 text-green-600 dark:text-green-400 text-xs sm:text-sm font-bold px-2 sm:px-3 py-0.5 sm:py-1 rounded-full">
+                      Save 35 EGP
+                    </span>
+                  </>
+                ) : ["black-honey", "burgundy", "wine", "mocha", "strawberry-milk"].includes(product.id) ? (
+                  <>
+                    <span className="text-base sm:text-lg md:text-xl text-muted-foreground line-through">150 EGP</span>
+                    <span className="bg-green-500/10 text-green-600 dark:text-green-400 text-xs sm:text-sm font-bold px-2 sm:px-3 py-0.5 sm:py-1 rounded-full">
+                      Save 51 EGP
+                    </span>
+                  </>
+                ) : null}
               </div>
               
               {/* Product Description */}

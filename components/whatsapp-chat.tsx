@@ -8,7 +8,7 @@ export function WhatsAppChat() {
   const [isOpen, setIsOpen] = useState(false)
   const [message, setMessage] = useState("")
   
-  const whatsappNumber = "201012622315" // Luqitchy Cosmetics
+  const whatsappNumber = "201105003495" // Luqitchy Cosmetics
   
   const sendMessage = () => {
     const text = message || "Hi! I'm interested in Luqitchy Cosmetics products 💄"

@@ -13,7 +13,7 @@ const products = [
     image: "/images/black-honey.jpeg",
     color: "from-amber-700 to-amber-900",
     accent: "bg-amber-600",
-    price: 100,
+    price: 99,
   },
   {
     id: "burgundy",
@@ -22,7 +22,7 @@ const products = [
     image: "/images/burgundy.jpeg",
     color: "from-red-800 to-red-950",
     accent: "bg-red-800",
-    price: 100,
+    price: 99,
   },
   {
     id: "wine",
@@ -31,7 +31,7 @@ const products = [
     image: "/images/wine.jpeg",
     color: "from-red-600 to-red-800",
     accent: "bg-red-600",
-    price: 100,
+    price: 99,
   },
   {
     id: "mocha",
@@ -40,7 +40,7 @@ const products = [
     image: "/images/mocha.jpeg",
     color: "from-amber-800 to-amber-950",
     accent: "bg-amber-800",
-    price: 100,
+    price: 99,
   },
   {
     id: "strawberry-milk",
@@ -49,7 +49,7 @@ const products = [
     image: "/images/strawberry-milk.jpeg",
     color: "from-pink-400 to-pink-600",
     accent: "bg-pink-400",
-    price: 100,
+    price: 65,
   },
   {
     id: "body-lotion-splash-mulberry",

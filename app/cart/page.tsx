@@ -871,7 +871,7 @@ export default function CartPage() {
                   <p className="text-xs sm:text-sm text-muted-foreground mt-2 mb-2">Send payment to Vodafone Cash wallet or InstaPay and attach the payment confirmation screenshot</p>
                   <div className="bg-white/30 dark:bg-black/30 rounded-lg p-3 mb-3 border border-red-500/20">
                     <p className="text-xs sm:text-sm text-muted-foreground mb-1">Vodafone Cash / InstaPay Number:</p>
-                    <p className="text-base font-mono font-bold text-lg text-red-600 dark:text-red-400 flex items-center gap-2">💳 <span dir="ltr">01012622315</span></p>
+                    <p className="text-base font-mono font-bold text-lg text-red-600 dark:text-red-400 flex items-center gap-2">💳 <span dir="ltr">01105003495</span></p>
                   </div>
                   <ul className="text-xs space-y-1 text-muted-foreground mb-3">
 
