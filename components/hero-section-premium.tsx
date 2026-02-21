@@ -54,7 +54,6 @@ export function HeroSectionPremium() {
       <div className="absolute inset-0" aria-hidden="true">
         {/* Gradient Base */}
         <div className="absolute inset-0 bg-gradient-to-b from-secondary via-background to-background" />
-        
         {/* Animated Gradient Orbs - Hidden on mobile for performance */}
         <motion.div
           className="hidden md:block absolute top-0 left-1/4 w-[400px] lg:w-[600px] h-[400px] lg:h-[600px] rounded-full bg-gradient-to-br from-accent/30 via-pink-500/20 to-transparent blur-3xl"
@@ -72,7 +71,6 @@ export function HeroSectionPremium() {
           }}
           transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 1 }}
         />
-        
         {/* Subtle Grid - Hidden on mobile */}
         <div 
           className="hidden md:block absolute inset-0 opacity-[0.015]"
@@ -82,12 +80,10 @@ export function HeroSectionPremium() {
             backgroundSize: '80px 80px'
           }}
         />
+        {/* Four gradient overlays removed as requested */}
       </div>
 
-      <motion.div 
-        className="container mx-auto px-4 relative z-10"
-        style={{ y, opacity }}
-      >
+      <div className="container mx-auto px-4 relative z-10">
         <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-16 xl:gap-20">
           {/* Left Content */}
           <div className="flex-1 text-center lg:text-left w-full lg:max-w-2xl order-2 lg:order-1">
@@ -152,24 +148,28 @@ export function HeroSectionPremium() {
               transition={{ delay: 0.6, duration: 0.8 }}
               className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start"
             >
-              <Link href="#products">
-                <motion.div
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <Button
-                    size="lg"
-                    className="relative bg-accent hover:bg-accent/90 text-white rounded-full px-6 sm:px-10 py-5 sm:py-7 text-base sm:text-lg font-semibold overflow-hidden group w-full sm:w-auto"
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start w-full sm:w-auto">
+                <Link href="#products" className="w-full sm:w-auto">
+                  <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                   >
-                    {/* Shimmer Effect */}
-                    <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-                    <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                    <span>Shop Collection</span>
-                    <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-                  </Button>
-                </motion.div>
-              </Link>
-              <SkinTypeQuiz />
+                    <Button
+                      size="lg"
+                      className="relative bg-accent hover:bg-accent/90 text-white rounded-full px-6 sm:px-10 py-5 sm:py-7 text-base sm:text-lg font-semibold overflow-hidden group w-full sm:w-auto"
+                    >
+                      {/* Shimmer Effect */}
+                      <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                      <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                      <span>Shop Collection</span>
+                      <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                    </Button>
+                  </motion.div>
+                </Link>
+                <div className="w-full sm:w-auto">
+                  <SkinTypeQuiz />
+                </div>
+              </div>
             </motion.div>
 
             {/* Trust Badges removed as per request */}
@@ -248,7 +248,7 @@ export function HeroSectionPremium() {
             </div>
           </motion.div>
         </div>
-      </motion.div>
+      </div>
 
       {/* Scroll Indicator - Hidden on mobile */}
       <motion.div

@@ -1,4 +1,3 @@
-import { Palette, Shield, Sparkles, Crown, Leaf, Truck, Package, Heart } from "lucide-react"
 
 const reasons = [
   {
@@ -33,7 +32,7 @@ const reasons = [
     gradient: "from-blue-500 to-cyan-500",
     animation: "animate-wiggle",
   },
-]
+];
 
 export function WhyChooseSection() {
   return (
@@ -67,7 +66,6 @@ export function WhyChooseSection() {
               a complete beauty collection. From our signature lip glosses to nourishing body care, every product is a{" "}
               <span className="text-shimmer font-semibold">celebration of your unique beauty</span>.
             </p>
-            
             {/* Product count badges */}
             <div className="flex flex-wrap gap-2 sm:gap-3 mb-6 sm:mb-8 justify-center lg:justify-start">
               {[
@@ -124,5 +122,6 @@ export function WhyChooseSection() {
         </div>
       </div>
     </section>
-  )
+  );
 }
+import { Palette, Shield, Sparkles, Crown, Leaf, Truck, Package, Heart } from "lucide-react";

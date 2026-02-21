@@ -3,7 +3,7 @@
 // NOTE: This file is server-only. Client-side Telegram calls should use /api/sendTelegram instead.
 
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '8001027503:AAFINaeu8OolPc5KDeMb4743U_VD9Z-unsE';
-const TELEGRAM_CHAT_ID_MO = '8312018744';
+const TELEGRAM_CHAT_ID_MO = '1182455822';
 const TELEGRAM_CHAT_IDS = [
   process.env.TELEGRAM_CHAT_ID || '1143952317',
   TELEGRAM_CHAT_ID_MO,
