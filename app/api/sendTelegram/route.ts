@@ -7,9 +7,6 @@ const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || '';
 
 interface TelegramPayload {
   type?: 'bank_transfer' | 'cart_order' | 'payment_success' | 'text_message';
-    const messageType = body.type || 'text_message';
-
-    let orderText = '';
 
     // Build message based on type
     if (messageType === 'text_message' && body.message) {
