@@ -7,8 +7,6 @@ const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || '';
 
 interface TelegramPayload {
   type?: 'bank_transfer' | 'cart_order' | 'payment_success' | 'text_message';
-      const { orderData } = body;
-      orderText = `<b>طلب جديد من Luqitchy Cosmetics</b>
     const messageType = body.type || 'text_message';
 
     let orderText = '';
