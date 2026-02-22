@@ -43,7 +43,33 @@ export async function POST(request: NextRequest) {
       orderText = body.message;
     } else if (messageType === 'bank_transfer' && body.orderData) {
       const { orderData } = body;
-      orderText = `<b>طلب جديد من Luqitchy Cosmetics</b>\n\n<b>👤 بيانات العميل:</b>\nاسم: ${orderData.customer_name}\nالهاتف: ${orderData.phone}\nالبريد: ${orderData.customer_email}\n\n<b>📦 تفاصيل الطلب:</b>\nرقم الطلب: <code>${orderData.order_id}</code>\nالمنتج: ${orderData.product_name}\nالكمية: ${orderData.quantity}\nالسعر: ${orderData.price} ج.م\nالإجمالي: <b>${orderData.total_amount} ج.م</b>\n\n<b>Order Total:</b> ${orderData.total_amount} ج.م\n<b>Shipping (all Egypt):</b> +70 ج.م\n<b>Total with Shipping:</b> ${orderData.total_amount + 70} ج.م\n\n<b>📍 عنوان التسليم:</b>\nالمحافظة: ${orderData.governorate}\nالمدينة: ${orderData.city}\nالشارع: ${orderData.street}\n${orderData.landmark ? `المعلم: ${orderData.landmark}` : ''}\n\n<b>💳 طريقة الدفع:</b>\n${orderData.notes ? `<b>📝 ملاحظات:</b>\n${orderData.notes}` : ''}`;
+        orderText = `<b>طلب جديد من Luqitchy Cosmetics</b>
+
+      <b>👤 بيانات العميل:</b>
+      اسم: ${orderData.customer_name}
+      الهاتف: ${orderData.phone}
+      البريد: ${orderData.customer_email}
+
+      <b>📦 تفاصيل الطلب:</b>
+      رقم الطلب: <code>${orderData.order_id}</code>
+      المنتج: ${orderData.product_name}
+      الكمية: ${orderData.quantity}
+      السعر: ${orderData.price} ج.م
+      الإجمالي: <b>${orderData.total_amount} ج.م</b>
+
+      <b>Order Total:</b> ${orderData.total_amount} ج.م
+      <b>Shipping (all Egypt):</b> +70 ج.م
+      <b>Total with Shipping:</b> ${orderData.total_amount + 70} ج.م
+
+      <b>📍 عنوان التسليم:</b>
+      المحافظة: ${orderData.governorate}
+      المدينة: ${orderData.city}
+      الشارع: ${orderData.street}
+      ${orderData.landmark ? `المعلم: ${orderData.landmark}` : ''}
+
+      <b>💳 طريقة الدفع:</b>
+      ${orderData.notes ? `<b>📝 ملاحظات:</b>
+      ${orderData.notes}` : ''}`;
     } else if (messageType === 'cart_order' && body.orderData) {
       const { orderData } = body;
       const productsText = orderData.items 
