@@ -113,7 +113,6 @@ ${new Date().toLocaleString('ar-EG')}
 📧 <b>البريد:</b> ${orderData.customerEmail}
 📞 <b>الهاتف:</b> ${orderData.phone}
 
-📍 <b>العنوان:</b>
 ${orderData.address}
 
 📦 <b>المنتجات:</b>
@@ -138,6 +137,7 @@ ${orderData.items.map((item: any) => `• ${item.name} × ${item.quantity}`).joi
     // Step 1: Send text message
    orderText = `
     console.log('🤖 [Telegram] Sending message to Telegram API...');
+   orderText = `
     const telegramUrl = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
     console.log('   URL:', telegramUrl.substring(0, 50) + '...');
 
