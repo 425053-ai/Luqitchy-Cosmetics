@@ -12,7 +12,7 @@ const footerProducts = [
   { name: "Body Lotion + Splash Bundle - Mulberry", href: "/order/body-lotion-splash-mulberry" },
   { name: "Body Lotion + Splash Bundle - Sugar Drop", href: "/order/body-lotion-splash-sugar-drop" },
   { name: "Lotion & Splash travel Size", href: "/order/lotion-splash-travel" },
-  { name: "Eyebrow Gel 20g", href: "/order/eyebrow-gel" },
+  { name: "Eyebrow Gel 20g", href: "/order/eyebrow-gel-20g" },
   { name: "Eyebrow Gel 10g", href: "/order/eyebrow-gel-10g" },
 ];
 
