@@ -13,7 +13,6 @@ interface TelegramPayload {
       const body: TelegramPayload = await request.json();
       const messageType = body.type || 'text_message';
       let orderText = '';
-  type?: 'bank_transfer' | 'cart_order' | 'payment_success' | 'text_message';
 }
 
     // Build message based on type
