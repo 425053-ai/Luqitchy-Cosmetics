@@ -142,8 +142,15 @@ function generateEmailHTML(data: SendOrderRequest, productsTable: string): strin
         </div>
 
         <div class="section" style="background-color: #fff5e6; border-left-color: #ff9900;">
-          <h2 style="color: #ff9900;">💰 Total Amount</h2>
+          <h2 style="color: #ff9900;">💰 Order Total</h2>
           <div class="total">${data.total_amount} EGP</div>
+          <div class="info-row" style="margin-top:8px;">
+            <span class="info-label">Shipping (all Egypt):</span>
+            <span class="info-value">+70 EGP</span>
+          </div>
+          <div class="total" style="margin-top:8px; color:#2db67a;">
+            Total with Shipping: <strong>${data.total_amount + 70} EGP</strong>
+          </div>
         </div>
 
         <div style="background-color: #e6f9f0; padding: 15px; border-radius: 10px; margin: 20px 0;">

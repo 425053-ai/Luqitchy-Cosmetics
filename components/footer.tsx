@@ -199,14 +199,14 @@ export function Footer() {
         {/* Bottom Bar */}
         <div className="border-t border-background/10 pt-6 sm:pt-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-3 sm:gap-4">
-            <div className="w-full flex flex-row items-center justify-between mt-4 mb-2">
-              <div className="text-sm sm:text-base md:text-lg font-bold text-background/80 flex items-center gap-2">
+            <div className="w-full flex flex-col sm:flex-row items-center justify-between mt-4 mb-2 gap-2">
+              <div className="text-sm sm:text-base md:text-lg font-bold text-background/80 flex items-center gap-2 text-center sm:text-left">
                 Made with
                 <span className="animate-heart-beat text-pink-400 text-lg md:text-xl">💖</span>
                 by <span className="font-bold text-primary">Lingo</span> for <span className="font-bold text-accent">Luqitchy</span>
                 <span className="animate-sparkle text-yellow-400 text-lg md:text-xl">✨</span>
               </div>
-              <div className="text-sm sm:text-base md:text-lg font-semibold text-background/70 flex items-center gap-2">
+              <div className="text-sm sm:text-base md:text-lg font-semibold text-background/70 flex items-center gap-2 text-center sm:text-left">
                 © {currentYear} Luqitchy Cosmetics. All rights reserved.
                 <span className="animate-sparkle text-yellow-400 text-lg md:text-xl">✨</span>
                 <span className="animate-heart-beat text-pink-400 text-lg md:text-xl">💖</span>

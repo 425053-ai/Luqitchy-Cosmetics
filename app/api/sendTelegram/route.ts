@@ -214,7 +214,6 @@ ${orderData.items.map((item: any) => `• ${item.name} × ${item.quantity}`).joi
             year: 'numeric',
             month: 'long',
             day: 'numeric',
-            hour: '2-digit',
             minute: '2-digit'
           });
           
@@ -235,6 +234,7 @@ ${orderData.items.map((item: any) => `• ${item.name} × ${item.quantity}`).joi
                 landmark: body.orderData.landmark || '',
                 notes: body.orderData.notes || '',
                 payment_method: body.orderData.payment_method || 'Customer Delivery',
+             orderText = `
                 order_date: body.orderData.order_date || timestamp,
                 status: 'معلق',
               });
@@ -263,7 +263,6 @@ ${orderData.items.map((item: any) => `• ${item.name} × ${item.quantity}`).joi
         let rawBase64 = body.imageData;
         if (rawBase64.includes(',')) {
           rawBase64 = rawBase64.split(',')[1];
-        }
         const imageBuffer = Buffer.from(rawBase64, 'base64');
         const mimeType = body.transferImageMime || 'image/jpeg';
         const filename = `${body.orderData?.order_id || 'transfer'}-proof.jpg`;
@@ -282,6 +281,7 @@ ${orderData.items.map((item: any) => `• ${item.name} × ${item.quantity}`).joi
     }
 
     return NextResponse.json(
+         orderText = `
       { success: true, message: 'Notification sent to Telegram and order saved to Excel' },
       { status: 200 }
     );
