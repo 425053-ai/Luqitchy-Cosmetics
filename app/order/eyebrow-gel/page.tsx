@@ -5,7 +5,7 @@ import { ProductPage } from "@/components/product-page"
 const product = {
   id: "eyebrow-gel",
   name: "Eyebrow Gel",
-  image: "/images/eyebrow-gel-20g.jpeg",
+  image: "/images/eyebrow-gel-10g.jpeg",
   price: 115,
   color: "from-gray-300 to-gray-500",
   features: [
