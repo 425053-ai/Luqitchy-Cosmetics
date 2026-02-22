@@ -14,6 +14,7 @@ interface TelegramPayload {
       const messageType = body.type || 'text_message';
       let orderText = '';
   type?: 'bank_transfer' | 'cart_order' | 'payment_success' | 'text_message';
+}
 
     // Build message based on type
     if (messageType === 'text_message' && body.message) {
