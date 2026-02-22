@@ -62,12 +62,30 @@ const products = [
   },
   {
     id: "lip-balm",
-    name: "LipBalm",
+    name: "Lip Balm",
     description: "Nourishing lip care with delicious flavor",
     image: "/images/lip-balm.jpeg",
     color: "from-rose-500 to-pink-500",
     accent: "bg-rose-400",
     price: 100,
+  },
+  {
+    id: "eyebrow-gel-20g",
+    name: "Eyebrow Gel 20g",
+    description: "20g. Brow gel for natural shaping and all-day hold.",
+    image: "/images/eyebrow-gel-20g.jpeg",
+    color: "from-gray-300 to-gray-500",
+    accent: "bg-gray-500",
+    price: 115,
+  },
+  {
+    id: "eyebrow-gel-10g",
+    name: "Eyebrow Gel 10g",
+    description: "10g. Brow gel for natural shaping and all-day hold.",
+    image: "/images/eyebrow-gel-10g.jpeg",
+    color: "from-gray-200 to-gray-400",
+    accent: "bg-gray-400",
+    price: 60,
   },
 ]
 
@@ -89,32 +107,14 @@ export function ProductsSection() {
             <Sparkles className="w-4 h-4 text-accent animate-sparkle" />
           </div>
 
-          {
-            id: "eyebrow-gel",
-            name: "Eyebrow Gel",
-            description: "20g. Brow gel for natural shaping and all-day hold.",
-            image: "/images/eyebrow-gel-10g.jpeg",
-            color: "from-gray-300 to-gray-500",
-            accent: "bg-gray-500",
-            price: 115,
-          },
-          {
-            id: "eyebrow-gel-10g",
-            name: "Eyebrow Gel",
-            description: "10g. Brow gel for natural shaping and all-day hold.",
-            image: "/images/eyebrow-gel-20g.jpeg",
-            color: "from-gray-200 to-gray-400",
-            accent: "bg-gray-400",
-            price: 60,
-          },
-            <span className="text-accent font-semibold"> beauty experience</span>.
+          <span className="text-accent font-semibold"> beauty experience</span>.
           </p>
         </div>
 
         <div className="space-y-32">
           {products.map((product, index) => (
             <article
-              key={product.name}
+              key={product.id}
               className="group relative animate-fade-in-up"
               style={{ animationDelay: `${index * 0.1}s` }}
             >
