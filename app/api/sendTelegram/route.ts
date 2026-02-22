@@ -65,39 +65,6 @@ interface TelegramPayload {
       ${orderData.city ? `المدينة: ${orderData.city}` : ''}
       العنوان: ${orderData.street_address}`;
 
-<b>📦 المنتجات:</b>
-${productsText}
-
-<b>💰 الإجمالي: ${orderData.total_price} ج.م</b>
-
-<b>📍 عنوان التسليم:</b>
-المحافظة: ${orderData.governorate}
-${orderData.city ? `المدينة: ${orderData.city}` : ''}
-العنوان: ${orderData.street_address}
-      orderText = body.message;
-    } else if (messageType === 'bank_transfer' && body.orderData) {
-      const { orderData } = body;
-      orderText = `
-
-<b>⏰ التاريخ:</b>
-${new Date().toLocaleString('ar-EG')}
-      `.trim();
-    } else if (messageType === 'payment_success' && body.orderData) {
-      const { orderData } = body;
-         orderText = `
-      orderText = `
-<b>💳 دفع ناجح</b>
-
-📱 <b>رقم المعاملة:</b> ${orderData.transactionId}
-💰 <b>المبلغ:</b> ${orderData.amount} جنيه
-
-👤 <b>العميل:</b> ${orderData.customerName}
-📧 <b>البريد:</b> ${orderData.customerEmail}
-📞 <b>الهاتف:</b> ${orderData.phone}
-
-${orderData.address}
-
-📦 <b>المنتجات:</b>
 ${orderData.items.map((item: any) => `• ${item.name} × ${item.quantity}`).join('\n')}
 
 📅 <b>الوقت:</b> ${new Date().toLocaleString('ar-EG')}
