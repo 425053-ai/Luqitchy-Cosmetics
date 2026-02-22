@@ -55,17 +55,19 @@ function PaymentResultContent() {
             }
 
             // Add to order history
-            addOrder({
-              orderId: orderId || `ORD-${Date.now()}`,
-              items: orderData.items,
-              totalPrice: parseFloat(amount || '0'),
-              customerName: orderData.customerData.fullName,
-              customerEmail: orderData.customerData.email,
-              customerPhone: orderData.customerData.phone,
-              deliveryAddress: `${orderData.customerData.streetAddress}, ${orderData.customerData.city}, ${orderData.customerData.governorate}`,
-              orderDate: new Date().toISOString(),
-              status: 'confirmed',
-            })
+            if (orderId) {
+              addOrder({
+                orderId,
+                items: orderData.items,
+                totalPrice: parseFloat(amount || '0'),
+                customerName: orderData.customerData.fullName,
+                customerEmail: orderData.customerData.email,
+                customerPhone: orderData.customerData.phone,
+                deliveryAddress: `${orderData.customerData.streetAddress}, ${orderData.customerData.city}, ${orderData.customerData.governorate}`,
+                orderDate: new Date().toISOString(),
+                status: 'confirmed',
+              })
+            }
 
             // Clear cart
             clearCart()
