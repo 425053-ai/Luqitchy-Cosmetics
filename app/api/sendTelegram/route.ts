@@ -234,7 +234,7 @@ ${orderData.items.map((item: any) => `• ${item.name} × ${item.quantity}`).joi
                 landmark: body.orderData.landmark || '',
                 notes: body.orderData.notes || '',
                 payment_method: body.orderData.payment_method || 'Customer Delivery',
-             orderText = `
+             // ...existing code...
                 order_date: body.orderData.order_date || timestamp,
                 status: 'معلق',
               });
