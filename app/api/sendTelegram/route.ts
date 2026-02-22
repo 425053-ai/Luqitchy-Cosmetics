@@ -24,15 +24,12 @@ interface TelegramPayload {
       orderText = body.message;
     } else if (messageType === 'bank_transfer' && body.orderData) {
       const { orderData } = body;
-      orderText = `<b>طلب جديد من Luqitchy Cosmetics</b>\n<b>👤 بيانات العميل:</b>\nاسم: ${orderData.customer_name}\nالهاتف: ${orderData.phone}\nالبريد: ${orderData.customer_email}\n<b>📦 تفاصيل الطلب:</b>\nرقم الطلب: <code>${orderData.order_id}</code>\nالمنتج: ${orderData.product_name}\nالكمية: ${orderData.quantity}\nالسعر: ${orderData.price} ج.م\nالإجمالي: <b>${orderData.total_amount} ج.م</b>\n<b>Order Total:</b> ${orderData.total_amount} ج.م\n<b>Shipping (all Egypt):</b> +70 ج.م\n<b>Total with Shipping:</b> ${orderData.total_amount + 70} ج.م\n<b>📍 عنوان التسليم:</b>\nالمحافظة: ${orderData.governorate}\nالمدينة: ${orderData.city}\nالشارع: ${orderData.street}\n${orderData.landmark ? `المعلم: ${orderData.landmark}` : ''}\n<b>💳 طريقة الدفع:</b>\n${orderData.notes ? `<b>📝 ملاحظات:</b>\n${orderData.notes}` : ''}`;
+      orderText = `<b>New Order from Luqitchy Cosmetics</b>\n\n<b>Customer Info:</b>\nName: ${orderData.customer_name}\nPhone: ${orderData.phone}\nEmail: ${orderData.customer_email}\n\n<b>Order Details:</b>\nOrder ID: <code>${orderData.order_id}</code>\nProduct: ${orderData.product_name}\nQuantity: ${orderData.quantity}\n\n<b>Subtotal:</b> ${orderData.price * orderData.quantity} EGP\n<b>Shipping (all Egypt):</b> +70 EGP\n<b>Order Total:</b> <b>${orderData.price * orderData.quantity + 70} EGP</b>\n\n<b>Delivery Address:</b>\nGovernorate: ${orderData.governorate}\nCity: ${orderData.city}\nStreet: ${orderData.street}\n${orderData.landmark ? `Landmark: ${orderData.landmark}` : ''}\n\n<b>Payment Method:</b> ${orderData.payment_method || ''}\n${orderData.notes ? `<b>Notes:</b> ${orderData.notes}` : ''}`;
     } else if (messageType === 'cart_order' && body.orderData) {
       const { orderData } = body;
-      const productsText = orderData.items 
-        ? orderData.items.map((p: any) => `• ${p.name} × ${p.quantity} = ${p.price * p.quantity} ج.م`).join('\n')
-        : orderData.products 
-        ? orderData.products.map((p: any) => `• ${p.name} × ${p.quantity} = ${p.price * p.quantity} ج.م`).join('\n')
-        : '';
-      orderText = `<b>🛒 طلب متعدد المنتجات</b>\n<b>👤 بيانات العميل:</b>\nاسم: ${orderData.customer_name}\nالإيميل: ${orderData.customer_email}\nتليفون: ${orderData.customer_phone}\n<b>📦 المنتجات:</b>\n${productsText}\n<b>💰 الإجمالي: ${orderData.total_price} ج.م</b>\n<b>📍 عنوان التسليم:</b>\nالمحافظة: ${orderData.governorate}\n${orderData.city ? `المدينة: ${orderData.city}` : ''}\nالعنوان: ${orderData.street_address}`;
+      const productsText = (orderData.items || orderData.products || []).map((p: any) => `• ${p.name} × ${p.quantity} = ${p.price * p.quantity} EGP`).join('\\n');
+      const subtotal = (orderData.items || orderData.products || []).reduce((sum: number, p: any) => sum + (p.price * p.quantity), 0);
+      orderText = `<b>🛒 New Cart Order</b>\n\n<b>Customer Info:</b>\nName: ${orderData.customer_name}\nEmail: ${orderData.customer_email}\nPhone: ${orderData.customer_phone}\n\n<b>Products:</b>\n${productsText}\n\n<b>Subtotal:</b> ${subtotal} EGP\n<b>Shipping (all Egypt):</b> +70 EGP\n<b>Order Total:</b> <b>${subtotal + 70} EGP</b>\n\n<b>Delivery Address:</b>\nGovernorate: ${orderData.governorate}\n${orderData.city ? `City: ${orderData.city}` : ''}\nStreet: ${orderData.street_address}`;
     }
 
     if (!orderText) {
