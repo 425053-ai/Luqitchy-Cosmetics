@@ -65,10 +65,6 @@ export async function POST(request: NextRequest) {
 ${orderData.landmark ? `المعلم: ${orderData.landmark}` : ''}
 
 <b>💳 طريقة الدفع:</b>
-${orderData.payment_method}
-
-<b>⏰ وقت الطلب:</b>
-${orderData.order_date}
 
 ${orderData.notes ? `<b>📝 ملاحظات:</b>\n${orderData.notes}` : ''}
       `.trim();
@@ -97,6 +93,10 @@ ${productsText}
 المحافظة: ${orderData.governorate}
 ${orderData.city ? `المدينة: ${orderData.city}` : ''}
 العنوان: ${orderData.street_address}
+      orderText = body.message;
+    } else if (messageType === 'bank_transfer' && body.orderData) {
+      const { orderData } = body;
+      orderText = `
 
 <b>⏰ التاريخ:</b>
 ${new Date().toLocaleString('ar-EG')}
