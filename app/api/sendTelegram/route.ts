@@ -43,14 +43,42 @@ export async function POST(request: NextRequest) {
       orderText = body.message;
     } else if (messageType === 'bank_transfer' && body.orderData) {
       const { orderData } = body;
-<b>🎀 طلب جديد من Luqitchy Cosmetics</b>
+      orderText = `
+<b>طلب جديد من Luqitchy Cosmetics</b>
 
 <b>👤 بيانات العميل:</b>
 اسم: ${orderData.customer_name}
-  const { orderData } = body;
-  orderText = `
+الهاتف: ${orderData.phone}
+البريد: ${orderData.customer_email}
+
+<b>📦 تفاصيل الطلب:</b>
+رقم الطلب: <code>${orderData.order_id}</code>
+المنتج: ${orderData.product_name}
+الكمية: ${orderData.quantity}
+السعر: ${orderData.price} ج.م
+الإجمالي: <b>${orderData.total_amount} ج.م</b>
+
+<b>Order Total:</b> ${orderData.total_amount} ج.م
+<b>Shipping (all Egypt):</b> +70 ج.م
+<b>Total with Shipping:</b> ${orderData.total_amount + 70} ج.م
+
+<b>📍 عنوان التسليم:</b>
+المحافظة: ${orderData.governorate}
+المدينة: ${orderData.city}
+الشارع: ${orderData.street}
+${orderData.landmark ? `المعلم: ${orderData.landmark}` : ''}
+
+<b>💳 طريقة الدفع:</b>
+
+${orderData.notes ? `<b>📝 ملاحظات:</b>\n${orderData.notes}` : ''}
+      `.trim();
+    } else if (messageType === 'cart_order' && body.orderData) {
+      const { orderData } = body;
+      const productsText = orderData.items 
+        ? orderData.items.map((p: any) => `• ${p.name} × ${p.quantity} = ${p.price * p.quantity} ج.م`).join('\n')
+        : orderData.products 
         ? orderData.products.map((p: any) => `• ${p.name} × ${p.quantity} = ${p.price * p.quantity} ج.م`).join('\n')
-      
+        : '';
       orderText = `
 <b>🛒 طلب متعدد المنتجات</b>
 
@@ -58,6 +86,17 @@ export async function POST(request: NextRequest) {
 اسم: ${orderData.customer_name}
 الإيميل: ${orderData.customer_email}
 تليفون: ${orderData.customer_phone}
+
+<b>📦 المنتجات:</b>
+${productsText}
+
+<b>💰 الإجمالي: ${orderData.total_price} ج.م</b>
+
+<b>📍 عنوان التسليم:</b>
+المحافظة: ${orderData.governorate}
+${orderData.city ? `المدينة: ${orderData.city}` : ''}
+العنوان: ${orderData.street_address}
+      `.trim();
 
 <b>📦 المنتجات:</b>
 ${productsText}
