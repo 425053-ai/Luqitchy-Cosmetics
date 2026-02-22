@@ -199,13 +199,23 @@ export function Footer() {
         {/* Bottom Bar */}
         <div className="border-t border-background/10 pt-6 sm:pt-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-3 sm:gap-4">
-            <p className="text-[10px] sm:text-xs text-background/40 flex items-center gap-1 flex-wrap justify-center md:justify-start">
-              <span className="text-background/60">Made with <span className="animate-heart-beat">💖</span> by <span className="font-bold">Lingo</span> for <span className="font-bold">Luqitchy</span> <span className="animate-sparkle">✨</span></span>
-              <span className="mx-2">|</span>
-              © {currentYear} Luqitchy Cosmetics. All rights reserved.
-              <span className="animate-sparkle">✨</span>
-              <span className="animate-heart-beat">💖</span>
-            </p>
+            <div className="w-full flex flex-col items-center justify-center mt-4 mb-2">
+              <div className="text-lg sm:text-xl md:text-2xl font-bold text-background/80 flex items-center gap-2 mb-2">
+                Made with
+                <span className="animate-heart-beat text-pink-400 text-2xl md:text-3xl">💖</span>
+                by <span className="font-bold text-primary">Lingo</span> for <span className="font-bold text-accent">Luqitchy</span>
+                <span className="animate-sparkle text-yellow-400 text-2xl md:text-3xl">✨</span>
+              </div>
+              <div className="text-base sm:text-lg md:text-xl font-semibold text-background/70 flex items-center gap-2">
+                © {currentYear} Luqitchy Cosmetics. All rights reserved.
+                <span className="animate-sparkle text-yellow-400 text-xl md:text-2xl">✨</span>
+                <span className="animate-heart-beat text-pink-400 text-xl md:text-2xl">💖</span>
+              </div>
+              <div className="mt-2 text-sm sm:text-base text-background/60 font-medium flex items-center gap-2">
+                <span className="animate-heart-beat text-pink-400">القلوب بتدق وبتنبض وبتتحرك</span>
+                <span className="animate-sparkle text-yellow-400">والنجمة بتتحرك وبتلمع</span>
+              </div>
+            </div>
           </div>
           
           {/* Contact with LINGO */}
