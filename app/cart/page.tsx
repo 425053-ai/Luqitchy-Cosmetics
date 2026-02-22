@@ -14,6 +14,8 @@ import { compressImage } from "@/lib/image-compression"
 export default function CartPage() {
   const router = useRouter()
   const { items, removeFromCart, updateQuantity, clearCart, totalPrice } = useCart()
+  const SHIPPING_FEE = 70;
+  const totalWithShipping = totalPrice > 0 ? totalPrice + SHIPPING_FEE : 0;
   const { addOrder } = useOrderHistory()
   const [formData, setFormData] = useState({
     fullName: "",
@@ -83,6 +85,7 @@ export default function CartPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
     if (isSubmitting) return
     if (items.length === 0) return
 
@@ -121,33 +124,40 @@ export default function CartPage() {
     }
 
     try {
+      const orderPayload = {
+        order_id,
+        order_date,
+        order_type: 'cart',
+        customer_name: formData.fullName,
+        customer_email: formData.email,
+        phone: formData.phone,
+        whatsapp: sameAsPhone ? formData.phone : formData.whatsapp,
+        products: items.map(item => ({
+          name: item.name,
+          quantity: item.quantity,
+          price: item.price,
+          total: item.quantity * item.price,
+        })),
+        total_amount: totalWithShipping,
+        governorate: formData.governorate,
+        city: formData.city,
+        street: formData.streetAddress,
+        landmark: formData.landmark,
+        notes: formData.notes || 'بدون ملاحظات',
+        payment_method: 'Vodafone Cash Wallet & InstaPay',
+        imageData,
+        transferImageMime: imageMime,
+      };
       const unifiedOrderResponse = await fetch('/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          order_id,
-          order_date,
-          order_type: 'cart',
-          customer_name: formData.fullName,
-          customer_email: formData.email,
-          phone: formData.phone,
-          whatsapp: sameAsPhone ? formData.phone : formData.whatsapp,
-          products: items.map(item => ({
-            name: item.name,
-            quantity: item.quantity,
-            price: item.price,
-            total: item.quantity * item.price,
-          })),
-          total_amount: totalPrice,
-          governorate: formData.governorate,
-          city: formData.city,
-          street: formData.streetAddress,
-          landmark: formData.landmark,
-          notes: formData.notes || 'بدون ملاحظات',
-          payment_method: 'Vodafone Cash Wallet & InstaPay',
-          imageData,
-          transferImageMime: imageMime,
-        }),
+        body: JSON.stringify(orderPayload),
+      })
+      // Send admin email notification (separate Brevo account)
+      await fetch('/api/sendAdminEmail', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(orderPayload),
       })
 
       if (!unifiedOrderResponse.ok) {
@@ -167,7 +177,7 @@ export default function CartPage() {
             quantity: item.quantity,
             image: item.image,
           })),
-          totalPrice: totalPrice,
+          totalPrice: totalWithShipping,
           customerName: formData.fullName,
           customerEmail: formData.email,
           customerPhone: formData.phone,
@@ -190,7 +200,7 @@ export default function CartPage() {
       setSubmittedOrder({
         orderId: order_id,
         items: savedItems,
-        totalPrice: savedTotalPrice,
+        totalPrice: savedTotalPrice + SHIPPING_FEE,
         totalQuantity: savedTotalQuantity,
         customerData: { ...formData },
         orderTime: order_date,
@@ -334,9 +344,19 @@ export default function CartPage() {
 
             {/* Total */}
             <div className="p-3 sm:p-4 md:p-6 bg-accent/5">
-              <div className="flex justify-between items-center text-base sm:text-lg md:text-xl">
-                <span className="font-bold">💰 Total:</span>
-                <span className="font-bold text-accent text-lg sm:text-xl md:text-2xl">{submittedOrder.totalPrice} EGP</span>
+              <div className="flex flex-col gap-2">
+                <div className="flex justify-between items-center text-base sm:text-lg md:text-xl">
+                  <span className="font-bold">Subtotal:</span>
+                  <span className="font-bold text-foreground">{submittedOrder.totalPrice - SHIPPING_FEE} EGP</span>
+                </div>
+                <div className="flex justify-between items-center text-base sm:text-lg md:text-xl">
+                  <span className="font-bold">Shipping (all Egypt):</span>
+                  <span className="font-bold text-blue-600">+70 EGP</span>
+                </div>
+                <div className="flex justify-between items-center text-base sm:text-lg md:text-xl mt-2">
+                  <span className="font-bold">💰 Total:</span>
+                  <span className="font-bold text-accent text-lg sm:text-xl md:text-2xl">{submittedOrder.totalPrice} EGP</span>
+                </div>
               </div>
             </div>
 
@@ -698,13 +718,19 @@ export default function CartPage() {
               <h2 className="text-xl sm:text-2xl font-serif font-bold mb-4 sm:mb-6">Complete Your Order</h2>
 
               <div className="bg-accent/10 backdrop-blur-sm rounded-lg sm:rounded-xl p-3 sm:p-4 mb-4 sm:mb-6 border border-accent/20">
-                <div className="flex justify-between items-center mb-2 text-sm sm:text-base">
-                  <span className="text-muted-foreground">Products ({items.reduce((sum, item) => sum + item.quantity, 0)})</span>
-                  <span className="font-semibold">{totalPrice} EGP</span>
-                </div>
-                <div className="flex justify-between items-center pt-2 sm:pt-3 border-t border-accent/20">
-                  <span className="text-base sm:text-lg font-bold">Total</span>
-                  <span className="text-xl sm:text-2xl font-bold text-accent">{totalPrice} EGP</span>
+                <div className="flex flex-col gap-2">
+                  <div className="flex justify-between items-center mb-2 text-sm sm:text-base">
+                    <span className="text-muted-foreground">Products ({items.reduce((sum, item) => sum + item.quantity, 0)})</span>
+                    <span className="font-semibold">{totalPrice} EGP</span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm sm:text-base">
+                    <span className="font-semibold text-blue-700">Shipping (all Egypt)</span>
+                    <span className="font-semibold text-blue-700">+70 EGP</span>
+                  </div>
+                  <div className="flex justify-between items-center pt-2 sm:pt-3 border-t border-accent/20">
+                    <span className="text-base sm:text-lg font-bold">Total</span>
+                    <span className="text-xl sm:text-2xl font-bold text-accent">{totalWithShipping} EGP</span>
+                  </div>
                 </div>
               </div>
 
@@ -941,6 +967,9 @@ export default function CartPage() {
                     </span>
                   </div>
                 </div>
+                  <div className="text-xs sm:text-sm text-blue-700 font-semibold mb-2 text-center">
+                    🚚 Shipping to all governorates: <span className="font-bold">70 EGP</span> only
+                  </div>
                   <Button
                     type="submit"
                     disabled={isSubmitting}
@@ -951,7 +980,7 @@ export default function CartPage() {
                     ) : (
                       <>
                         <ShoppingCart className="w-5 h-5 ml-2" />
-                        Complete Order ({totalPrice} EGP)
+                        Complete Order ({totalWithShipping} EGP)
                       </>
                     )}
                   </Button>

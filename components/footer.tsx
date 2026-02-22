@@ -2,6 +2,20 @@ import Image from "next/image"
 import { Heart, Instagram, Sparkles, Mail, MapPin, Clock } from "lucide-react"
 import Link from "next/link"
 
+const footerProducts = [
+  { name: "Black Honey", href: "/order/black-honey" },
+  { name: "Burgundy", href: "/order/burgundy" },
+  { name: "Wine", href: "/order/wine" },
+  { name: "Mocha", href: "/order/mocha" },
+  { name: "Strawberry Milk", href: "/order/strawberry-milk" },
+  { name: "Lip Balm", href: "/order/lip-balm" },
+  { name: "Body Lotion + Splash Bundle - Mulberry", href: "/order/body-lotion-splash-mulberry" },
+  { name: "Body Lotion + Splash Bundle - Sugar Drop", href: "/order/body-lotion-splash-sugar-drop" },
+  { name: "Lotion & Splash travel Size", href: "/order/lotion-splash-travel" },
+  { name: "Eyebrow Gel 20g", href: "/order/eyebrow-gel" },
+  { name: "Eyebrow Gel 10g", href: "/order/eyebrow-gel-10g" },
+];
+
 export function Footer() {
   const currentYear = new Date().getFullYear()
   
@@ -59,15 +73,7 @@ export function Footer() {
               <span className="text-sm animate-sparkle">✨</span>
             </h3>
             <ul className="space-y-2 sm:space-y-3 text-xs sm:text-sm">
-              {[
-                { name: "Black Honey", href: "/order/black-honey" },
-                { name: "Burgundy", href: "/order/burgundy" },
-                { name: "Wine", href: "/order/wine" },
-                { name: "Mocha", href: "/order/mocha" },
-                { name: "Strawberry Milk", href: "/order/strawberry-milk" },
-                { name: "Lip Balm", href: "/order/lip-balm" },
-                { name: "Body Lotion Bundles", href: "/#products" },
-              ].map((product) => (
+              {footerProducts.map((product) => (
                 <li key={product.name}>
                   <Link
                     href={product.href}
@@ -122,7 +128,7 @@ export function Footer() {
             <ul className="space-y-3 sm:space-y-4 text-xs sm:text-sm">
               <li>
                 <a
-                  href="https://www.instagram.com/luqitchyglossy?igsh=OWNlcnFqMmttMWhw"
+                  href="https://www.instagram.com/luqitchyco.eg?igsh=a2V3eGJkdjAxeHUw&utm_source=qr"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 sm:gap-3 justify-center sm:justify-start text-background/60 hover:text-primary transition-colors group"
@@ -132,13 +138,13 @@ export function Footer() {
                   </div>
                   <div>
                     <span className="block font-medium text-background/80 group-hover:text-primary text-xs sm:text-sm">Instagram</span>
-                    <span className="text-[10px] sm:text-xs text-background/50">@luqitchyglossy</span>
+                    <span className="text-[10px] sm:text-xs text-background/50">@luqitchyco.eg</span>
                   </div>
                 </a>
               </li>
               <li>
                 <a
-                  href="https://www.tiktok.com/@luqitchyglossy3?_r=1&_t=ZS-92uEz8OxLJh"
+                  href="https://www.tiktok.com/@luqitchyco.eg?_r=1&_t=ZS-948OONS27XN"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 sm:gap-3 justify-center sm:justify-start text-background/60 hover:text-primary transition-colors group"
@@ -154,7 +160,7 @@ export function Footer() {
                   </div>
                   <div>
                     <span className="block font-medium text-background/80 group-hover:text-primary text-xs sm:text-sm">TikTok</span>
-                    <span className="text-[10px] sm:text-xs text-background/50">@luqitchyglossy3</span>
+                    <span className="text-[10px] sm:text-xs text-background/50">@luqitchyco.eg</span>
                   </div>
                 </a>
               </li>
@@ -193,17 +199,17 @@ export function Footer() {
         {/* Bottom Bar */}
         <div className="border-t border-background/10 pt-6 sm:pt-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-3 sm:gap-4">
-            {/* Made with love by Lingo removed as per request */}
             <p className="text-[10px] sm:text-xs text-background/40 flex items-center gap-1 flex-wrap justify-center md:justify-start">
-              © {currentYear} Luqitchy Cosmetics. All rights reserved.
-              <span className="animate-glitter">✨</span>
-              <span className="animate-heart-pop">💖</span>
+              <span className="text-background/60">Made with <span className="animate-heart-beat">💖</span> by <span className="font-bold">Lingo</span> for <span className="font-bold">Luqitchy</span> <span className="animate-sparkle">✨</span></span>
               <span className="mx-2">|</span>
-              <span className="text-background/60">Made with <span className="animate-heart-pop">💖</span> by <span className="font-bold">Lingo</span> for <span className="font-bold">Luqitchy</span> <span className="animate-sparkle">✨</span></span>
+              © {currentYear} Luqitchy Cosmetics. All rights reserved.
+              <span className="animate-sparkle">✨</span>
+              <span className="animate-heart-beat">💖</span>
             </p>
           </div>
           
           {/* Contact with LINGO */}
+
           <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-background/10 text-center">
             <p className="text-[10px] sm:text-xs text-background/50 mb-2 sm:mb-3 flex items-center justify-center gap-1">
               <span className="animate-sparkle">✨</span>

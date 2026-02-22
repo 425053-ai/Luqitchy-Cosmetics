@@ -89,15 +89,24 @@ export function ProductsSection() {
             <Sparkles className="w-4 h-4 text-accent animate-sparkle" />
           </div>
 
-          <h2
-            id="products-heading"
-            className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6"
-          >
-            Luqitchy <span className="gradient-text">Cosmetics</span>
-          </h2>
-
-          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto text-pretty leading-relaxed">
-            Discover our stunning collection of premium cosmetics, each crafted to perfection for the ultimate
+          {
+            id: "eyebrow-gel",
+            name: "Eyebrow Gel",
+            description: "20g. Brow gel for natural shaping and all-day hold.",
+            image: "/images/eyebrow-gel-10g.jpeg",
+            color: "from-gray-300 to-gray-500",
+            accent: "bg-gray-500",
+            price: 115,
+          },
+          {
+            id: "eyebrow-gel-10g",
+            name: "Eyebrow Gel",
+            description: "10g. Brow gel for natural shaping and all-day hold.",
+            image: "/images/eyebrow-gel-20g.jpeg",
+            color: "from-gray-200 to-gray-400",
+            accent: "bg-gray-400",
+            price: 60,
+          },
             <span className="text-accent font-semibold"> beauty experience</span>.
           </p>
         </div>

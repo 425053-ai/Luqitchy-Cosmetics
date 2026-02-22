@@ -131,39 +131,48 @@ export function ProductPage({ product }: ProductPageProps) {
     }
 
     // UNIFIED ORDER PROCESSING - Single call to /api/orders
+    const orderPayload = {
+      order_id: order_id,
+      order_date: order_date,
+      order_type: 'single_product',
+      customer_name: formData.fullName,
+      customer_email: formData.email,
+      phone: formData.phone,
+      whatsapp: formData.whatsapp || formData.phone,
+      products: [{
+        name: product.name,
+        quantity: quantity,
+        price: product.price,
+        total: quantity * product.price,
+      }],
+      total_amount: total_price,
+      governorate: formData.governorate,
+      city: formData.city,
+      street: formData.streetAddress,
+      landmark: formData.landmark,
+      notes: formData.notes || 'بدون ملاحظات',
+      payment_method: 'تحويل بنكي للرقم 01012622315',
+      imageData: imageData,
+      transferImageMime: imageMime,
+    };
     const unifiedOrderResponse = await fetch('/api/orders', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        order_id: order_id,
-        order_date: order_date,
-        order_type: 'single_product',
-        customer_name: formData.fullName,
-        customer_email: formData.email,
-        phone: formData.phone,
-        whatsapp: formData.whatsapp || formData.phone,
-        products: [{
-          name: product.name,
-          quantity: quantity,
-          price: product.price,
-          total: quantity * product.price,
-        }],
-        total_amount: total_price,
-        governorate: formData.governorate,
-        city: formData.city,
-        street: formData.streetAddress,
-        landmark: formData.landmark,
-        notes: formData.notes || 'بدون ملاحظات',
-        payment_method: 'تحويل بنكي للرقم 01012622315',
-        imageData: imageData,
-        transferImageMime: imageMime,
-      }),
+      body: JSON.stringify(orderPayload),
     })
 
     if (!unifiedOrderResponse.ok) {
       setIsSubmitting(false)
       return
     }
+
+
+    // Send admin email notification (separate Brevo account)
+    await fetch('/api/sendAdminEmail', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(orderPayload),
+    })
 
     const orderResult = await unifiedOrderResponse.json()
 
@@ -367,17 +376,18 @@ export function ProductPage({ product }: ProductPageProps) {
 
                 {/* Total */}
                 <div className="p-3 sm:p-4 md:p-6 bg-gradient-to-r from-accent/5 via-accent/10 to-accent/5">
-                  <div className="flex flex-col sm:flex-row justify-between items-center gap-2 sm:gap-0">
-                    <div>
-                      <span className="text-muted-foreground text-sm">Grand Total</span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-2xl">💰</span>
-                        <span className="font-bold text-lg sm:text-xl md:text-2xl">Total Amount</span>
-                      </div>
+                  <div className="flex flex-col gap-2">
+                    <div className="flex justify-between items-center text-base">
+                      <span className="font-semibold">Subtotal:</span>
+                      <span>{submittedOrder.totalPrice} EGP</span>
                     </div>
-                    <div className="text-center sm:text-right">
-                      <span className="text-2xl sm:text-3xl md:text-4xl font-bold text-accent">{submittedOrder.totalPrice}</span>
-                      <span className="text-base sm:text-lg md:text-xl font-semibold text-accent ml-1">EGP</span>
+                    <div className="flex justify-between items-center text-base">
+                      <span className="font-semibold text-blue-700">Shipping (all Egypt):</span>
+                      <span className="text-blue-700">+70 EGP</span>
+                    </div>
+                    <div className="flex justify-between items-center text-lg mt-2">
+                      <span className="font-bold">Order Total:</span>
+                      <span className="text-2xl sm:text-3xl md:text-4xl font-bold text-accent">{submittedOrder.totalPrice + 70} EGP</span>
                     </div>
                   </div>
                 </div>
@@ -901,16 +911,26 @@ export function ProductPage({ product }: ProductPageProps) {
 
                 {/* Order Summary */}
                 <div className="bg-accent/5 rounded-2xl p-4 border border-accent/20">
-                  <div className="flex justify-between items-center">
-                    <span className="font-semibold">Order Total:</span>
-                    <span className="text-2xl font-bold text-accent">{quantity * product.price} EGP</span>
+                  <div className="flex flex-col gap-2">
+                    <div className="flex justify-between items-center">
+                      <span className="font-semibold">Order Total:</span>
+                      <span className="text-2xl font-bold text-accent">{quantity * product.price} EGP</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="font-semibold text-blue-700">Shipping (all Egypt):</span>
+                      <span className="text-blue-700">+70 EGP</span>
+                    </div>
+                    <div className="flex justify-between items-center mt-2">
+                      <span className="font-bold">Total with Shipping:</span>
+                      <span className="text-2xl font-bold text-green-700">{quantity * product.price + 70} EGP</span>
+                    </div>
                   </div>
                 </div>
 
                 <Button
                   type="submit"
                   disabled={isSubmitting || uploadingImage || !transferImage}
-                  className="w-full h-16 luxury-btn text-xl rounded-2xl transition-all duration-300 group disabled:opacity-70 disabled:cursor-not-allowed"
+                  className="w-full h-16 luxury-btn text-xl rounded-2xl transition-all duration-300 group disabled:opacity-70 disabled:cursor-not-allowed mt-2"
                 >
                   {isSubmitting ? (
                     <>Processing...</>
@@ -919,13 +939,17 @@ export function ProductPage({ product }: ProductPageProps) {
                   ) : (
                     <>
                       <span className="mr-2">🏦</span>
-                      Submit Order
+                      Complete Order ({quantity * product.price + 70} EGP)
                       <span className="ml-2 group-hover:translate-x-1 transition-transform">→</span>
                     </>
                   )}
                 </Button>
-                
-                <p className="text-center text-xs text-muted-foreground">
+
+                <div className="text-xs text-blue-700 font-semibold text-center mt-2">
+                  🚚 Shipping to all governorates: 70 EGP only
+                </div>
+
+                <p className="text-center text-xs text-muted-foreground mt-1">
                   By placing this order, you agree to our terms and conditions
                 </p>
               </form>

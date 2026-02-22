@@ -44,7 +44,7 @@ const instagramPosts = [
 ]
 
 export function InstagramFeed() {
-  const instagramUrl = "https://instagram.com/luqitchycosmetics" // Replace with actual URL
+  const instagramUrl = "https://www.instagram.com/luqitchyco.eg?igsh=a2V3eGJkdjAxeHUw&utm_source=qr"
 
   return (
     <section className="py-20 px-4 bg-gradient-to-b from-background via-pink-50/30 dark:via-pink-950/10 to-background relative overflow-hidden">

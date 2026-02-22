@@ -172,7 +172,15 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
 
               <p className="text-xl text-muted-foreground mb-6 leading-relaxed">{product.longDescription}</p>
 
-              <div className="text-3xl font-bold text-accent mb-8">{product.price}</div>
+              <div className="flex flex-col gap-2 mb-8">
+                <div className="text-3xl font-bold text-accent">{product.price}</div>
+                <div className="text-xs sm:text-sm text-blue-700 font-semibold">
+                  🚚 الشحن لكل المحافظات <span className="font-bold">٧٠ جنيه</span> فقط
+                </div>
+                <div className="text-base sm:text-lg font-bold text-green-700 mt-2">
+                  Order Total: {parseInt(product.price.replace(/[^0-9]/g, "")) + 70} EGP
+                </div>
+              </div>
 
               {/* Features */}
               <div className="grid grid-cols-2 gap-4 mb-8">

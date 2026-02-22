@@ -3,22 +3,22 @@
 import { ProductPage } from "@/components/product-page"
 
 const product = {
-  id: "eyebrow-gel",
+  id: "eyebrow-gel-10g",
   name: "Eyebrow Gel",
-  image: "/images/eyebrow-gel-20g.jpeg",
-  price: 115,
-  color: "from-gray-300 to-gray-500",
+  image: "/images/eyebrow-gel-10g.jpeg",
+  price: 60,
+  color: "from-gray-200 to-gray-400",
   features: [
-    "20g size",
+    "10g size",
     "Natural shaping",
     "All-day hold",
     "Easy to use",
     "Suitable for all brow types",
   ],
   description:
-    "Brow gel for natural shaping and all-day hold. Size: 20g.",
+    "Brow gel for natural shaping and all-day hold. Size: 10g.",
 }
 
-export default function EyebrowGelPage() {
+export default function EyebrowGel10gPage() {
   return <ProductPage product={product} />
 }

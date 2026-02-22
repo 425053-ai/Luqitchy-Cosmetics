@@ -1,3 +1,16 @@
+@keyframes heart-beat {
+  0%, 100% { transform: scale(1); }
+  10% { transform: scale(1.2); }
+  20% { transform: scale(0.95); }
+  30% { transform: scale(1.15); }
+  40% { transform: scale(0.98); }
+  50% { transform: scale(1.1); }
+  60% { transform: scale(1); }
+}
+.animate-heart-beat {
+  animation: heart-beat 1.2s infinite cubic-bezier(0.4, 0, 0.2, 1);
+  display: inline-block;
+}
 @import 'tailwindcss';
 @import 'tw-animate-css';
 

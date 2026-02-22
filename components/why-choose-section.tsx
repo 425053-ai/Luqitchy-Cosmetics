@@ -34,6 +34,20 @@ const reasons = [
   },
 ];
 
+const productBadges = [
+  { label: "Black Honey", emoji: "💄" },
+  { label: "Burgundy", emoji: "💄" },
+  { label: "Wine", emoji: "💄" },
+  { label: "Mocha", emoji: "💄" },
+  { label: "Strawberry Milk", emoji: "💄" },
+  { label: "Lip Balm", emoji: "💋" },
+  { label: "Body Lotion + Splash Bundle - Mulberry", emoji: "🧴" },
+  { label: "Body Lotion + Splash Bundle - Sugar Drop", emoji: "🧴" },
+  { label: "Lotion & Splash travel Size", emoji: "🧴" },
+  { label: "Eyebrow Gel 20g", emoji: "🪞", key: "eyebrow-gel-20g" },
+  { label: "Eyebrow Gel 10g", emoji: "🪞", key: "eyebrow-gel-10g" },
+];
+
 export function WhyChooseSection() {
   return (
     <section className="py-16 sm:py-20 md:py-28 lg:py-36 bg-gradient-to-b from-background via-secondary/10 to-background relative overflow-hidden" aria-labelledby="why-choose-heading">
@@ -63,17 +77,12 @@ export function WhyChooseSection() {
 
             <p className="text-base sm:text-lg md:text-xl text-muted-foreground mb-6 sm:mb-8 leading-relaxed text-pretty max-w-xl mx-auto lg:mx-0">
               We blend <span className="text-accent font-semibold">premium luxury</span> with playful charm to create
-              a complete beauty collection. From our signature lip glosses to nourishing body care, every product is a{" "}
-              <span className="text-shimmer font-semibold">celebration of your unique beauty</span>.
+              a complete beauty collection. From our signature lip glosses to nourishing body care, every product is crafted to highlight your beauty.
             </p>
             {/* Product count badges */}
             <div className="flex flex-wrap gap-2 sm:gap-3 mb-6 sm:mb-8 justify-center lg:justify-start">
-              {[
-                { label: "5 Lip Glosses", emoji: "💄" },
-                { label: "1 Lip Balm", emoji: "💋" },
-                { label: "2 Body Bundles", emoji: "🧴" },
-              ].map((item) => (
-                <span key={item.label} className="inline-flex items-center gap-1.5 sm:gap-2 bg-accent/10 border border-accent/20 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium">
+              {productBadges.map((item, idx) => (
+                <span key={item.key || item.label} className="inline-flex items-center gap-1.5 sm:gap-2 bg-accent/10 border border-accent/20 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium">
                   <span>{item.emoji}</span>
                   {item.label}
                 </span>

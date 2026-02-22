@@ -162,6 +162,8 @@ export function CustomerReviews() {
                     alt={reviews[currentIndex].product}
                     fill
                     className="object-cover"
+                    priority
+                    loading="eager"
                   />
                 </div>
 

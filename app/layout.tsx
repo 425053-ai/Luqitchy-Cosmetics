@@ -130,8 +130,8 @@ export default function RootLayout({
                 "availableLanguage": ["English", "Arabic"]
               },
               "sameAs": [
-                "https://www.instagram.com/luqitchyglossy",
-                "https://www.tiktok.com/@luqitchyglossy3"
+                "https://www.instagram.com/luqitchyco.eg?igsh=a2V3eGJkdjAxeHUw&utm_source=qr",
+                "https://www.tiktok.com/@luqitchyco.eg?_r=1&_t=ZS-948OONS27XN"
               ]
             })
           }}

@@ -33,6 +33,7 @@ interface OrderData {
   }
   paymentMethod: string
   billReference?: string
+  shippingFee?: number
 }
 
 // Payment method display info
@@ -320,7 +321,6 @@ export default function ConfirmationPage() {
                 <span className="animate-cute-wiggle">🛍️</span>
                 Order Items
               </h2>
-              
               <div className="space-y-3">
                 {orderData.items.map((item, index) => (
                   <div key={index} className="flex items-center gap-3 p-2 bg-background/50 rounded-lg">
@@ -334,10 +334,19 @@ export default function ConfirmationPage() {
                     <p className="font-semibold text-accent">{(item.price * item.quantity).toLocaleString()} EGP</p>
                   </div>
                 ))}
-                
-                <div className="pt-3 border-t border-border flex justify-between items-center">
-                  <span className="font-semibold">Total:</span>
-                  <span className="text-lg font-bold text-accent">{orderData.amount?.toLocaleString()} EGP</span>
+                <div className="pt-3 border-t border-border flex flex-col gap-1">
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="font-semibold">Subtotal:</span>
+                    <span>{(orderData.amount - 70).toLocaleString()} EGP</span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="font-semibold text-blue-700">Shipping (all Egypt):</span>
+                    <span className="text-blue-700">+70 EGP</span>
+                  </div>
+                  <div className="flex justify-between items-center text-base mt-1">
+                    <span className="font-semibold">Total:</span>
+                    <span className="text-lg font-bold text-accent">{orderData.amount?.toLocaleString()} EGP</span>
+                  </div>
                 </div>
               </div>
             </div>
