@@ -6,45 +6,25 @@ const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '';
 const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || '';
 
 interface TelegramPayload {
-  }
+  type?: 'bank_transfer' | 'cart_order' | 'payment_success' | 'text_message';
+  orderData?: any;
+  imageData?: string;
+  transferImageMime?: string;
+  message?: string;
+}
 
   export async function POST(request: NextRequest) {
     try {
       const body: TelegramPayload = await request.json();
       const messageType = body.type || 'text_message';
       let orderText = '';
-}
 
     // Build message based on type
     if (messageType === 'text_message' && body.message) {
       orderText = body.message;
     } else if (messageType === 'bank_transfer' && body.orderData) {
       const { orderData } = body;
-        orderText = `<b>طلب جديد من Luqitchy Cosmetics</b>
-      اسم: ${orderData.customer_name}
-      interface TelegramPayload {
-        type: 'bank_transfer' | 'cart_order' | 'payment_success' | 'text_message';
-        orderData: any;
-        imageData?: string;
-        transferImageMime?: string;
-      }
-      الكمية: ${orderData.quantity}
-      السعر: ${orderData.price} ج.م
-      الإجمالي: <b>${orderData.total_amount} ج.م</b>
-
-      <b>Order Total:</b> ${orderData.total_amount} ج.م
-      <b>Shipping (all Egypt):</b> +70 ج.م
-      <b>Total with Shipping:</b> ${orderData.total_amount + 70} ج.م
-
-      <b>📍 عنوان التسليم:</b>
-      المحافظة: ${orderData.governorate}
-      المدينة: ${orderData.city}
-      الشارع: ${orderData.street}
-      ${orderData.landmark ? `المعلم: ${orderData.landmark}` : ''}
-
-      <b>💳 طريقة الدفع:</b>
-      ${orderData.notes ? `<b>📝 ملاحظات:</b>
-      ${orderData.notes}` : ''}`;
+      orderText = `<b>طلب جديد من Luqitchy Cosmetics</b>\n<b>👤 بيانات العميل:</b>\nاسم: ${orderData.customer_name}\nالهاتف: ${orderData.phone}\nالبريد: ${orderData.customer_email}\n<b>📦 تفاصيل الطلب:</b>\nرقم الطلب: <code>${orderData.order_id}</code>\nالمنتج: ${orderData.product_name}\nالكمية: ${orderData.quantity}\nالسعر: ${orderData.price} ج.م\nالإجمالي: <b>${orderData.total_amount} ج.م</b>\n<b>Order Total:</b> ${orderData.total_amount} ج.م\n<b>Shipping (all Egypt):</b> +70 ج.م\n<b>Total with Shipping:</b> ${orderData.total_amount + 70} ج.م\n<b>📍 عنوان التسليم:</b>\nالمحافظة: ${orderData.governorate}\nالمدينة: ${orderData.city}\nالشارع: ${orderData.street}\n${orderData.landmark ? `المعلم: ${orderData.landmark}` : ''}\n<b>💳 طريقة الدفع:</b>\n${orderData.notes ? `<b>📝 ملاحظات:</b>\n${orderData.notes}` : ''}`;
     } else if (messageType === 'cart_order' && body.orderData) {
       const { orderData } = body;
       const productsText = orderData.items 
@@ -52,27 +32,10 @@ interface TelegramPayload {
         : orderData.products 
         ? orderData.products.map((p: any) => `• ${p.name} × ${p.quantity} = ${p.price * p.quantity} ج.م`).join('\n')
         : '';
-        orderText = `<b>🛒 طلب متعدد المنتجات</b>
-      <b>👤 بيانات العميل:</b>
-      اسم: ${orderData.customer_name}
-      الإيميل: ${orderData.customer_email}
-      تليفون: ${orderData.customer_phone}
-      <b>📦 المنتجات:</b>
-      ${productsText}
-      <b>💰 الإجمالي: ${orderData.total_price} ج.م</b>
-      <b>📍 عنوان التسليم:</b>
-      المحافظة: ${orderData.governorate}
-      ${orderData.city ? `المدينة: ${orderData.city}` : ''}
-      العنوان: ${orderData.street_address}`;
-
-${orderData.items.map((item: any) => `• ${item.name} × ${item.quantity}`).join('\n')}
-
-📅 <b>الوقت:</b> ${new Date().toLocaleString('ar-EG')}
-      `.trim();
+      orderText = `<b>🛒 طلب متعدد المنتجات</b>\n<b>👤 بيانات العميل:</b>\nاسم: ${orderData.customer_name}\nالإيميل: ${orderData.customer_email}\nتليفون: ${orderData.customer_phone}\n<b>📦 المنتجات:</b>\n${productsText}\n<b>💰 الإجمالي: ${orderData.total_price} ج.م</b>\n<b>📍 عنوان التسليم:</b>\nالمحافظة: ${orderData.governorate}\n${orderData.city ? `المدينة: ${orderData.city}` : ''}\nالعنوان: ${orderData.street_address}`;
     }
 
     if (!orderText) {
-      console.warn('⚠️ [Telegram] Invalid message type or missing data - type:', messageType);
       return NextResponse.json(
         { success: false, error: 'Invalid message type or missing data' },
         { status: 400 }
