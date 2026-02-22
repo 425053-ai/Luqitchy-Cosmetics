@@ -238,7 +238,7 @@ ${orderData.items.map((item: any) => `• ${item.name} × ${item.quantity}`).joi
                 order_date: body.orderData.order_date || timestamp,
                 status: 'معلق',
               });
-              console.log(`   ✓ Saved: ${product.name}`);
+              console.log(`   Saved: ${product.name}`);
             } catch (productError: any) {
               console.warn(`   ✗ Failed to save ${product.name}:`, productError.message);
             }
