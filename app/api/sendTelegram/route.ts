@@ -52,24 +52,18 @@ interface TelegramPayload {
         : orderData.products 
         ? orderData.products.map((p: any) => `• ${p.name} × ${p.quantity} = ${p.price * p.quantity} ج.م`).join('\n')
         : '';
-      orderText = `
-<b>🛒 طلب متعدد المنتجات</b>
-
-<b>👤 بيانات العميل:</b>
-اسم: ${orderData.customer_name}
-الإيميل: ${orderData.customer_email}
-تليفون: ${orderData.customer_phone}
-
-<b>📦 المنتجات:</b>
-${productsText}
-
-<b>💰 الإجمالي: ${orderData.total_price} ج.م</b>
-
-<b>📍 عنوان التسليم:</b>
-المحافظة: ${orderData.governorate}
-${orderData.city ? `المدينة: ${orderData.city}` : ''}
-العنوان: ${orderData.street_address}
-      `.trim();
+        orderText = `<b>🛒 طلب متعدد المنتجات</b>
+      <b>👤 بيانات العميل:</b>
+      اسم: ${orderData.customer_name}
+      الإيميل: ${orderData.customer_email}
+      تليفون: ${orderData.customer_phone}
+      <b>📦 المنتجات:</b>
+      ${productsText}
+      <b>💰 الإجمالي: ${orderData.total_price} ج.م</b>
+      <b>📍 عنوان التسليم:</b>
+      المحافظة: ${orderData.governorate}
+      ${orderData.city ? `المدينة: ${orderData.city}` : ''}
+      العنوان: ${orderData.street_address}`;
 
 <b>📦 المنتجات:</b>
 ${productsText}
