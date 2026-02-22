@@ -108,7 +108,6 @@ export function ProductsSection() {
           </div>
 
           <span className="text-accent font-semibold"> beauty experience</span>.
-          </p>
         </div>
 
         <div className="space-y-32">

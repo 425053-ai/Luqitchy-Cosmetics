@@ -6,7 +6,6 @@ import { AboutSection } from "@/components/about-section"
 import { ProductsSection } from "@/components/products-section"
 import { BrandStory } from "@/components/brand-story"
 import { WhyChooseSection } from "@/components/why-choose-section"
-import { PoliciesSection } from "@/components/policies-section"
 import { FAQSection } from "@/components/faq-section"
 import { Footer } from "@/components/footer"
 import { FloatingDecorations } from "@/components/floating-decorations"
@@ -78,7 +77,6 @@ export default function Home() {
         </section>
         <BrandStory />
         <WhyChooseSection />
-        <PoliciesSection />
         <FAQSection />
 
         <Footer />
