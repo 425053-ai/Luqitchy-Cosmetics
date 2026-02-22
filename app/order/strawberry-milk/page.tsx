@@ -4,7 +4,7 @@ import { ProductPage } from "@/components/product-page"
 
 const product = {
   id: "strawberry-milk",
-  name: "Strawberry Milk",
+  name: "Lipgloss Strawberry Milk",
   image: "/images/strawberry-milk.jpeg",
   price: 99,
   color: "from-pink-400 to-pink-600",

@@ -4,7 +4,7 @@ import { ProductPage } from "@/components/product-page"
 
 const product = {
   id: "wine",
-  name: "Wine",
+  name: "Lipgloss Wine",
   image: "/images/wine.jpeg",
   price: 99,
   color: "from-red-600 to-red-800",

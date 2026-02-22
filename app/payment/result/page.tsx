@@ -136,6 +136,30 @@ function PaymentResultContent() {
                     <span className="text-sm text-muted-foreground">المبلغ</span>
                   </div>
                 )}
+                {/* Show ordered products */}
+                {typeof window !== "undefined" && (() => {
+                  const pendingOrderData = localStorage.getItem('pendingOrderData');
+                  if (pendingOrderData) {
+                    try {
+                      const orderData = JSON.parse(pendingOrderData);
+                      if (orderData && orderData.items && orderData.items.length > 0) {
+                        return (
+                          <div className="mt-4">
+                            <span className="font-bold text-green-600 block mb-2">المنتجات المطلوبة:</span>
+                            <ul className="list-disc list-inside text-right">
+                              {orderData.items.map((item, idx) => (
+                                <li key={idx} className="text-sm text-accent">
+                                  {item.name}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        );
+                      }
+                    } catch (e) {}
+                  }
+                  return null;
+                })()}
               </div>
 
               <p className="text-sm text-muted-foreground">

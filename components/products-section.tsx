@@ -15,7 +15,7 @@ const products = [
     // ...existing products...
   {
     id: "burgundy",
-    name: "Burgundy",
+    name: "Lipgloss Burgundy",
     description: "A deep, luxurious berry red with cherry undertones",
     image: "/images/burgundy.jpeg",
     color: "from-red-800 to-red-950",
@@ -27,7 +27,7 @@ const products = [
   },
   {
     id: "mocha",
-    name: "Mocha",
+    name: "Lipgloss Mocha",
     description: "A creamy coffee-inspired nude with warm undertones",
     image: "/images/mocha.jpeg",
     color: "from-amber-800 to-amber-950",
@@ -39,7 +39,7 @@ const products = [
   },
   {
     id: "strawberry-milk",
-    name: "Strawberry Milk",
+    name: "Lipgloss Strawberry Milk",
     description: "A sweet, playful pink with creamy shimmer",
     image: "/images/strawberry-milk.jpeg",
     color: "from-pink-400 to-pink-600",
@@ -51,7 +51,7 @@ const products = [
   },
   {
     id: "black-honey",
-    name: "Black Honey",
+    name: "Lipgloss Black Honey",
     description: "A rich, warm honey-brown with golden shimmer",
     image: "/images/black-honey.jpeg",
     color: "from-amber-700 to-amber-900",
@@ -64,7 +64,7 @@ const products = [
   },
   {
     id: "wine",
-    name: "Wine",
+    name: "Lipgloss Wine",
     description: "An elegant wine-inspired red with a glossy finish",
     image: "/images/wine.jpeg",
     color: "from-red-600 to-red-800",

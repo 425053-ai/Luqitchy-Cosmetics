@@ -4,7 +4,7 @@ import { ProductPage } from "@/components/product-page"
 
 const product = {
   id: "mocha",
-  name: "Mocha",
+  name: "Lipgloss Mocha",
   image: "/images/mocha.jpeg",
   price: 99,
   color: "from-amber-800 to-amber-950",

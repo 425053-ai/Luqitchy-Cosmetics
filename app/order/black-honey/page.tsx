@@ -4,7 +4,7 @@ import { ProductPage } from "@/components/product-page"
 
 const product = {
   id: "black-honey",
-  name: "Black Honey",
+  name: "Lipgloss Black Honey",
   image: "/images/black-honey.jpeg",
   price: 99,
   color: "from-amber-700 to-amber-900",
