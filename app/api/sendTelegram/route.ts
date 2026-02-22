@@ -22,15 +22,13 @@ interface TelegramPayload {
     } else if (messageType === 'bank_transfer' && body.orderData) {
       const { orderData } = body;
         orderText = `<b>طلب جديد من Luqitchy Cosmetics</b>
-
-      <b>👤 بيانات العميل:</b>
       اسم: ${orderData.customer_name}
-      الهاتف: ${orderData.phone}
-      البريد: ${orderData.customer_email}
-
-      <b>📦 تفاصيل الطلب:</b>
-      رقم الطلب: <code>${orderData.order_id}</code>
-      المنتج: ${orderData.product_name}
+      interface TelegramPayload {
+        type: 'bank_transfer' | 'cart_order' | 'payment_success' | 'text_message';
+        orderData: any;
+        imageData?: string;
+        transferImageMime?: string;
+      }
       الكمية: ${orderData.quantity}
       السعر: ${orderData.price} ج.م
       الإجمالي: <b>${orderData.total_amount} ج.م</b>
