@@ -74,7 +74,6 @@ ${orderData.notes ? `<b>📝 ملاحظات:</b>\n${orderData.notes}` : ''}
         ? orderData.items.map((p: any) => `• ${p.name} × ${p.quantity} = ${p.price * p.quantity} ج.م`).join('\n')
         : orderData.products 
         ? orderData.products.map((p: any) => `• ${p.name} × ${p.quantity} = ${p.price * p.quantity} ج.م`).join('\n')
-        : '(لا توجد منتجات)';
       
       orderText = `
 <b>🛒 طلب متعدد المنتجات</b>
@@ -103,6 +102,7 @@ ${new Date().toLocaleString('ar-EG')}
       `.trim();
     } else if (messageType === 'payment_success' && body.orderData) {
       const { orderData } = body;
+         orderText = `
       orderText = `
 <b>💳 دفع ناجح</b>
 
