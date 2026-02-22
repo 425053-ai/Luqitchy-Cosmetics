@@ -10,7 +10,6 @@ interface TelegramPayload {
   orderData?: any;
   imageData?: string;
   transferImageMime?: string;
-  message?: string;
 }
 
 export async function POST(request: NextRequest) {
@@ -33,6 +32,7 @@ export async function POST(request: NextRequest) {
     // ✅ LOG 2: Log incoming request
     console.log('📥 [Telegram] Received request with type:', body.type || 'text_message');
     console.log('📥 [Telegram] Request body keys:', Object.keys(body));
+   orderText = `
 
     const messageType = body.type || 'text_message';
 
