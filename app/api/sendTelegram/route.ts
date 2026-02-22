@@ -7,33 +7,8 @@ const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || '';
 
 interface TelegramPayload {
   type?: 'bank_transfer' | 'cart_order' | 'payment_success' | 'text_message';
-  orderData?: any;
-  imageData?: string;
-  transferImageMime?: string;
-}
-
-export async function POST(request: NextRequest) {
-  try {
-    const body: TelegramPayload = await request.json();
-
-    // ✅ LOG 1: Check environment variables
-    console.log('🔧 [Telegram] Environment Variables Check:');
-    console.log('  - TELEGRAM_BOT_TOKEN:', TELEGRAM_BOT_TOKEN ? '✓ Set (' + TELEGRAM_BOT_TOKEN.substring(0, 15) + '...)' : '✗ MISSING');
-    console.log('  - TELEGRAM_CHAT_ID:', TELEGRAM_CHAT_ID ? '✓ Set (' + TELEGRAM_CHAT_ID + ')' : '✗ MISSING');
-
-    if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) {
-      console.error('❌ [Telegram] Missing Telegram credentials - cannot send notification');
-      return NextResponse.json(
-        { success: false, error: 'Missing Telegram configuration' },
-        { status: 500 }
-      );
-    }
-
-    // ✅ LOG 2: Log incoming request
-    console.log('📥 [Telegram] Received request with type:', body.type || 'text_message');
-    console.log('📥 [Telegram] Request body keys:', Object.keys(body));
-   orderText = `
-
+      const { orderData } = body;
+      orderText = `<b>طلب جديد من Luqitchy Cosmetics</b>
     const messageType = body.type || 'text_message';
 
     let orderText = '';
