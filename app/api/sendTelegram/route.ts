@@ -43,7 +43,6 @@ export async function POST(request: NextRequest) {
       orderText = body.message;
     } else if (messageType === 'bank_transfer' && body.orderData) {
       const { orderData } = body;
-      orderText = `
 <b>🎀 طلب جديد من Luqitchy Cosmetics</b>
 
 <b>👤 بيانات العميل:</b>
@@ -68,6 +67,7 @@ ${orderData.landmark ? `المعلم: ${orderData.landmark}` : ''}
 
 ${orderData.notes ? `<b>📝 ملاحظات:</b>\n${orderData.notes}` : ''}
       `.trim();
+      // Removed duplicate block with emoji. Only keep the updated block below.
     } else if (messageType === 'cart_order' && body.orderData) {
       const { orderData } = body;
       const productsText = orderData.items 
