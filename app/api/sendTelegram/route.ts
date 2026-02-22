@@ -47,31 +47,8 @@ export async function POST(request: NextRequest) {
 
 <b>👤 بيانات العميل:</b>
 اسم: ${orderData.customer_name}
-الهاتف: ${orderData.phone}
-البريد: ${orderData.customer_email}
-
-<b>📦 تفاصيل الطلب:</b>
-رقم الطلب: <code>${orderData.order_id}</code>
-المنتج: ${orderData.product_name}
-الكمية: ${orderData.quantity}
-السعر: ${orderData.price} ج.م
-الإجمالي: <b>${orderData.total_amount} ج.م</b>
-
-<b>📍 عنوان التسليم:</b>
-المحافظة: ${orderData.governorate}
-المدينة: ${orderData.city}
-الشارع: ${orderData.street}
-${orderData.landmark ? `المعلم: ${orderData.landmark}` : ''}
-
-<b>💳 طريقة الدفع:</b>
-
-${orderData.notes ? `<b>📝 ملاحظات:</b>\n${orderData.notes}` : ''}
-      `.trim();
-    } else if (messageType === 'cart_order' && body.orderData) {
-      const { orderData } = body;
-      const productsText = orderData.items 
-        ? orderData.items.map((p: any) => `• ${p.name} × ${p.quantity} = ${p.price * p.quantity} ج.م`).join('\n')
-        : orderData.products 
+  const { orderData } = body;
+  orderText = `
         ? orderData.products.map((p: any) => `• ${p.name} × ${p.quantity} = ${p.price * p.quantity} ج.م`).join('\n')
       
       orderText = `
