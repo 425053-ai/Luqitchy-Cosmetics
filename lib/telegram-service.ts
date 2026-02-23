@@ -282,12 +282,7 @@ ${customerData.landmark ? `• علامة مميزة: ${customerData.landmark}` 
 • الشارع: ${customerData.streetAddress}
 ${customerData.landmark ? `• علامة مميزة: ${customerData.landmark}` : ''}
 
-━━━━━━━━━━━━━━━━━━━━
-
-📦 <b>المنتج:</b>
-• ${orderData.productName}
-• الكمية: ${orderData.quantity}
-• السعر: ${orderData.productPrice} جنيه
+// ...existing code...
 
 ━━━━━━━━━━━━━━━━━━━━
 
@@ -340,6 +335,9 @@ ${customerData.landmark ? `• علامة مميزة: ${customerData.landmark}` 
 
 ${productsList}
 
+Shipping (all Egypt)
++70 EGP
+
 ━━━━━━━━━━━━━━━━━━━━
 
 💰 <b>الإجمالي:</b> ${totalPrice} جنيه
@@ -349,27 +347,9 @@ ${productsList}
 📝 <b>ملاحظات:</b> ${customerData.notes || 'لا توجد ملاحظات'}
 
 📅 <b>التاريخ:</b> ${new Date().toLocaleString('ar-EG')}
-  `.trim();
-
-  return await sendTelegramMessage(message);
-};
-
-// Bank Transfer Order - with proof image
-export const sendBankTransferOrder = async (orderData: {
-  orderId: string;
-  productName: string;
-  quantity: number;
-  productPrice: number;
-  totalPrice: number;
-  customerData: CustomerData;
-  transferProofBase64: string;
-  transferProofMime: string;
-}): Promise<TelegramResponse> => {
-  const { customerData } = orderData;
-  const fullAddress = formatAddress(customerData);
-  
-  const message = `
-🏦 <b>تحويل بنكي - طلب جديد #${orderData.orderId}</b>
+    `.trim();
+  message = `
+🛒 <b>طلب جديد #${orderData.orderId}</b>
 
 ━━━━━━━━━━━━━━━━━━━━
 
@@ -384,6 +364,27 @@ export const sendBankTransferOrder = async (orderData: {
 • المدينة: ${customerData.city}
 • الشارع: ${customerData.streetAddress}
 ${customerData.landmark ? `• علامة مميزة: ${customerData.landmark}` : ''}
+
+━━━━━━━━━━━━━━━━━━━━
+
+📦 <b>المنتج:</b>
+• ${orderData.productName}
+• الكمية: ${orderData.quantity}
+• السعر: ${orderData.productPrice} جنيه
+
+Shipping (all Egypt)
++70 EGP
+
+━━━━━━━━━━━━━━━━━━━━
+
+💰 <b>الإجمالي:</b> ${orderData.totalPrice} جنيه
+
+💳 <b>طريقة الدفع:</b> ${paymentMethodText}
+
+📝 <b>ملاحظات:</b> ${customerData.notes || 'لا توجد ملاحظات'}
+
+📅 <b>التاريخ:</b> ${new Date().toLocaleString('ar-EG')}
+  `.trim();
 
 ━━━━━━━━━━━━━━━━━━━━
 

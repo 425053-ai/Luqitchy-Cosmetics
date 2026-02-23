@@ -121,6 +121,9 @@ function generateEmailHTML(data: SendOrderRequest, productsTable: string): strin
               ${productsTable}
             </tbody>
           </table>
+          <div style="margin-top:10px; font-size:16px; color:#ff9900; font-weight:bold;">
+            Shipping (all Egypt): +70 EGP
+          </div>
         </div>
 
         <div class="section">

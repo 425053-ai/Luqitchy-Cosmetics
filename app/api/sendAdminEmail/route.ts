@@ -113,6 +113,9 @@ function generateAdminEmailHTML(data: AdminEmailRequest): string {
               ${productsRows}
             </tbody>
           </table>
+          <div style="margin-top:10px; font-size:16px; color:#27ae60; font-weight:bold;">
+            Shipping (all Egypt): +70 EGP
+          </div>
         </div>
 
         <div class="total-box">

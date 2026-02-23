@@ -41,7 +41,8 @@ function saveCounterToFile(counter: number) {
 }
 
 // Initialize counter on first load
-loadCounterFromFile()
+memoryCounter = 0
+saveCounterToFile(0)
 
 // Lazy initialization - only create Redis client when needed (not at build time)
 let redis: Redis | null = null
