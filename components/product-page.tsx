@@ -544,10 +544,10 @@ export function ProductPage({ product }: ProductPageProps) {
                   style={{ touchAction: 'pan-y', cursor: images.length > 1 ? 'grab' : 'default' }}
                 >
                   <Image 
-                    src={images[activeImage]} 
-                    alt={product.name} 
-                    fill 
-                    className="object-contain p-4 group-hover:scale-110 transition-transform duration-700" 
+                    src={images[activeImage]}
+                    alt={product.name}
+                    fill
+                    className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-700"
                     priority
                     draggable={false}
                   />
@@ -571,7 +571,7 @@ export function ProductPage({ product }: ProductPageProps) {
                         type="button"
                         style={{ boxShadow: i === activeImage ? '0 0 0 2px #fff, 0 2px 8px #ffb6c1' : undefined }}
                       >
-                        <Image src={img} alt={`Thumbnail ${i + 1}`} width={36} height={36} className="rounded-full object-cover" />
+                        <Image src={img} alt={`Thumbnail ${i + 1}`} width={36} height={36} className="rounded-full object-cover w-full h-full" />
                       </button>
                     ))}
                   </div>

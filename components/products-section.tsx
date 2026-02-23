@@ -486,30 +486,33 @@ export function ProductsSection() {
 
                   {/* Price and Add to Cart */}
                   <div className="flex flex-col gap-2">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-lg font-bold text-accent">{product.price} <span className="text-sm text-muted-foreground">EGP</span></span>
-                      {/* Discount for Lip Gloss */}
-                      {["black-honey", "burgundy", "wine", "mocha", "strawberry-milk"].includes(product.id) && (
-                        <>
-                          <span className="text-xs sm:text-sm text-muted-foreground line-through ml-2">150 EGP</span>
-                          <span className="bg-green-500/10 text-green-600 dark:text-green-400 text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full ml-2">Save 51 EGP</span>
-                        </>
-                      )}
-                      {/* Discount for Lip Balm */}
-                      {product.id === "lip-balm" && (
-                        <>
-                          <span className="text-xs sm:text-sm text-muted-foreground line-through ml-2">100 EGP</span>
-                          <span className="bg-green-500/10 text-green-600 dark:text-green-400 text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full ml-2">Save 35 EGP</span>
-                        </>
-                      )}
-                      {/* Discount for Lotion & Splash travel Size */}
-                      {product.id === "lotion-splash-travel" && (
-                        <>
-                          <span className="text-xs sm:text-sm text-muted-foreground line-through ml-2">250 EGP</span>
-                          <span className="bg-green-500/10 text-green-600 dark:text-green-400 text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full ml-2">Save 75 EGP</span>
-                        </>
-                      )}
-                    </div>
+                    {/* Only show price/discount row here if not limited offer */}
+                    {!(product.isLimitedOffer && product.oldPrice) && (
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-lg font-bold text-accent">{product.price} <span className="text-sm text-muted-foreground">EGP</span></span>
+                        {/* Discount for Lip Gloss */}
+                        {["black-honey", "burgundy", "wine", "mocha", "strawberry-milk"].includes(product.id) && (
+                          <>
+                            <span className="text-xs sm:text-sm text-muted-foreground line-through ml-2">150 EGP</span>
+                            <span className="bg-green-500/10 text-green-600 dark:text-green-400 text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full ml-2">Save 51 EGP</span>
+                          </>
+                        )}
+                        {/* Discount for Lip Balm */}
+                        {product.id === "lip-balm" && (
+                          <>
+                            <span className="text-xs sm:text-sm text-muted-foreground line-through ml-2">100 EGP</span>
+                            <span className="bg-green-500/10 text-green-600 dark:text-green-400 text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full ml-2">Save 35 EGP</span>
+                          </>
+                        )}
+                        {/* Discount for Lotion & Splash travel Size */}
+                        {product.id === "lotion-splash-travel" && (
+                          <>
+                            <span className="text-xs sm:text-sm text-muted-foreground line-through ml-2">250 EGP</span>
+                            <span className="bg-green-500/10 text-green-600 dark:text-green-400 text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full ml-2">Save 75 EGP</span>
+                          </>
+                        )}
+                      </div>
+                    )}
                     <div className="flex gap-2 w-full">
                       <Button
                         className="w-1/2 bg-accent hover:bg-accent/90 text-white rounded-xl sm:rounded-2xl shadow-lg transition-all duration-300 group/btn h-10 sm:h-12 text-xs sm:text-base btn-kawaii animate-glow-soft"
