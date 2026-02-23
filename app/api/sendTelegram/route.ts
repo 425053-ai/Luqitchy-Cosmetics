@@ -205,11 +205,6 @@ interface TelegramPayload {
   }
 }
 
-// Increase Vercel body size limit for large image uploads
-export const config = {
-  api: {
-    bodyParser: {
-      sizeLimit: '20mb',
-    },
-  },
-};
+// Next.js 14+ App Router: use segment config
+export const runtime = 'nodejs';
+export const maxDuration = 20;
