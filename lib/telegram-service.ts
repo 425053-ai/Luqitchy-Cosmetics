@@ -386,18 +386,7 @@ Shipping (all Egypt)
 📅 <b>التاريخ:</b> ${new Date().toLocaleString('ar-EG')}
   `.trim();
 
-━━━━━━━━━━━━━━━━━━━━
-
-📦 <b>المنتج:</b>
-• ${orderData.productName}
-• الكمية: ${orderData.quantity}
-• السعر: ${orderData.productPrice} جنيه
-
-━━━━━━━━━━━━━━━━━━━━
-
-💰 <b>الإجمالي:</b> ${orderData.totalPrice} جنيه
-
-💳 <b>طريقة الدفع:</b> 🏦 تحويل بنكي (أوضة التحويل في الصورة)
+// ...existing code...
 
 📝 <b>ملاحظات:</b> ${customerData.notes || 'لا توجد ملاحظات'}
 
