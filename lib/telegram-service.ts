@@ -306,9 +306,7 @@ export const sendCartOrderToTelegram = async (orderData: OrderData): Promise<Tel
   const productsList = products
     .map((p, i) => `${i + 1}. ${p.name}\n   الكمية: ${p.quantity} | السعر: ${p.price * p.quantity} جنيه`)
     .join('\n\n');
-
-  const totalQuantity = products.reduce((sum, p) => sum + p.quantity, 0);
-
+  // ...existing code...
   // Format payment method with all options
   const paymentMethodText = formatPaymentMethod(customerData.paymentMethod, customerData.billReference);
 
@@ -348,50 +346,16 @@ Shipping (all Egypt)
 
 📅 <b>التاريخ:</b> ${new Date().toLocaleString('ar-EG')}
     `.trim();
-  message = `
-🛒 <b>طلب جديد #${orderData.orderId}</b>
-
-━━━━━━━━━━━━━━━━━━━━
-
-👤 <b>بيانات العميل:</b>
-• الاسم: ${customerData.fullName}
-• الإيميل: ${customerData.email}
-• تليفون: ${customerData.phone}
-• واتساب: ${customerData.whatsapp}
-
-📍 <b>العنوان:</b>
-• المحافظة: ${customerData.governorate}
-• المدينة: ${customerData.city}
-• الشارع: ${customerData.streetAddress}
-${customerData.landmark ? `• علامة مميزة: ${customerData.landmark}` : ''}
-
-━━━━━━━━━━━━━━━━━━━━
-
-📦 <b>المنتج:</b>
-• ${orderData.productName}
-• الكمية: ${orderData.quantity}
-• السعر: ${orderData.productPrice} جنيه
-
-Shipping (all Egypt)
-+70 EGP
-
-━━━━━━━━━━━━━━━━━━━━
-
-💰 <b>الإجمالي:</b> ${orderData.totalPrice} جنيه
-
-💳 <b>طريقة الدفع:</b> ${paymentMethodText}
-
-📝 <b>ملاحظات:</b> ${customerData.notes || 'لا توجد ملاحظات'}
-
-📅 <b>التاريخ:</b> ${new Date().toLocaleString('ar-EG')}
-  `.trim();
+  // ...existing code...
 
 // ...existing code...
 
   // Send text message first, then photo
   const textResult = await sendTelegramMessage(message);
   const imageBuffer = Buffer.from(orderData.transferProofBase64, 'base64');
-  const photoResult = await sendPhotoToTelegram(imageBuffer, orderData.transferProofMime, `📸 إثبات الدفع - ${orderData.orderId}`, `${orderData.orderId}-proof.jpg`);
+  const photoCaption = 'اثبات الدفع - ' + orderData.orderId;
+  const photoFilename = orderData.orderId + '-proof.jpg';
+  const photoResult = await sendPhotoToTelegram(imageBuffer, orderData.transferProofMime, photoCaption, photoFilename);
   if (!photoResult.success) {
     console.error('⚠️ [Telegram] Photo upload failed for bank transfer, but text was sent:', photoResult.error);
   }
