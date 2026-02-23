@@ -232,11 +232,40 @@ export const sendSingleProductOrder = async (orderData: {
 }): Promise<TelegramResponse> => {
   const { customerData } = orderData;
   const fullAddress = formatAddress(customerData);
-  
   // Format payment method with all options
   const paymentMethodText = formatPaymentMethod(customerData.paymentMethod, customerData.billReference);
-  
-  const message = `
+
+  // Special message for the limited offer product
+  let message = '';
+  if (orderData.productName.includes('Lipglosses') && orderData.productName.includes('Lotion Sample')) {
+    message = `
+🎉 <b>LIMITED TIME OFFER ORDER!</b>
+🛒 <b>طلب جديد #${orderData.orderId}</b>
+━━━━━━━━━━━━━━━━━━━━
+👤 <b>بيانات العميل:</b>
+• الاسم: ${customerData.fullName}
+• الإيميل: ${customerData.email}
+• تليفون: ${customerData.phone}
+• واتساب: ${customerData.whatsapp}
+📍 <b>العنوان:</b>
+• المحافظة: ${customerData.governorate}
+• المدينة: ${customerData.city}
+• الشارع: ${customerData.streetAddress}
+${customerData.landmark ? `• علامة مميزة: ${customerData.landmark}` : ''}
+━━━━━━━━━━━━━━━━━━━━
+<b>💄 OFFER PRODUCT:</b>
+• 3 Lipglosses (Burgundy, Mocha, Strawberry milk)
+• Lotion Sample 5g (FREE)
+• الكمية: ${orderData.quantity}
+• السعر: ${orderData.productPrice} جنيه
+━━━━━━━━━━━━━━━━━━━━
+💰 <b>الإجمالي:</b> ${orderData.totalPrice} جنيه
+💳 <b>طريقة الدفع:</b> ${paymentMethodText}
+📝 <b>ملاحظات:</b> ${customerData.notes || 'لا توجد ملاحظات'}
+📅 <b>التاريخ:</b> ${new Date().toLocaleString('ar-EG')}
+    `.trim();
+  } else {
+    message = `
 🛒 <b>طلب جديد #${orderData.orderId}</b>
 
 ━━━━━━━━━━━━━━━━━━━━
@@ -269,8 +298,8 @@ ${customerData.landmark ? `• علامة مميزة: ${customerData.landmark}` 
 📝 <b>ملاحظات:</b> ${customerData.notes || 'لا توجد ملاحظات'}
 
 📅 <b>التاريخ:</b> ${new Date().toLocaleString('ar-EG')}
-  `.trim();
-
+    `.trim();
+  }
   return await sendTelegramMessage(message);
 };
 

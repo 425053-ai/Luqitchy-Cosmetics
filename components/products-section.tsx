@@ -14,6 +14,21 @@ const products = [
 // ...existing products...
     // ...existing products...
   {
+    id: "lipgloss-lotion-offer",
+    name: "3 Lipglosses + Lotion Sample",
+    description: "3 lipglosses (Burgundy, Mocha, Strawberry milk) + 5g lotion sample. Limited time offer!",
+    image: "/images/lipgloss-lotion-offer-main.jpg",
+    color: "from-yellow-400 to-pink-400",
+    accent: "bg-yellow-400",
+    price: 199,
+    oldPrice: 300,
+    isLimitedOffer: true,
+    imageClass: "object-cover object-center",
+    containerBg: "bg-gradient-to-br from-yellow-50 to-pink-50 dark:from-yellow-950/30 dark:to-pink-950/30",
+    isNew: true,
+    limitedOfferText: "Limited Time Offer!",
+  },
+  {
     id: "burgundy",
     name: "Lipgloss Burgundy",
     description: "A deep, luxurious berry red with cherry undertones",
@@ -222,35 +237,9 @@ export function ProductsSection() {
       aria-labelledby="products-heading"
     >
       {/* Background decorations */}
+
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <motion.div 
-          className="hidden sm:block absolute top-20 left-10 text-4xl opacity-30"
-          animate={{ y: [0, -15, 0], rotate: [0, 5, 0] }}
-          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-        >
-          🌸
-        </motion.div>
-        <motion.div 
-          className="hidden sm:block absolute bottom-32 right-16 text-3xl opacity-30"
-          animate={{ y: [0, 10, 0], rotate: [0, -10, 0] }}
-          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-        >
-          💄
-        </motion.div>
-        <motion.div 
-          className="hidden md:block absolute top-40 right-20 text-2xl opacity-25"
-          animate={{ scale: [1, 1.2, 1], rotate: [0, 180, 360] }}
-          transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-        >
-          ✨
-        </motion.div>
-        <motion.div 
-          className="hidden lg:block absolute bottom-40 left-20 text-3xl opacity-25"
-          animate={{ y: [0, -20, 0], x: [0, 10, 0] }}
-          transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
-        >
-          🎀
-        </motion.div>
+        {/* background decorations only */}
         <motion.div 
           className="hidden md:block absolute top-1/3 left-5 text-2xl opacity-20"
           animate={{ rotate: [0, 15, -15, 0] }}
@@ -370,7 +359,15 @@ export function ProductsSection() {
                   <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-4xl opacity-0 group-hover:opacity-100 transition-all duration-500 animate-kawaii-bounce pointer-events-none">💖</span>
 
                   {/* New badge */}
-                  {product.isNew && (
+                  {product.isLimitedOffer ? (
+                    <div className="absolute top-4 left-4 bg-gradient-to-r from-yellow-300 to-pink-300 text-yellow-900 dark:text-yellow-100 px-3 py-1 rounded-full shadow-lg transform translate-y-0 group-hover:-translate-y-1 transition-transform duration-300 z-10 animate-glow-soft border-2 border-yellow-400">
+                      <span className="text-xs font-bold flex items-center gap-1">
+                        <span className="animate-sparkle">⏳</span>
+                        {product.limitedOfferText || 'Limited Offer'}
+                        <span className="animate-star-twirl">🔥</span>
+                      </span>
+                    </div>
+                  ) : product.isNew && (
                     <div className="absolute top-4 left-4 premium-badge px-3 py-1 rounded-full shadow-lg transform translate-y-0 group-hover:-translate-y-1 transition-transform duration-300 z-10 animate-glow-soft">
                       <span className="text-xs font-bold flex items-center gap-1">
                         <span className="animate-sparkle">✨</span>
@@ -439,6 +436,13 @@ export function ProductsSection() {
                         <span className="bg-green-500/10 text-green-600 dark:text-green-400 text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full ml-2">Save 75 EGP</span>
                       </>
                     )}
+                    {/* Discount for Limited Offer */}
+                    {product.isLimitedOffer && (
+                      <>
+                        <span className="text-xs sm:text-sm text-muted-foreground line-through ml-2">{product.oldPrice} EGP</span>
+                        <span className="bg-pink-500/10 text-pink-600 dark:text-pink-400 text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full ml-2">Save {product.oldPrice - product.price} EGP</span>
+                      </>
+                    )}
                   </motion.div>
                 </div>
 
@@ -469,7 +473,16 @@ export function ProductsSection() {
                     />
                   </div>
 
-                  <p className="text-xs sm:text-sm text-muted-foreground mb-4 sm:mb-5 line-clamp-2 leading-relaxed">{product.description}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground mb-2 sm:mb-3 line-clamp-2 leading-relaxed">{product.description}</p>
+                  {/* Show price, old price, and discount for limited offer in description area */}
+                  {product.isLimitedOffer && product.oldPrice && (
+                    <div className="flex items-baseline gap-2 mb-2">
+                      <span className="text-xl font-bold text-accent">{product.price}</span>
+                      <span className="text-sm text-muted-foreground">EGP</span>
+                      <span className="text-base text-muted-foreground line-through ml-2">{product.oldPrice} EGP</span>
+                      <span className="bg-pink-500/10 text-pink-600 dark:text-pink-400 text-xs font-bold px-2 py-0.5 rounded-full ml-2">Save {product.oldPrice - product.price} EGP</span>
+                    </div>
+                  )}
 
                   {/* Price and Add to Cart */}
                   <div className="flex flex-col gap-2">

@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import Image from "next/image"
+import { ChevronLeft, ChevronRight } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { ArrowLeft, Star, ShoppingCart, Plus, Minus, Check } from "lucide-react"
@@ -16,14 +17,20 @@ interface ProductPageProps {
     id: string
     name: string
     image: string
+    images?: string[]
     price: number
     color: string
-    features: string[]
+    features?: string[]
     description?: string
+    oldPrice?: number
+    isLimitedOffer?: boolean
   }
 }
 
 export function ProductPage({ product }: ProductPageProps) {
+  // For image carousel
+  const images = product.images && product.images.length > 0 ? product.images : [product.image];
+  const [activeImage, setActiveImage] = useState(0);
   const router = useRouter()
   const { addToCart } = useCart()
   const { addOrder } = useOrderHistory()
@@ -468,33 +475,107 @@ export function ProductPage({ product }: ProductPageProps) {
         </Link>
 
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-6 sm:gap-8 md:gap-12 lg:gap-16">
-          {/* Product Image */}
+          {/* Product Image Carousel */}
           <div className="animate-slide-in-left opacity-0" style={{ animationDelay: "0.1s" }}>
             <div className="sticky top-4 sm:top-6 md:top-8">
-              <div className="relative aspect-square rounded-2xl sm:rounded-3xl overflow-hidden shadow-xl sm:shadow-2xl shadow-primary/20 group bg-gradient-to-br from-pink-50 to-rose-50 dark:from-pink-950/20 dark:to-rose-950/20">
-                <Image 
-                  src={product.image} 
-                  alt={product.name} 
-                  fill 
-                  className="object-contain p-4 group-hover:scale-110 transition-transform duration-700" 
-                  priority
-                />
-                <div className={`absolute inset-0 bg-gradient-to-br ${product.color} opacity-0 group-hover:opacity-20 transition-opacity duration-500`} />
-                
-                {/* Premium overlay effect */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                
-                {/* Floating badge */}
-                <div className="absolute top-3 left-3 sm:top-4 sm:left-4 premium-badge px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm shadow-lg">
-                  ✨ Premium
+              <div className="relative aspect-square rounded-2xl sm:rounded-3xl overflow-hidden shadow-xl sm:shadow-2xl shadow-primary/20 group bg-gradient-to-br from-pink-50 to-rose-50 dark:from-pink-950/20 dark:to-rose-950/20 select-none">
+                {/* Slider arrows always visible on all devices */}
+                {images.length > 1 && (
+                  <>
+                    <button
+                      className="absolute left-2 top-1/2 -translate-y-1/2 z-20 bg-white/80 hover:bg-accent/80 text-accent hover:text-white rounded-full p-1 shadow-md focus:outline-none"
+                      onClick={() => setActiveImage((prev) => (prev === 0 ? images.length - 1 : prev - 1))}
+                      aria-label="Previous image"
+                      type="button"
+                    >
+                      <ChevronLeft className="w-6 h-6" />
+                    </button>
+                    <button
+                      className="absolute right-2 top-1/2 -translate-y-1/2 z-20 bg-white/80 hover:bg-accent/80 text-accent hover:text-white rounded-full p-1 shadow-md focus:outline-none"
+                      onClick={() => setActiveImage((prev) => (prev === images.length - 1 ? 0 : prev + 1))}
+                      aria-label="Next image"
+                      type="button"
+                    >
+                      <ChevronRight className="w-6 h-6" />
+                    </button>
+                  </>
+                )}
+                {/* Touch swipe support (all devices) */}
+                <div
+                  className="w-full h-full"
+                  onTouchStart={e => {
+                    if (images.length < 2) return;
+                    const touchStartX = e.touches[0].clientX;
+                    let handled = false;
+                    const handleTouchMove = (moveEvent: TouchEvent) => {
+                      const diff = moveEvent.touches[0].clientX - touchStartX;
+                      if (!handled && Math.abs(diff) > 40) {
+                        handled = true;
+                        if (diff > 0) setActiveImage(prev => prev === 0 ? images.length - 1 : prev - 1);
+                        else setActiveImage(prev => prev === images.length - 1 ? 0 : prev + 1);
+                        window.removeEventListener('touchmove', handleTouchMove);
+                      }
+                    };
+                    window.addEventListener('touchmove', handleTouchMove);
+                    window.addEventListener('touchend', () => {
+                      window.removeEventListener('touchmove', handleTouchMove);
+                    }, { once: true });
+                  }}
+                  onMouseDown={e => {
+                    if (images.length < 2) return;
+                    const mouseStartX = e.clientX;
+                    let handled = false;
+                    const handleMouseMove = (moveEvent: MouseEvent) => {
+                      const diff = moveEvent.clientX - mouseStartX;
+                      if (!handled && Math.abs(diff) > 40) {
+                        handled = true;
+                        if (diff > 0) setActiveImage(prev => prev === 0 ? images.length - 1 : prev - 1);
+                        else setActiveImage(prev => prev === images.length - 1 ? 0 : prev + 1);
+                        window.removeEventListener('mousemove', handleMouseMove);
+                        window.removeEventListener('mouseup', handleMouseUp);
+                      }
+                    };
+                    const handleMouseUp = () => {
+                      window.removeEventListener('mousemove', handleMouseMove);
+                    };
+                    window.addEventListener('mousemove', handleMouseMove);
+                    window.addEventListener('mouseup', handleMouseUp, { once: true });
+                  }}
+                  style={{ touchAction: 'pan-y', cursor: images.length > 1 ? 'grab' : 'default' }}
+                >
+                  <Image 
+                    src={images[activeImage]} 
+                    alt={product.name} 
+                    fill 
+                    className="object-contain p-4 group-hover:scale-110 transition-transform duration-700" 
+                    priority
+                    draggable={false}
+                  />
+                  <div className={`absolute inset-0 bg-gradient-to-br ${product.color} opacity-0 group-hover:opacity-20 transition-opacity duration-500`} />
+                  {/* Premium overlay effect */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  {/* Floating badge */}
+                  <div className="absolute top-3 left-3 sm:top-4 sm:left-4 premium-badge px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm shadow-lg">
+                    {product.isLimitedOffer ? '⏳ Limited Offer' : '✨ Premium'}
+                  </div>
                 </div>
-              </div>
-              
-              {/* Image thumbnails/indicators */}
-              <div className="flex justify-center gap-1.5 sm:gap-2 mt-3 sm:mt-4">
-                {[1, 2, 3].map((_, i) => (
-                  <div key={i} className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full ${i === 0 ? 'bg-accent' : 'bg-muted'} transition-colors cursor-pointer hover:bg-accent/70`} />
-                ))}
+                {/* Carousel Thumbnails - clearer and larger on all devices */}
+                {images.length > 1 && (
+                  <div className="flex justify-center gap-3 mt-3 sm:mt-4">
+                    {images.map((img, i) => (
+                      <button
+                        key={i}
+                        className={`w-5 h-5 sm:w-7 sm:h-7 rounded-full border-2 flex items-center justify-center transition-colors focus:outline-none ${i === activeImage ? 'border-accent bg-accent/90 scale-110' : 'border-muted bg-muted/70 opacity-70'}`}
+                        onClick={() => setActiveImage(i)}
+                        aria-label={`Show image ${i + 1}`}
+                        type="button"
+                        style={{ boxShadow: i === activeImage ? '0 0 0 2px #fff, 0 2px 8px #ffb6c1' : undefined }}
+                      >
+                        <Image src={img} alt={`Thumbnail ${i + 1}`} width={36} height={36} className="rounded-full object-cover" />
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -515,6 +596,14 @@ export function ProductPage({ product }: ProductPageProps) {
               <div className="flex flex-wrap items-baseline gap-2 sm:gap-4 mb-4 sm:mb-6">
                 <span className="text-3xl sm:text-4xl md:text-5xl font-bold text-accent">{product.price}</span>
                 <span className="text-lg sm:text-xl md:text-2xl font-semibold text-accent">EGP</span>
+                {product.oldPrice && (
+                  <>
+                    <span className="text-base sm:text-lg md:text-xl text-muted-foreground line-through">{product.oldPrice} EGP</span>
+                    <span className="bg-green-500/10 text-green-600 dark:text-green-400 text-xs sm:text-sm font-bold px-2 sm:px-3 py-0.5 sm:py-1 rounded-full">
+                      Save {product.oldPrice - product.price} EGP
+                    </span>
+                  </>
+                )}
                 {product.id === "lip-balm" ? (
                   <>
                     <span className="text-base sm:text-lg md:text-xl text-muted-foreground line-through">100 EGP</span>
