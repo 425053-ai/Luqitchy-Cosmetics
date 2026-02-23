@@ -388,13 +388,6 @@ Shipping (all Egypt)
 
 // ...existing code...
 
-<b>ملاحظات:</b> ${customerData.notes || 'لا توجد ملاحظات'}
-
-<b>التاريخ:</b> ${new Date().toLocaleString('ar-EG')}
-
-<b>الحالة:</b> في انتظار التحقق من التحويل
-  `.trim();
-
   // Send text message first, then photo
   const textResult = await sendTelegramMessage(message);
   const imageBuffer = Buffer.from(orderData.transferProofBase64, 'base64');
