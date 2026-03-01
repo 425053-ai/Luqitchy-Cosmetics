@@ -9,6 +9,7 @@ import { ShoppingBag, Sparkles, Heart, ArrowRight } from "lucide-react"
 import { useCart } from "@/context/CartContext"
 import { useWishlist } from "@/context/WishlistContext"
 import { useToast } from "@/components/ui/toast"
+import { trackEvent } from "@/lib/analytics-client"
 
 const products = [
   {
@@ -224,6 +225,7 @@ export function ProductsSection() {
   const { showToast } = useToast()
 
   const handleQuickAdd = (product: typeof products[0]) => {
+    trackEvent('add_to_cart', { productId: product.id, productName: product.name, source: 'home_quick_add' })
     addToCart({
       id: product.id,
       name: product.name,

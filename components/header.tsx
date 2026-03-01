@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import Image from "next/image"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Menu, X, Sparkles, ShoppingCart, Heart, Package } from "lucide-react"
 import { useCart } from "@/context/CartContext"
@@ -20,8 +21,32 @@ const navLinks = [
 export function Header() {
   const [isOpen, setIsOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const [logoTapCount, setLogoTapCount] = useState(0)
+  const [logoTapTimer, setLogoTapTimer] = useState<ReturnType<typeof setTimeout> | null>(null)
+  const router = useRouter()
   const { totalItems } = useCart()
   const { totalItems: wishlistCount } = useWishlist()
+
+  const handleLogoTap = () => {
+    const nextCount = logoTapCount + 1
+    setLogoTapCount(nextCount)
+
+    if (logoTapTimer) {
+      clearTimeout(logoTapTimer)
+    }
+
+    if (nextCount >= 5) {
+      setLogoTapCount(0)
+      router.push('/admin-access')
+      return
+    }
+
+    const timer = setTimeout(() => {
+      setLogoTapCount(0)
+    }, 2000)
+
+    setLogoTapTimer(timer)
+  }
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20)
@@ -39,7 +64,7 @@ export function Header() {
     >
       <div className="container mx-auto px-3 sm:px-4">
         <div className="flex items-center justify-between h-16 sm:h-18 md:h-22">
-          <a href="#hero" className="flex items-center gap-2 sm:gap-3 group">
+          <a href="#hero" onClick={handleLogoTap} className="flex items-center gap-2 sm:gap-3 group">
             <div className="relative">
               <div className="absolute inset-0 rounded-full bg-accent/30 blur-md group-hover:bg-accent/50 transition-all duration-300 animate-pulse" />
               <Image

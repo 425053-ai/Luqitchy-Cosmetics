@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { calculateOrderTotals } from '@/lib/order-totals';
 import { formatOrderId, getNextOrderCounter } from '@/lib/order-counter';
+import { insertAnalyticsEvent } from '@/lib/analytics-db';
+import { createServerPrismaClient } from '@/lib/server-prisma';
 
 function buildFallbackOrder(orderNumber: string, products: any, customer: any, productsSubtotal: number, shippingFee: number, finalTotal: number) {
   const createdAt = new Date().toISOString();
@@ -28,10 +30,12 @@ export async function POST(request: NextRequest) {
   let products: any = [];
   let customer: any = {};
   let reservedOrderId: string | null = null;
+  let sessionId = '';
   try {
     const body = await request.json();
     products = body.products;
     customer = body.customer;
+    sessionId = String(body?.sessionId || '');
     if (!products || !customer) {
       return NextResponse.json({ error: 'Missing products or customer data' }, { status: 400 });
     }
@@ -45,13 +49,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(buildFallbackOrder(reservedOrderId, products, customer, productsSubtotal, shippingFee, finalTotal), { status: 200 });
     }
 
-    const [{ PrismaClient }, { PrismaPg }] = await Promise.all([
-      import('@prisma/client'),
-      import('@prisma/adapter-pg'),
-    ]);
-
-    const adapter = new PrismaPg({ connectionString: databaseUrl });
-    prisma = new PrismaClient({ adapter });
+    prisma = await createServerPrismaClient();
 
     // Create order in transaction
     const order = await prisma.$transaction(async (tx) => {
@@ -67,6 +65,18 @@ export async function POST(request: NextRequest) {
       });
       return created;
     });
+
+    if (sessionId) {
+      await insertAnalyticsEvent(prisma, {
+        type: 'order_completed',
+        sessionId,
+        metadata: {
+          orderId: order.orderNumber,
+          finalTotal,
+          productsCount: Array.isArray(products) ? products.length : 0,
+        },
+      });
+    }
 
     return NextResponse.json({ success: true, orderNumber: order.orderNumber, orderId: order.orderNumber, order });
   } catch (error: any) {

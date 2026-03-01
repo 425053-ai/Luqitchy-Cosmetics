@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button"
 import { Footer } from "@/components/footer"
 import { PageQuickActions } from "@/components/page-quick-actions"
 import { compressImage } from "@/lib/image-compression"
+import { getAnalyticsSessionId, trackEvent } from "@/lib/analytics-client"
 
 export default function CartPage() {
   const router = useRouter()
@@ -91,6 +92,7 @@ export default function CartPage() {
     if (items.length === 0) return
 
     setIsSubmitting(true)
+    trackEvent('checkout_started', { source: 'cart_page', itemsCount: items.length })
 
     // Process image data if available
     let imageData = null
@@ -126,6 +128,7 @@ export default function CartPage() {
         },
         imageData,
         transferImageMime: imageMime,
+        sessionId: getAnalyticsSessionId(),
       };
       const response = await fetch('/api/create-order', {
         method: 'POST',

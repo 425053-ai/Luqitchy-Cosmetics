@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button"
 import { Footer } from "@/components/footer"
 import { PageQuickActions } from "@/components/page-quick-actions"
 import { compressImage } from "@/lib/image-compression"
+import { getAnalyticsSessionId, trackEvent } from "@/lib/analytics-client"
 
 interface ProductPageProps {
   product: {
@@ -90,6 +91,7 @@ export function ProductPage({ product }: ProductPageProps) {
 
   const handleAddToCart = () => {
     const cartItemId = selectedShade ? `${product.id}-${selectedShade.toLowerCase()}` : product.id
+    trackEvent('add_to_cart', { productId: product.id, productName: productDisplayName, quantity })
     addToCart({
       id: cartItemId,
       name: productDisplayName,
@@ -113,6 +115,7 @@ export function ProductPage({ product }: ProductPageProps) {
     if (isSubmitting) return
 
     setIsSubmitting(true)
+    trackEvent('checkout_started', { source: 'product_page', productId: product.id })
     const total_price = quantity * product.price
 
     // Always allow order submission, even if image upload fails
@@ -145,6 +148,7 @@ export function ProductPage({ product }: ProductPageProps) {
       },
       imageData,
       transferImageMime: imageMime,
+      sessionId: getAnalyticsSessionId(),
     };
     try {
       const response = await fetch('/api/create-order', {

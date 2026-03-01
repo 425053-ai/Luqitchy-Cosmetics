@@ -8,6 +8,7 @@ import { OrderHistoryProvider } from "@/context/OrderHistoryContext"
 import { ToastProvider } from "@/components/ui/toast"
 import { SkipLink } from "@/components/skip-link"
 import { ScrollToTop } from "@/components/scroll-to-top"
+import { AnalyticsTracker } from "@/components/analytics-tracker"
 import "./globals.css"
 
 const quicksand = Quicksand({
@@ -173,6 +174,7 @@ export default function RootLayout({
         />
       </head>
       <body className={`${quicksand.variable} ${playfair.variable} font-sans antialiased`} suppressHydrationWarning>
+        <AnalyticsTracker />
         <SkipLink />
         <ScrollToTop />
         <CartProvider>
