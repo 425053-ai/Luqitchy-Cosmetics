@@ -1,6 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-import { PrismaPg } from '@prisma/adapter-pg';
 import { calculateOrderTotals } from '@/lib/order-totals';
 
 function buildFallbackOrder(products: any, customer: any, productsSubtotal: number, shippingFee: number, finalTotal: number) {
@@ -25,7 +23,7 @@ function buildFallbackOrder(products: any, customer: any, productsSubtotal: numb
 }
 
 export async function POST(request: NextRequest) {
-  let prisma: PrismaClient | null = null;
+  let prisma: any = null;
   let products: any = [];
   let customer: any = {};
   try {
@@ -43,6 +41,11 @@ export async function POST(request: NextRequest) {
     if (!databaseUrl) {
       return NextResponse.json(buildFallbackOrder(products, customer, productsSubtotal, shippingFee, finalTotal), { status: 200 });
     }
+
+    const [{ PrismaClient }, { PrismaPg }] = await Promise.all([
+      import('@prisma/client'),
+      import('@prisma/adapter-pg'),
+    ]);
 
     const adapter = new PrismaPg({ connectionString: databaseUrl });
     prisma = new PrismaClient({ adapter });
