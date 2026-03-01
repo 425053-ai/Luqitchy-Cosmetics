@@ -1,0 +1,13 @@
+# Migration Steps for Order System Refactor
+
+1. Ensure PostgreSQL server is running at the address in your .env DATABASE_URL.
+2. Run:
+   npx prisma migrate dev --name init-order-system
+   (This will create the Order table with auto-increment and orderNumber.)
+3. Remove any old Redis/Upstash environment variables from your .env and deployment config.
+4. Remove the following files (no longer needed):
+   - app/api/orderCounter/route.ts
+   - scripts/reset-order-counter.ts
+5. Remove @upstash/redis from package.json and lock files (already done).
+6. Test order creation via /api/create-order from both product and cart checkout.
+7. Confirm order numbers are sequential and shipping fee is applied once per order.

@@ -24,8 +24,10 @@ interface ProductPageProps {
     description?: string
     oldPrice?: number
     isLimitedOffer?: boolean
+    shadeOptions?: string[]
   }
 }
+export default ProductPage;
 
 export function ProductPage({ product }: ProductPageProps) {
   // For image carousel
@@ -57,12 +59,17 @@ export function ProductPage({ product }: ProductPageProps) {
   // Save submitted order data
   const [submittedOrder, setSubmittedOrder] = useState<{
     orderId: string;
-    items: { id: string; name: string; price: number; quantity: number; image: string }[];
+    items: { id: string; name: string; price: number; quantity: number; image: string; shade?: string }[];
     totalPrice: number;
     totalQuantity: number;
     customerData: typeof formData;
     orderTime: string;
   } | null>(null)
+  const [selectedShade, setSelectedShade] = useState(
+    product.shadeOptions && product.shadeOptions.length > 0 ? product.shadeOptions[0] : ""
+  )
+
+  const productDisplayName = selectedShade ? `${product.name} (Shade: ${selectedShade})` : product.name
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -81,12 +88,14 @@ export function ProductPage({ product }: ProductPageProps) {
   }
 
   const handleAddToCart = () => {
+    const cartItemId = selectedShade ? `${product.id}-${selectedShade.toLowerCase()}` : product.id
     addToCart({
-      id: product.id,
-      name: product.name,
+      id: cartItemId,
+      name: productDisplayName,
       price: product.price,
       image: product.image,
       color: product.color,
+      shade: selectedShade || undefined,
       quantity: quantity,
     })
     setAddedToCart(true)
@@ -105,30 +114,6 @@ export function ProductPage({ product }: ProductPageProps) {
     setIsSubmitting(true)
     const total_price = quantity * product.price
 
-    // Generate sequential order ID
-    let order_id: string
-    try {
-      const orderIdResponse = await fetch('/api/orderCounter', { method: 'POST' })
-      if (orderIdResponse.ok) {
-        const { orderId } = await orderIdResponse.json()
-        order_id = orderId
-      } else {
-        setIsSubmitting(false)
-        return
-      }
-    } catch {
-      setIsSubmitting(false)
-      return
-    }
-
-    const order_date = new Date().toLocaleString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
-
     // Always allow order submission, even if image upload fails
     let imageData = null
     let imageMime = null
@@ -137,96 +122,124 @@ export function ProductPage({ product }: ProductPageProps) {
       imageMime = 'image/jpeg'
     }
 
-    // UNIFIED ORDER PROCESSING - Single call to /api/orders
+    // UNIFIED ORDER PROCESSING - Single call to /api/create-order
     const orderPayload = {
-      order_id: order_id,
-      order_date: order_date,
-      order_type: 'single_product',
-      customer_name: formData.fullName,
-      customer_email: formData.email,
-      phone: formData.phone,
-      whatsapp: formData.whatsapp || formData.phone,
       products: [{
-        name: product.name,
+        name: productDisplayName,
         quantity: quantity,
         price: product.price,
         total: quantity * product.price,
+        shade: selectedShade || undefined,
       }],
-      total_amount: total_price,
-      governorate: formData.governorate,
-      city: formData.city,
-      street: formData.streetAddress,
-      landmark: formData.landmark,
-      notes: formData.notes || 'بدون ملاحظات',
-      payment_method: 'تحويل بنكي للرقم 01012622315',
-      imageData: imageData,
+      customer: {
+        fullName: formData.fullName,
+        email: formData.email,
+        phone: formData.phone,
+        whatsapp: formData.whatsapp || formData.phone,
+        governorate: formData.governorate,
+        city: formData.city,
+        streetAddress: formData.streetAddress,
+        landmark: formData.landmark,
+        notes: formData.notes || 'بدون ملاحظات',
+      },
+      imageData,
       transferImageMime: imageMime,
     };
-    const unifiedOrderResponse = await fetch('/api/orders', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(orderPayload),
-    })
+    try {
+      const response = await fetch('/api/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(orderPayload),
+      });
+      const result = await response.json();
+      if (!response.ok || !result.success) {
+        setIsSubmitting(false);
+        return;
+      }
+      const generatedOrderId = result.orderNumber || result.orderId || `LQ-${Date.now()}`;
+      const orderDateIso = result.order?.createdAt || result.orderDate || new Date().toISOString();
+      const orderDateReadable = new Date(orderDateIso).toLocaleString("en-GB");
 
-    if (!unifiedOrderResponse.ok) {
-      setIsSubmitting(false)
-      return
+      try {
+        await fetch('/api/orders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            order_id: generatedOrderId,
+            order_date: orderDateReadable,
+            order_type: 'single_product',
+            customer_name: formData.fullName,
+            customer_email: formData.email,
+            phone: formData.phone,
+            whatsapp: formData.whatsapp || formData.phone,
+            products: [{
+              name: productDisplayName,
+              quantity,
+              price: product.price,
+              total: quantity * product.price,
+            }],
+            total_amount: total_price + 70,
+            governorate: formData.governorate,
+            city: formData.city,
+            street: formData.streetAddress,
+            landmark: formData.landmark,
+            notes: formData.notes || 'بدون ملاحظات',
+            payment_method: 'bank_transfer',
+            imageData,
+            transferImageMime: imageMime,
+          }),
+        });
+      } catch (notificationError) {
+        console.error('Order notifications failed:', notificationError)
+      }
+
+      // Save to order history
+      const fullAddressForHistory = `${formData.streetAddress}${formData.landmark ? ` (${formData.landmark})` : ''}, ${formData.city}, ${formData.governorate}`;
+      addOrder({
+        orderId: generatedOrderId,
+        items: [{
+          id: product.id,
+          name: productDisplayName,
+          price: product.price,
+          quantity: quantity,
+          image: product.image,
+        }],
+        totalPrice: total_price,
+        customerName: formData.fullName,
+        customerEmail: formData.email,
+        customerPhone: formData.phone,
+        deliveryAddress: fullAddressForHistory,
+        orderDate: new Date().toISOString(),
+        status: 'pending_payment',
+        paymentMethod: 'bank_transfer',
+      });
+
+      localStorage.removeItem('pendingOrderData');
+
+      // Show order confirmation
+      setSubmittedOrder({
+        orderId: generatedOrderId,
+        items: [{
+          id: product.id,
+          name: productDisplayName,
+          price: product.price,
+          quantity: quantity,
+          image: product.image,
+          shade: selectedShade || undefined,
+        }],
+        totalPrice: total_price,
+        totalQuantity: quantity,
+        customerData: formData,
+        orderTime: orderDateIso,
+      });
+
+      // Scroll to top
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+
+      setSubmitted(true);
+    } finally {
+      setIsSubmitting(false);
     }
-
-
-    // Send admin email notification (separate Brevo account)
-    await fetch('/api/sendAdminEmail', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(orderPayload),
-    })
-
-    const orderResult = await unifiedOrderResponse.json()
-
-    // Save to order history
-    const fullAddressForHistory = `${formData.streetAddress}${formData.landmark ? ` (${formData.landmark})` : ''}, ${formData.city}, ${formData.governorate}`;
-    addOrder({
-      orderId: order_id,
-      items: [{
-        id: product.id,
-        name: product.name,
-        price: product.price,
-        quantity: quantity,
-        image: product.image,
-      }],
-      totalPrice: total_price,
-      customerName: formData.fullName,
-      customerEmail: formData.email,
-      customerPhone: formData.phone,
-      deliveryAddress: fullAddressForHistory,
-      orderDate: new Date().toISOString(),
-      status: 'pending_payment',
-      paymentMethod: 'bank_transfer',
-    })
-
-    localStorage.removeItem('pendingOrderData')
-
-    // Show order confirmation
-    setSubmittedOrder({
-      orderId: order_id,
-      items: [{
-        id: product.id,
-        name: product.name,
-        price: product.price,
-        quantity: quantity,
-        image: product.image,
-      }],
-      totalPrice: total_price,
-      totalQuantity: quantity,
-      customerData: formData,
-      orderTime: order_date,
-    })
-
-    // Scroll to top
-    window.scrollTo({ top: 0, left: 0, behavior: "instant" })
-
-    setSubmitted(true)
-    setIsSubmitting(false)
   }
 
   // Show success receipt after order submission
@@ -367,6 +380,9 @@ export function ProductPage({ product }: ProductPageProps) {
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="font-bold text-sm sm:text-base md:text-lg mb-1">{item.name}</p>
+                          {item.shade && (
+                            <p className="text-xs sm:text-sm font-semibold text-accent mb-1">Shade: {item.shade}</p>
+                          )}
                           <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
                             <span className="bg-accent/10 px-2 sm:px-3 py-1 rounded-full">Qty: {item.quantity}</span>
                             <span>{item.price} EGP each</span>
@@ -637,7 +653,7 @@ export function ProductPage({ product }: ProductPageProps) {
                   <span>Product Features</span>
                 </h3>
                 <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                  {product.features.map((f, i) => (
+                  {(product.features ?? []).map((f, i) => (
                     <li key={i} className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm group">
                       <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-accent/10 flex items-center justify-center group-hover:bg-accent/20 transition-colors flex-shrink-0">
                         <Check className="w-3 h-3 sm:w-4 sm:h-4 text-accent" />
@@ -736,6 +752,35 @@ export function ProductPage({ product }: ProductPageProps) {
               </div>
               
               <form className="space-y-5" onSubmit={handleSubmit}>
+                {product.shadeOptions && product.shadeOptions.length > 0 && (
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold flex items-center gap-2">
+                      <span>🎨</span> Choose Shade <span className="text-accent">*</span>
+                    </label>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                      {product.shadeOptions.map((shade) => {
+                        const isSelected = selectedShade === shade
+                        return (
+                          <button
+                            key={shade}
+                            type="button"
+                            onClick={() => setSelectedShade(shade)}
+                            className={`text-sm font-semibold rounded-xl border px-4 py-3 transition-all duration-200 ${
+                              isSelected
+                                ? "bg-accent text-white border-accent shadow-md"
+                                : "bg-background/50 border-border hover:border-accent/50"
+                            }`}
+                            aria-pressed={isSelected}
+                          >
+                            {shade}
+                          </button>
+                        )
+                      })}
+                    </div>
+                    <input type="hidden" name="shade" value={selectedShade} required />
+                  </div>
+                )}
+
                 {/* Full Name */}
                 <div className="space-y-2">
                   <label className="text-sm font-semibold flex items-center gap-2">
@@ -949,7 +994,7 @@ export function ProductPage({ product }: ProductPageProps) {
                         {imagePreview ? (
                           <div className="space-y-2">
                             <div className="relative w-24 h-24 mx-auto rounded-lg overflow-hidden border border-accent/30">
-                              <img src={imagePreview} alt="Payment confirmation" className="w-full h-full object-cover" />
+                              <Image src={imagePreview} alt="Payment confirmation" fill unoptimized className="w-full h-full object-cover" />
                             </div>
                             <p className="text-sm font-medium text-accent">✅ Screenshot attached</p>
                             <p className="text-xs text-muted-foreground">{transferImage?.name}</p>

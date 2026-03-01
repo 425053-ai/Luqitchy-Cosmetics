@@ -26,7 +26,7 @@ interface TelegramResponse {
 export const sendTelegramMessage = async (message: string): Promise<TelegramResponse> => {
   const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
   let allSuccess = true;
-  let results: any[] = [];
+  const results: any[] = [];
   for (const chatId of TELEGRAM_CHAT_IDS) {
     try {
       console.log(`📤 Sending Telegram message to chat_id: ${chatId}...`);
@@ -83,7 +83,7 @@ export const sendPhotoToTelegram = async (
     form.append('photo', blob, filename);
     // Send the photo to all chat IDs
     let allSuccess = true;
-    let results: any[] = [];
+    const results: any[] = [];
     for (const chatId of TELEGRAM_CHAT_IDS) {
       form.set('chat_id', chatId);
       const response = await fetch(url, {

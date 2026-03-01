@@ -1,4 +1,5 @@
 'use client';
+import Image from "next/image"
 import { Header } from "@/components/header"
 import { HeroSectionPremium } from "@/components/hero-section-premium"
 import { TrustBadges } from "@/components/trust-badges"
@@ -62,11 +63,12 @@ export default function Home() {
                     key={src}
                     className="relative w-full aspect-[4/5] sm:aspect-[4/5] md:aspect-[4/5] rounded-xl shadow-lg overflow-hidden flex items-center justify-center bg-background border border-accent/20"
                   >
-                    <img
+                    <Image
                       src={src}
                       alt={`Review ${i + 1}`}
+                      fill
+                      unoptimized
                       className="w-full h-full object-contain"
-                      loading="lazy"
                       style={{ maxHeight: '100%', maxWidth: '100%' }}
                     />
                   </div>

@@ -9,6 +9,7 @@ export interface CartItem {
   quantity: number
   image: string
   color: string
+  shade?: string
 }
 
 interface CartContextType {
@@ -45,11 +46,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const addToCart = (item: Omit<CartItem, 'quantity'> & { quantity?: number }) => {
     setItems(currentItems => {
-      const existingItem = currentItems.find(i => i.id === item.id)
+      const existingItem = currentItems.find(i => i.id === item.id && i.shade === item.shade)
       
       if (existingItem) {
         return currentItems.map(i =>
-          i.id === item.id
+          i.id === item.id && i.shade === item.shade
             ? { ...i, quantity: i.quantity + (item.quantity || 1) }
             : i
         )

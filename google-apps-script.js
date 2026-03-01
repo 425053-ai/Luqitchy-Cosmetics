@@ -21,6 +21,8 @@
  * =====================
  */
 
+/* global ContentService, SpreadsheetApp */
+
 // ========== CONFIGURATION ==========
 const SHEET_NAME = 'Orders'; // Name of the sheet tab
 

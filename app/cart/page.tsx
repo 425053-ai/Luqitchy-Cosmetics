@@ -91,30 +91,6 @@ export default function CartPage() {
 
     setIsSubmitting(true)
 
-    // Generate sequential order ID
-    let order_id: string
-    try {
-      const orderIdResponse = await fetch('/api/orderCounter', { method: 'POST' })
-      if (orderIdResponse.ok) {
-        const { orderId } = await orderIdResponse.json()
-        order_id = orderId
-      } else {
-        setIsSubmitting(false)
-        return
-      }
-    } catch {
-      setIsSubmitting(false)
-      return
-    }
-
-    const order_date = new Date().toLocaleString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
-
     // Process image data if available
     let imageData = null
     let imageMime = null
@@ -124,60 +100,93 @@ export default function CartPage() {
     }
 
     try {
+      const savedItems = [...items]
+      const savedTotalPrice = totalPrice
+      const savedTotalQuantity = items.reduce((sum, item) => sum + item.quantity, 0)
+
       const orderPayload = {
-        order_id,
-        order_date,
-        order_type: 'cart',
-        customer_name: formData.fullName,
-        customer_email: formData.email,
-        phone: formData.phone,
-        whatsapp: sameAsPhone ? formData.phone : formData.whatsapp,
-        products: items.map(item => ({
+        products: savedItems.map(item => ({
           name: item.name,
           quantity: item.quantity,
           price: item.price,
           total: item.quantity * item.price,
+          shade: item.shade || undefined,
         })),
-        total_amount: totalWithShipping,
-        governorate: formData.governorate,
-        city: formData.city,
-        street: formData.streetAddress,
-        landmark: formData.landmark,
-        notes: formData.notes || 'بدون ملاحظات',
-        payment_method: 'Vodafone Cash Wallet & InstaPay',
+        customer: {
+          fullName: formData.fullName,
+          email: formData.email,
+          phone: formData.phone,
+          whatsapp: sameAsPhone ? formData.phone : formData.whatsapp,
+          governorate: formData.governorate,
+          city: formData.city,
+          streetAddress: formData.streetAddress,
+          landmark: formData.landmark,
+          notes: formData.notes || 'بدون ملاحظات',
+        },
         imageData,
         transferImageMime: imageMime,
       };
-      const unifiedOrderResponse = await fetch('/api/orders', {
+      const response = await fetch('/api/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(orderPayload),
       })
-      // Send admin email notification (separate Brevo account)
-      await fetch('/api/sendAdminEmail', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(orderPayload),
-      })
-
-      if (!unifiedOrderResponse.ok) {
+      const result = await response.json();
+      if (!response.ok || !result.success) {
         setIsSubmitting(false)
         return
+      }
+
+      const generatedOrderId = result.orderNumber || result.orderId || `LQ-${Date.now()}`
+      const orderDateIso = result.order?.createdAt || result.orderDate || new Date().toISOString()
+      const orderDateReadable = new Date(orderDateIso).toLocaleString("en-GB")
+
+      try {
+        await fetch('/api/orders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            order_id: generatedOrderId,
+            order_date: orderDateReadable,
+            order_type: 'cart',
+            customer_name: formData.fullName,
+            customer_email: formData.email,
+            phone: formData.phone,
+            whatsapp: sameAsPhone ? formData.phone : formData.whatsapp,
+            products: savedItems.map(item => ({
+              name: item.name,
+              quantity: item.quantity,
+              price: item.price,
+              total: item.quantity * item.price,
+            })),
+            total_amount: savedTotalPrice + SHIPPING_FEE,
+            governorate: formData.governorate,
+            city: formData.city,
+            street: formData.streetAddress,
+            landmark: formData.landmark,
+            notes: formData.notes || 'بدون ملاحظات',
+            payment_method: 'bank_transfer',
+            imageData,
+            transferImageMime: imageMime,
+          }),
+        })
+      } catch (notificationError) {
+        console.error('Order notifications failed:', notificationError)
       }
 
       // Add to order history
       if (addOrder) {
         const fullAddress = `${formData.streetAddress}${formData.landmark ? ` (${formData.landmark})` : ''}, ${formData.city}, ${formData.governorate}`
         addOrder({
-          orderId: order_id,
-          items: items.map(item => ({
+          orderId: generatedOrderId,
+          items: savedItems.map(item => ({
             id: item.id,
             name: item.name,
             price: item.price,
             quantity: item.quantity,
             image: item.image,
           })),
-          totalPrice: totalWithShipping,
+          totalPrice: savedTotalPrice + SHIPPING_FEE,
           customerName: formData.fullName,
           customerEmail: formData.email,
           customerPhone: formData.phone,
@@ -189,21 +198,15 @@ export default function CartPage() {
       }
 
       localStorage.removeItem('pendingOrderData')
-
-      // Save order data before clearing cart
-      const savedItems = [...items]
-      const savedTotalPrice = totalPrice
-      const savedTotalQuantity = items.reduce((sum, item) => sum + item.quantity, 0)
-
       clearCart()
 
       setSubmittedOrder({
-        orderId: order_id,
+        orderId: generatedOrderId,
         items: savedItems,
         totalPrice: savedTotalPrice + SHIPPING_FEE,
         totalQuantity: savedTotalQuantity,
         customerData: { ...formData },
-        orderTime: order_date,
+        orderTime: orderDateIso,
       })
 
       window.scrollTo({ top: 0, left: 0, behavior: "instant" })
@@ -928,7 +931,7 @@ export default function CartPage() {
                       {imagePreview ? (
                         <div className="space-y-2">
                           <div className="relative w-24 h-24 mx-auto rounded-lg overflow-hidden border border-accent/30">
-                            <img src={imagePreview} alt="Payment confirmation" className="w-full h-full object-cover" />
+                            <Image src={imagePreview} alt="Payment confirmation" fill unoptimized className="w-full h-full object-cover" />
                           </div>
                           <p className="text-sm font-medium text-accent">✅ Screenshot attached</p>
                           <p className="text-xs text-muted-foreground">{transferImage?.name}</p>

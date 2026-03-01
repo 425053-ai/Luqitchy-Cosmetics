@@ -158,7 +158,9 @@ function PaymentResultContent() {
                           </div>
                         );
                       }
-                    } catch (e) {}
+                    } catch (e) {
+                      console.error('Failed to parse pending order data:', e)
+                    }
                   }
                   return null;
                 })()}

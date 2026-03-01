@@ -11,8 +11,28 @@ import { useWishlist } from "@/context/WishlistContext"
 import { useToast } from "@/components/ui/toast"
 
 const products = [
-// ...existing products...
-    // ...existing products...
+  {
+    id: "creamy-blusher",
+    name: "Creamy Blusher",
+    description: `Our creamy blusher formula and shades
+Super long lasting, easy to blend, natural look, hydrated, very safe on your skin.`,
+    image: "/images/creamy-blusher.jpeg",
+    color: "from-pink-400 to-rose-400",
+    accent: "bg-pink-400",
+    price: 95,
+    oldPrice: 125,
+    isNew: true,
+    imageClass: "object-cover object-center",
+    containerBg: "bg-gradient-to-br from-pink-50 to-rose-50 dark:from-pink-950/30 dark:to-rose-950/30",
+    options: {
+      shade: {
+        label: "Choose Shade",
+        values: ["Hotty", "Hazelnut", "Pinky"],
+        required: true,
+      },
+    },
+    selectedOptions: {},
+  },
   {
     id: "lipgloss-lotion-offer",
     name: "3 Lipglosses + Lotion Sample",
@@ -415,6 +435,13 @@ export function ProductsSection() {
                   >
                     <span className="text-lg font-bold text-accent">{product.price}</span>
                     <span className="text-sm text-muted-foreground ml-1">EGP</span>
+                    {/* Generic discount for products with old price */}
+                    {!product.isLimitedOffer && product.oldPrice && (
+                      <>
+                        <span className="text-xs sm:text-sm text-muted-foreground line-through ml-2">{product.oldPrice} EGP</span>
+                        <span className="bg-green-500/10 text-green-600 dark:text-green-400 text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full ml-2">Save {product.oldPrice - product.price} EGP</span>
+                      </>
+                    )}
                     {/* Discount for Lip Gloss */}
                     {["black-honey", "burgundy", "wine", "mocha", "strawberry-milk"].includes(product.id) && (
                       <>
@@ -490,6 +517,12 @@ export function ProductsSection() {
                     {!(product.isLimitedOffer && product.oldPrice) && (
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-lg font-bold text-accent">{product.price} <span className="text-sm text-muted-foreground">EGP</span></span>
+                        {product.oldPrice && (
+                          <>
+                            <span className="text-xs sm:text-sm text-muted-foreground line-through ml-2">{product.oldPrice} EGP</span>
+                            <span className="bg-green-500/10 text-green-600 dark:text-green-400 text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full ml-2">Save {product.oldPrice - product.price} EGP</span>
+                          </>
+                        )}
                         {/* Discount for Lip Gloss */}
                         {["black-honey", "burgundy", "wine", "mocha", "strawberry-milk"].includes(product.id) && (
                           <>

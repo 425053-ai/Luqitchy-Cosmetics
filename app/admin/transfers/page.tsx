@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 
 interface TransferProof {
   orderId: string
@@ -125,9 +126,11 @@ export default function AdminDashboard() {
                 {/* Image Preview */}
                 {proof.imageData && (
                   <div className="relative h-48 bg-gray-200 overflow-hidden">
-                    <img
+                    <Image
                       src={`data:${proof.imageMime || 'image/jpeg'};base64,${proof.imageData}`}
                       alt="Transfer proof"
+                      fill
+                      unoptimized
                       className="w-full h-full object-cover hover:scale-110 transition-transform cursor-pointer"
                       onClick={() => setSelectedImage(proof)}
                     />
@@ -228,10 +231,13 @@ export default function AdminDashboard() {
 
               <div className="p-6">
                 {selectedImage.imageData && (
-                  <img
+                  <Image
                     src={`data:${selectedImage.imageMime || 'image/jpeg'};base64,${selectedImage.imageData}`}
                     alt="Full transfer proof"
-                    className="w-full rounded-lg border-2 border-gray-200"
+                    width={1200}
+                    height={1200}
+                    unoptimized
+                    className="w-full h-auto rounded-lg border-2 border-gray-200"
                   />
                 )}
 

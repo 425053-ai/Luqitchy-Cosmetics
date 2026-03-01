@@ -66,6 +66,8 @@ interface TelegramPayload {
   transferImageMime?: string;
 }
 
+const sentAdminEmailOrderIds = new Set<string>();
+
 function generateProductsTable(products: OrderProduct[]): string {
   return products
     .map(
@@ -172,6 +174,7 @@ function generateAdminOrderHTML(data: {
         </div>
 
         <div class="total-box">
+          <div style="font-size: 14px; margin-bottom: 6px; opacity: 0.95;">Shipping (all Egypt): +70 EGP</div>
           <div style="font-size: 14px; margin-bottom: 5px;">💰 Order Total</div>
           <div class="amount">${data.total_amount} EGP</div>
         </div>
@@ -299,8 +302,12 @@ function generateEmailHTML(data: SendOrderRequest, productsTable: string): strin
             </thead>
             <tbody>
               ${productsTable}
+              <tr style="background-color: #fff9f0; font-weight: 600;">
+                <td colspan="3" style="padding: 10px; border: 1px solid #ff66b2; text-align: right;">Shipping (all Egypt):</td>
+                <td style="padding: 10px; border: 1px solid #ff66b2; text-align: center;">+70 EGP</td>
+              </tr>
               <tr style="background-color: #fff0f5; font-weight: bold;">
-                <td colspan="3" style="padding: 10px; border: 1px solid #ff66b2; text-align: right;">TOTAL:</td>
+                <td colspan="3" style="padding: 10px; border: 1px solid #ff66b2; text-align: right;">Order Total:</td>
                 <td style="padding: 10px; border: 1px solid #ff66b2; text-align: center;">${data.total_amount} EGP</td>
               </tr>
             </tbody>
@@ -642,6 +649,8 @@ export async function POST(request: NextRequest) {
 📦 <b>Products (${totalItems} item${totalItems > 1 ? 's' : ''})</b>
 ${productsTable}
 
+🚚 <b>Shipping (all Egypt): +70 EGP</b>
+
 💰 <b>TOTAL: ${total_amount} EGP</b>
 
 📍 <b>Delivery Address</b>
@@ -740,6 +749,9 @@ ${notes ? `\n📝 <b>Notes:</b> ${notes}` : ''}
     // STEP 5: Send admin email notification (separate Brevo account - independent 300/day quota)
     console.log('📬 [Order Flow] STEP 5: Sending admin email notification...');
     try {
+      if (sentAdminEmailOrderIds.has(order_id)) {
+        console.log(`ℹ️ [Admin Email] Skipping duplicate admin email for order ${order_id}`);
+      } else {
       const adminBrevoKey = (process.env.BREVO_ADMIN_API_KEY || '').trim();
       const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'luqitchycosmetics@gmail.com';
       const ADMIN_SENDER_EMAIL = process.env.BREVO_ADMIN_SENDER_EMAIL || 'belalahmedm667@gmail.com';
@@ -785,9 +797,11 @@ ${notes ? `\n📝 <b>Notes:</b> ${notes}` : ''}
         } else {
           const adminResult = await adminResponse.json();
           console.log('✅ [Admin Email] Admin notification sent! MessageId:', adminResult.messageId);
+          sentAdminEmailOrderIds.add(order_id);
         }
       } else {
         console.warn('⚠️ [Admin Email] BREVO_ADMIN_API_KEY not configured, skipping');
+      }
       }
     } catch (adminErr: any) {
       console.warn('⚠️ [Admin Email] Error (non-blocking):', adminErr?.message);

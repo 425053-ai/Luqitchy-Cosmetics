@@ -29,3 +29,5 @@ Luqitchy-Cosmetics-clean/
 
 # data folder (order counter is managed per deployment)
 /data/
+
+/lib/generated/prisma
