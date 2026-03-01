@@ -38,14 +38,23 @@ export async function fetchOrdersFromGoogleSheets(): Promise<{ success: boolean;
     });
 
     const text = await response.text();
+    const contentType = response.headers.get('content-type') || '';
     console.log('📊 [Google Sheets] Fetch response status:', response.status);
 
     let data;
     try {
       data = JSON.parse(text);
     } catch {
-      console.error('❌ [Google Sheets] Could not parse response:', text.substring(0, 200));
-      return { success: false, error: 'Invalid response from Google Sheets' };
+      const snippet = text.substring(0, 200).replace(/\s+/g, ' ');
+      const looksLikeHtml = /<!doctype html>|<html/i.test(snippet) || contentType.includes('text/html');
+
+      if (looksLikeHtml) {
+        console.warn('⚠️ [Google Sheets] Received HTML instead of JSON (likely deployment access/version issue). Returning empty orders safely.');
+        return { success: true, orders: [], error: 'Google Sheets returned HTML instead of JSON' };
+      }
+
+      console.warn('⚠️ [Google Sheets] Non-JSON response. Returning empty orders safely. Snippet:', snippet);
+      return { success: true, orders: [], error: 'Invalid response from Google Sheets' };
     }
 
     if (data.success !== false && data.orders) {
