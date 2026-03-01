@@ -3,8 +3,59 @@
  * Works from both localhost and Vercel (mobile + desktop)
  */
 
-const GOOGLE_SHEETS_WEBHOOK_URL = process.env.GOOGLE_SHEETS_WEBHOOK_URL || 
-  'https://script.google.com/macros/s/AKfycbwLrwY-bOSplulEa4Mz-ul8WuDbEn7t3E6Y-LAqWEkPf3gbwv0OlJx3WZccTjozKyXHvg/exec';
+const GOOGLE_SHEETS_WEBHOOK_URL = process.env.GOOGLE_SHEETS_WEBHOOK_URL?.trim() || '';
+
+const GOOGLE_SHEETS_CONFIG_ERROR =
+  'Google Sheets webhook misconfigured. Deploy Apps Script as Web App (Anyone) and set GOOGLE_SHEETS_WEBHOOK_URL to the /exec URL.';
+
+function isLikelyAppsScriptUrl(rawUrl: string): boolean {
+  if (!rawUrl || rawUrl.includes('your-deployment-id')) {
+    return false;
+  }
+
+  try {
+    const parsed = new URL(rawUrl);
+    const isGoogleHost = parsed.hostname === 'script.google.com' || parsed.hostname.endsWith('.script.google.com');
+    const isExecPath = /\/macros\/s\/.+\/exec\/?$/.test(parsed.pathname);
+    return isGoogleHost && isExecPath;
+  } catch {
+    return false;
+  }
+}
+
+function normalizeWebhookUrl(rawUrl: string): string {
+  const trimmed = rawUrl.trim();
+  try {
+    const parsed = new URL(trimmed);
+    parsed.search = '';
+    parsed.hash = '';
+    return parsed.toString();
+  } catch {
+    return trimmed;
+  }
+}
+
+function classifyNonJsonResponse(contentType: string, text: string): 'html-access' | 'html-other' | 'non-json' {
+  const snippet = text.substring(0, 1200).toLowerCase();
+  const isHtml = contentType.includes('text/html') || /<!doctype html>|<html/i.test(snippet);
+
+  if (!isHtml) {
+    return 'non-json';
+  }
+
+  const accessDeniedMarkers = [
+    'request access',
+    'you need access',
+    'access denied',
+    'signin',
+    'log in',
+    'يجب طلب الإذن بالوصول',
+    'يمكنك فتح المستند',
+    'تم رفض الدخول',
+  ];
+
+  return accessDeniedMarkers.some((marker) => snippet.includes(marker)) ? 'html-access' : 'html-other';
+}
 
 interface OrderRow {
   order_id: string;
@@ -31,8 +82,14 @@ interface OrderRow {
 export async function fetchOrdersFromGoogleSheets(): Promise<{ success: boolean; orders?: OrderRow[]; error?: string }> {
   try {
     console.log('📊 [Google Sheets] Fetching all orders...');
+
+    const webhookUrl = normalizeWebhookUrl(GOOGLE_SHEETS_WEBHOOK_URL);
+    if (!isLikelyAppsScriptUrl(webhookUrl)) {
+      console.error('❌ [Google Sheets] Invalid webhook URL format:', webhookUrl);
+      return { success: true, orders: [], error: GOOGLE_SHEETS_CONFIG_ERROR };
+    }
     
-    const response = await fetch(`${GOOGLE_SHEETS_WEBHOOK_URL}?action=getOrders`, {
+    const response = await fetch(`${webhookUrl}?action=getOrders`, {
       method: 'GET',
       headers: { 'Accept': 'application/json' },
     });
@@ -46,10 +103,15 @@ export async function fetchOrdersFromGoogleSheets(): Promise<{ success: boolean;
       data = JSON.parse(text);
     } catch {
       const snippet = text.substring(0, 200).replace(/\s+/g, ' ');
-      const looksLikeHtml = /<!doctype html>|<html/i.test(snippet) || contentType.includes('text/html');
+      const responseType = classifyNonJsonResponse(contentType, text);
 
-      if (looksLikeHtml) {
-        console.warn('⚠️ [Google Sheets] Received HTML instead of JSON (likely deployment access/version issue). Returning empty orders safely.');
+      if (responseType === 'html-access') {
+        console.warn('⚠️ [Google Sheets] Access-restricted HTML response from Apps Script. Returning empty orders safely.');
+        return { success: true, orders: [], error: GOOGLE_SHEETS_CONFIG_ERROR };
+      }
+
+      if (responseType === 'html-other') {
+        console.warn('⚠️ [Google Sheets] HTML response from webhook (unexpected). Returning empty orders safely.');
         return { success: true, orders: [], error: 'Google Sheets returned HTML instead of JSON' };
       }
 
@@ -97,6 +159,12 @@ export async function saveOrderToGoogleSheets(orderData: {
   try {
     console.log('📊 [Google Sheets] Saving single order:', orderData.order_id);
 
+    const webhookUrl = normalizeWebhookUrl(GOOGLE_SHEETS_WEBHOOK_URL);
+    if (!isLikelyAppsScriptUrl(webhookUrl)) {
+      console.error('❌ [Google Sheets] Invalid webhook URL format:', webhookUrl);
+      return { success: false, error: GOOGLE_SHEETS_CONFIG_ERROR };
+    }
+
     const row: OrderRow = {
       order_id: orderData.order_id,
       date: orderData.order_date,
@@ -116,7 +184,7 @@ export async function saveOrderToGoogleSheets(orderData: {
       status: orderData.status || 'Pending',
     };
 
-    const response = await fetch(GOOGLE_SHEETS_WEBHOOK_URL, {
+    const response = await fetch(webhookUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(row),
@@ -130,9 +198,19 @@ export async function saveOrderToGoogleSheets(orderData: {
     try {
       data = JSON.parse(text);
     } catch {
-      // Apps Script may return HTML on redirect success
-      console.log('📊 [Google Sheets] Non-JSON response (likely success):', text.substring(0, 100));
-      data = { success: true };
+      const responseType = classifyNonJsonResponse(response.headers.get('content-type') || '', text);
+      if (responseType === 'html-access') {
+        console.error('❌ [Google Sheets] Access denied HTML response while saving order.');
+        return { success: false, error: GOOGLE_SHEETS_CONFIG_ERROR };
+      }
+
+      if (responseType === 'html-other') {
+        console.warn('⚠️ [Google Sheets] Non-JSON HTML response while saving order, treating as success fallback.');
+        data = { success: true };
+      } else {
+        console.warn('⚠️ [Google Sheets] Non-JSON response while saving order, treating as success fallback.');
+        data = { success: true };
+      }
     }
 
     if (data.success !== false) {
@@ -170,6 +248,12 @@ export async function saveBulkOrderToGoogleSheets(bulkOrderData: {
   try {
     console.log('📊 [Google Sheets] Saving bulk order:', bulkOrderData.order_id, `(${bulkOrderData.products.length} products)`);
 
+    const webhookUrl = normalizeWebhookUrl(GOOGLE_SHEETS_WEBHOOK_URL);
+    if (!isLikelyAppsScriptUrl(webhookUrl)) {
+      console.error('❌ [Google Sheets] Invalid webhook URL format:', webhookUrl);
+      return { success: false, error: GOOGLE_SHEETS_CONFIG_ERROR };
+    }
+
     const rows: OrderRow[] = bulkOrderData.products.map((product) => ({
       order_id: bulkOrderData.order_id,
       date: bulkOrderData.order_date,
@@ -189,7 +273,7 @@ export async function saveBulkOrderToGoogleSheets(bulkOrderData: {
       status: bulkOrderData.status || 'Pending',
     }));
 
-    const response = await fetch(GOOGLE_SHEETS_WEBHOOK_URL, {
+    const response = await fetch(webhookUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ rows }),
@@ -202,8 +286,19 @@ export async function saveBulkOrderToGoogleSheets(bulkOrderData: {
     try {
       data = JSON.parse(text);
     } catch {
-      console.log('📊 [Google Sheets] Non-JSON response (likely success):', text.substring(0, 100));
-      data = { success: true };
+      const responseType = classifyNonJsonResponse(response.headers.get('content-type') || '', text);
+      if (responseType === 'html-access') {
+        console.error('❌ [Google Sheets] Access denied HTML response while saving bulk order.');
+        return { success: false, error: GOOGLE_SHEETS_CONFIG_ERROR };
+      }
+
+      if (responseType === 'html-other') {
+        console.warn('⚠️ [Google Sheets] Non-JSON HTML response while saving bulk order, treating as success fallback.');
+        data = { success: true };
+      } else {
+        console.warn('⚠️ [Google Sheets] Non-JSON response while saving bulk order, treating as success fallback.');
+        data = { success: true };
+      }
     }
 
     if (data.success !== false) {

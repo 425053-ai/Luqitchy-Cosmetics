@@ -6,6 +6,7 @@
  * 1. Go to: https://script.google.com
  * 2. Create a new project (or open your existing one)
  * 3. Replace ALL the code with this file's content
+ * 3.1 Set SPREADSHEET_ID below if this is a standalone script (recommended)
  * 4. Click "Deploy" > "New deployment"
  * 5. Type: "Web app"
  * 6. Execute as: "Me"
@@ -25,6 +26,7 @@
 
 // ========== CONFIGURATION ==========
 const SHEET_NAME = 'Orders'; // Name of the sheet tab
+const SPREADSHEET_ID = '1qYDz4wpPtczHXk33FxDOKzgwXUNaZYg0b90Yo8Oksu0'; // Optional: set your Google Sheet ID for standalone deployments
 
 // ========== doPost: Receive new orders ==========
 function doPost(e) {
@@ -61,7 +63,7 @@ function doGet(e) {
     var action = e.parameter.action || 'getOrders';
     
     if (action === 'getOrders') {
-      var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+      var sheet = getOrCreateSheet();
       
       if (!sheet) {
         return ContentService.createTextOutput(
@@ -127,7 +129,18 @@ function doGet(e) {
 // ========== Helper Functions ==========
 
 function getOrCreateSheet() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var ss = null;
+
+  if (SPREADSHEET_ID && SPREADSHEET_ID.trim()) {
+    ss = SpreadsheetApp.openById(SPREADSHEET_ID.trim());
+  } else {
+    ss = SpreadsheetApp.getActiveSpreadsheet();
+  }
+
+  if (!ss) {
+    throw new Error('Spreadsheet not found. Set SPREADSHEET_ID in script configuration or bind the script to a Google Sheet.');
+  }
+
   var sheet = ss.getSheetByName(SHEET_NAME);
   
   if (!sheet) {
