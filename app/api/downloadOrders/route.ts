@@ -17,8 +17,8 @@ export async function GET(request: NextRequest) {
     
     if (!result.success || !result.orders || result.orders.length === 0) {
       return NextResponse.json(
-        { error: 'لا توجد طلبات بعد. الطلبات ستظهر عندما يطلب أول عميل.' },
-        { status: 404 }
+        { noOrders: true, message: 'لا توجد طلبات بعد. الطلبات ستظهر عندما يطلب أول عميل.' },
+        { status: 200 }
       );
     }
 

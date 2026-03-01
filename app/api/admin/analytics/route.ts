@@ -13,6 +13,39 @@ interface AnalyticsEventRow {
   created_at: string | Date
 }
 
+function buildEmptyAnalytics(range: RangeKey, warning?: string) {
+  return {
+    range,
+    kpis: {
+      totalRevenue: 0,
+      ordersToday: 0,
+      conversionRate: 0,
+      averageOrderValue: 0,
+      monthlyGrowth: 0,
+      yearlyGrowth: 0,
+    },
+    charts: {
+      revenuePerMonth: [],
+      ordersPerDay: [],
+      topProducts: [],
+      salesByGovernorate: [],
+    },
+    funnel: {
+      visitors: 0,
+      addToCart: 0,
+      checkoutStarted: 0,
+      completed: 0,
+    },
+    insights: {
+      bestSellingHour: 0,
+      bestSellingDay: 'N/A',
+      returningCustomersRate: 0,
+      customerLifetimeValue: 0,
+    },
+    ...(warning ? { warning } : {}),
+  }
+}
+
 function toPercent(value: number) {
   return Number.isFinite(value) ? Math.round(value * 100) / 100 : 0
 }
@@ -65,13 +98,17 @@ export async function GET(request: NextRequest) {
   }
 
   let prisma: any = null
+  const rangeParam = (request.nextUrl.searchParams.get('range') || '30d') as RangeKey
+  const range: RangeKey = ['30d', '90d', '365d', 'all'].includes(rangeParam) ? rangeParam : '30d'
 
   try {
-    const rangeParam = (request.nextUrl.searchParams.get('range') || '30d') as RangeKey
-    const range: RangeKey = ['30d', '90d', '365d', 'all'].includes(rangeParam) ? rangeParam : '30d'
     const since = getSinceDate(range)
 
-    prisma = await createServerPrismaClient()
+    try {
+      prisma = await createServerPrismaClient()
+    } catch {
+      return NextResponse.json(buildEmptyAnalytics(range, 'Analytics data source is not configured yet'))
+    }
 
     const ordersWhere = since ? { createdAt: { gte: since } } : undefined
     const orders = await prisma.order.findMany({
@@ -235,7 +272,7 @@ export async function GET(request: NextRequest) {
     })
   } catch (error) {
     console.error('Admin analytics error:', error)
-    return NextResponse.json({ error: 'Failed to load analytics' }, { status: 500 })
+    return NextResponse.json(buildEmptyAnalytics(range, 'Analytics temporarily unavailable, showing empty dataset'))
   } finally {
     if (prisma) {
       await prisma.$disconnect()

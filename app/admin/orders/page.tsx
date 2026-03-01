@@ -6,7 +6,7 @@ import { Download, FileSpreadsheet, RefreshCw, ArrowLeft, CheckCircle, AlertCirc
 
 export default function AdminOrdersPage() {
   const [downloading, setDownloading] = useState(false)
-  const [status, setStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
+  const [status, setStatus] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null)
 
   const handleDownload = async () => {
     if (downloading) return
@@ -16,9 +16,22 @@ export default function AdminOrdersPage() {
     try {
       const response = await fetch('/api/downloadOrders')
 
+      const contentType = response.headers.get('Content-Type') || ''
+      if (contentType.includes('application/json')) {
+        const jsonData = await response.json().catch(() => null)
+
+        if (!response.ok) {
+          throw new Error(jsonData?.error || `فشل التنزيل (${response.status})`)
+        }
+
+        if (jsonData?.noOrders) {
+          setStatus({ type: 'info', message: jsonData.message || 'لا توجد طلبات بعد.' })
+          return
+        }
+      }
+
       if (!response.ok) {
-        const errorData = await response.json().catch(() => null)
-        throw new Error(errorData?.error || `فشل التنزيل (${response.status})`)
+        throw new Error(`فشل التنزيل (${response.status})`)
       }
 
       // Get the blob and download it
@@ -119,12 +132,16 @@ export default function AdminOrdersPage() {
                 className={`flex items-center gap-2 p-4 rounded-xl text-sm font-medium ${
                   status.type === 'success'
                     ? 'bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800'
+                    : status.type === 'info'
+                    ? 'bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800'
                     : 'bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800'
                 }`}
                 dir="rtl"
               >
                 {status.type === 'success' ? (
                   <CheckCircle className="w-5 h-5 flex-shrink-0" />
+                ) : status.type === 'info' ? (
+                  <AlertCircle className="w-5 h-5 flex-shrink-0" />
                 ) : (
                   <AlertCircle className="w-5 h-5 flex-shrink-0" />
                 )}
