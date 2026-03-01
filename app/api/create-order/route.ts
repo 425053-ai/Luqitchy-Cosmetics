@@ -1,15 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { calculateOrderTotals } from '@/lib/order-totals';
+import { formatOrderId, getNextOrderCounter } from '@/lib/order-counter';
 
-function buildFallbackOrder(products: any, customer: any, productsSubtotal: number, shippingFee: number, finalTotal: number) {
-  const fallbackId = Date.now();
+function buildFallbackOrder(orderNumber: string, products: any, customer: any, productsSubtotal: number, shippingFee: number, finalTotal: number) {
   const createdAt = new Date().toISOString();
   return {
     success: true,
-    orderNumber: `LQ-${fallbackId}`,
+    orderNumber,
+    orderId: orderNumber,
     order: {
-      id: fallbackId,
-      orderNumber: `LQ-${fallbackId}`,
+      id: orderNumber,
+      orderNumber,
       products,
       customer,
       productsSubtotal,
@@ -26,6 +27,7 @@ export async function POST(request: NextRequest) {
   let prisma: any = null;
   let products: any = [];
   let customer: any = {};
+  let reservedOrderId: string | null = null;
   try {
     const body = await request.json();
     products = body.products;
@@ -36,10 +38,11 @@ export async function POST(request: NextRequest) {
 
     // Calculate totals
     const { productsSubtotal, shippingFee, finalTotal } = calculateOrderTotals(products);
+    reservedOrderId = formatOrderId(getNextOrderCounter());
 
     const databaseUrl = process.env.DATABASE_URL;
     if (!databaseUrl) {
-      return NextResponse.json(buildFallbackOrder(products, customer, productsSubtotal, shippingFee, finalTotal), { status: 200 });
+      return NextResponse.json(buildFallbackOrder(reservedOrderId, products, customer, productsSubtotal, shippingFee, finalTotal), { status: 200 });
     }
 
     const [{ PrismaClient }, { PrismaPg }] = await Promise.all([
@@ -54,6 +57,7 @@ export async function POST(request: NextRequest) {
     const order = await prisma.$transaction(async (tx) => {
       const created = await tx.order.create({
         data: {
+          orderNumber: reservedOrderId,
           products,
           customer,
           productsSubtotal,
@@ -61,16 +65,14 @@ export async function POST(request: NextRequest) {
           finalTotal,
         },
       });
-      const orderNumber = `LQ-${created.id.toString().padStart(6, '0')}`;
-      return await tx.order.update({
-        where: { id: created.id },
-        data: { orderNumber },
-      });
+      return created;
     });
-    return NextResponse.json({ success: true, orderNumber: order.orderNumber, order });
+
+    return NextResponse.json({ success: true, orderNumber: order.orderNumber, orderId: order.orderNumber, order });
   } catch (error: any) {
     const { productsSubtotal, shippingFee, finalTotal } = calculateOrderTotals(products || []);
-    return NextResponse.json(buildFallbackOrder(products || [], customer || {}, productsSubtotal, shippingFee, finalTotal), { status: 200 });
+    const fallbackOrderId = reservedOrderId || formatOrderId(getNextOrderCounter());
+    return NextResponse.json(buildFallbackOrder(fallbackOrderId, products || [], customer || {}, productsSubtotal, shippingFee, finalTotal), { status: 200 });
   } finally {
     if (prisma) {
       await prisma.$disconnect();

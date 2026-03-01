@@ -9,6 +9,7 @@ import { useCart } from "@/context/CartContext"
 import { useOrderHistory } from "@/context/OrderHistoryContext"
 import { Button } from "@/components/ui/button"
 import { Footer } from "@/components/footer"
+import { PageQuickActions } from "@/components/page-quick-actions"
 import { compressImage } from "@/lib/image-compression"
 
 export default function CartPage() {
@@ -137,7 +138,11 @@ export default function CartPage() {
         return
       }
 
-      const generatedOrderId = result.orderNumber || result.orderId || `LQ-${Date.now()}`
+      const generatedOrderId = result.orderNumber || result.orderId
+      if (!generatedOrderId) {
+        setIsSubmitting(false)
+        return
+      }
       const orderDateIso = result.order?.createdAt || result.orderDate || new Date().toISOString()
       const orderDateReadable = new Date(orderDateIso).toLocaleString("en-GB")
 
@@ -221,6 +226,7 @@ export default function CartPage() {
   if (submitted && submittedOrder) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-secondary/20 to-background flex items-center justify-center px-3 sm:px-4 py-6 sm:py-8">
+        <PageQuickActions />
         <div className="w-full max-w-2xl space-y-4 sm:space-y-6">
           {/* Success Header */}
           <div className="text-center space-y-3 sm:space-y-4">
@@ -408,6 +414,7 @@ export default function CartPage() {
   if (items.length === 0) {
     return (
       <div className="min-h-screen flex flex-col justify-center items-center p-3 sm:p-4 bg-gradient-to-br from-background via-secondary/20 to-background text-center space-y-4 sm:space-y-6">
+        <PageQuickActions />
         <div className="bg-muted/30 backdrop-blur-sm rounded-full p-5 sm:p-6 md:p-8">
           <ShoppingCart className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 text-muted-foreground" />
         </div>
@@ -425,6 +432,7 @@ export default function CartPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-secondary/20 to-background p-3 sm:p-4 md:p-6">
+      <PageQuickActions />
       {/* Payment Modal for Visa/PayPal */}
       {showPaymentModal && paymentIframeUrl && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">

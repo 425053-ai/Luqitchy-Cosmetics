@@ -22,7 +22,8 @@ Super long lasting, easy to blend, natural look, hydrated, very safe on your ski
     price: 95,
     oldPrice: 125,
     isNew: true,
-    imageClass: "object-cover object-center",
+    imageClass: "object-contain object-center p-2 sm:p-3",
+    imageContainerClass: "aspect-[4/5]",
     containerBg: "bg-gradient-to-br from-pink-50 to-rose-50 dark:from-pink-950/30 dark:to-rose-950/30",
     options: {
       shade: {
@@ -352,7 +353,7 @@ export function ProductsSection() {
               {/* Premium Card Container */}
               <div className="premium-card kawaii-card rounded-2xl sm:rounded-3xl overflow-hidden h-full bg-card border border-border/50 hover:border-accent/30 transition-all duration-500 hover:shadow-xl hover:shadow-accent/10">
                 {/* Product Image Container - consistent aspect ratio across all devices */}
-                <div className={`relative aspect-[4/5] overflow-hidden ${product.containerBg}`}>
+                <div className={`relative ${product.imageContainerClass || "aspect-[4/5]"} overflow-hidden ${product.containerBg}`}>
                   {/* Glow effect */}
                   <div
                     className={`absolute inset-0 bg-gradient-to-br ${product.color} opacity-0 group-hover:opacity-30 transition-all duration-700`}

@@ -7,6 +7,7 @@ import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { CheckCircle, Mail, MessageCircle, ArrowRight, Sparkles, CreditCard, Smartphone, Wallet, Building2, Ticket } from "lucide-react"
 import { ConfettiEffect } from "@/components/confetti-effect"
+import { PageQuickActions } from "@/components/page-quick-actions"
 
 interface OrderItem {
   id: string
@@ -150,6 +151,7 @@ export default function ConfirmationPage() {
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-background via-secondary/30 to-background flex items-center justify-center px-3 sm:px-4 py-6 sm:py-8 overflow-hidden relative">
+      <PageQuickActions />
       {/* Confetti Effect */}
       <ConfettiEffect isActive={showConfetti} />
 

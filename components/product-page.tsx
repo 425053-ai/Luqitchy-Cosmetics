@@ -10,6 +10,7 @@ import { useCart } from "@/context/CartContext"
 import { useOrderHistory } from "@/context/OrderHistoryContext"
 import { Button } from "@/components/ui/button"
 import { Footer } from "@/components/footer"
+import { PageQuickActions } from "@/components/page-quick-actions"
 import { compressImage } from "@/lib/image-compression"
 
 interface ProductPageProps {
@@ -156,7 +157,11 @@ export function ProductPage({ product }: ProductPageProps) {
         setIsSubmitting(false);
         return;
       }
-      const generatedOrderId = result.orderNumber || result.orderId || `LQ-${Date.now()}`;
+      const generatedOrderId = result.orderNumber || result.orderId;
+      if (!generatedOrderId) {
+        setIsSubmitting(false);
+        return;
+      }
       const orderDateIso = result.order?.createdAt || result.orderDate || new Date().toISOString();
       const orderDateReadable = new Date(orderDateIso).toLocaleString("en-GB");
 
@@ -246,6 +251,7 @@ export function ProductPage({ product }: ProductPageProps) {
   if (submitted && submittedOrder) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-secondary/20 to-background flex items-center justify-center px-3 sm:px-4 py-6 sm:py-8">
+        <PageQuickActions />
         <div className="w-full max-w-2xl space-y-4 sm:space-y-6">
           {/* Success Header */}
           <div className="text-center space-y-3 sm:space-y-4 animate-slide-up opacity-0" style={{ animationDelay: "0.1s" }}>
@@ -474,6 +480,7 @@ export function ProductPage({ product }: ProductPageProps) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-secondary/20 to-background relative overflow-hidden">
+      <PageQuickActions />
       {/* Background Elements */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div className="hidden sm:block absolute top-20 right-10 w-60 md:w-96 h-60 md:h-96 bg-accent/5 rounded-full blur-2xl md:blur-3xl" />
