@@ -1,4 +1,12 @@
-export type AnalyticsEventType = 'visit' | 'add_to_cart' | 'checkout_started' | 'order_completed'
+export type AnalyticsEventType = 
+  | 'visit' 
+  | 'page_view' 
+  | 'product_viewed' 
+  | 'add_to_cart' 
+  | 'remove_from_cart'
+  | 'checkout_started' 
+  | 'order_completed'
+  | 'session_ended'
 
 export interface AnalyticsEventInput {
   type: AnalyticsEventType
@@ -22,6 +30,9 @@ export async function ensureAnalyticsTable(prisma: any) {
   )
   await prisma.$executeRawUnsafe(
     `CREATE INDEX IF NOT EXISTS idx_analytics_events_session_created ON analytics_events(session_id, created_at DESC)`
+  )
+  await prisma.$executeRawUnsafe(
+    `CREATE INDEX IF NOT EXISTS idx_analytics_events_session_id ON analytics_events(session_id)`
   )
 }
 
@@ -47,5 +58,14 @@ export async function getAnalyticsEvents(prisma: any, since?: Date) {
   return prisma.$queryRawUnsafe(
     `SELECT id, type, session_id, metadata, created_at FROM analytics_events WHERE created_at >= $1 ORDER BY created_at ASC`,
     since.toISOString()
+  )
+}
+
+export async function getSessionDetails(prisma: any, sessionId: string) {
+  await ensureAnalyticsTable(prisma)
+  
+  return prisma.$queryRawUnsafe(
+    `SELECT id, type, session_id, metadata, created_at FROM analytics_events WHERE session_id = $1 ORDER BY created_at ASC`,
+    sessionId
   )
 }

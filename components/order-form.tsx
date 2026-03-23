@@ -87,6 +87,26 @@ const products = [
     accent: "bg-gray-400",
     price: 60,
   },
+  {
+    id: "dri-oil",
+    name: "Dri Oil",
+    description: "Glow من غير أي إحساس دهني - خفيف وناعم مع ريحة أنثوية",
+    image: "/images/dri-oil.jpeg",
+    color: "from-yellow-400 to-amber-500",
+    accent: "bg-amber-500",
+    price: 250,
+    oldPrice: 350,
+  },
+  {
+    id: "body-care-strawberry",
+    name: "Body Care",
+    description: "Mini size lotion + splash بريحة Strawberry Pound Cake الحلوة",
+    image: "/images/body-care-strawberry.jpeg",
+    color: "from-pink-400 to-rose-500",
+    accent: "bg-pink-500",
+    price: 199,
+    oldPrice: 250,
+  },
 ]
 
 export function ProductsSection() {
@@ -154,7 +174,7 @@ export function ProductsSection() {
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <span className="text-3xl font-bold text-foreground">100 EGP</span>
+                    <span className="text-3xl font-bold text-foreground">{product.price} EGP</span>
                     <div className="flex items-center gap-1 text-sm text-muted-foreground">
                       <span className="inline-block animate-sparkle">✨</span>
                       Premium Quality

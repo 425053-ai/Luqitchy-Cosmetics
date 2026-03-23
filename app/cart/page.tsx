@@ -208,6 +208,20 @@ export default function CartPage() {
       localStorage.removeItem('pendingOrderData')
       clearCart()
 
+      // Track order completion
+      trackEvent('order_completed', {
+        orderId: generatedOrderId,
+        itemsCount: savedItems.length,
+        totalPrice: savedTotalPrice + SHIPPING_FEE,
+        governorate: formData.governorate,
+        products: savedItems.map(item => ({
+          id: item.id,
+          name: item.name,
+          quantity: item.quantity,
+          price: item.price,
+        }))
+      })
+
       setSubmittedOrder({
         orderId: generatedOrderId,
         items: savedItems,

@@ -2,7 +2,16 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerPrismaClient } from '@/lib/server-prisma'
 import { AnalyticsEventType, insertAnalyticsEvent } from '@/lib/analytics-db'
 
-const allowedTypes: AnalyticsEventType[] = ['visit', 'add_to_cart', 'checkout_started', 'order_completed']
+const allowedTypes: AnalyticsEventType[] = [
+  'visit', 
+  'page_view', 
+  'product_viewed', 
+  'add_to_cart', 
+  'remove_from_cart',
+  'checkout_started', 
+  'order_completed',
+  'session_ended'
+]
 
 export async function POST(request: NextRequest) {
   let prisma: any = null

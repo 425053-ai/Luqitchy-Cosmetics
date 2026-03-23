@@ -190,6 +190,32 @@ Super long lasting, easy to blend, natural look, hydrated, very safe on your ski
     originalPrice: 0,
     discount: 0,
   },
+  {
+    id: "dri-oil",
+    name: "Dri Oil",
+    description: "✨ Glow من غير أي إحساس دهني ✨\n\nلو بتحبي بشرتك تبقى ناعمة، لامعة، وريحتها تحفة… يبقى الـ Dry Oil ده معمول علشانك 💖\n\n💧 خفيف جدًا على البشرة\n💧 بيمتص بسرعة من غير ما يسيب أي greasy feeling\n💧 بيدي لمعة صحية وجذابة (مش لامعة زيادة)\n💧 بريحة أنثوية ناعمة تخليكي دايمًا fresh\n\nاستخدميه بعد الشاور أو قبل الخروج علشان بشرتك تبقى soft & glowing طول اليوم ✨\n\n✨ لأنك تستاهلي تباني دايمًا بأحلى شكل ✨",
+    image: "/images/dri-oil.jpeg",
+    color: "from-yellow-400 to-amber-500",
+    accent: "bg-amber-500",
+    price: 250,
+    oldPrice: 350,
+    isNew: true,
+    imageClass: "object-contain object-center p-4",
+    containerBg: "bg-gradient-to-br from-yellow-50 to-amber-100 dark:from-yellow-950/30 dark:to-amber-900/30",
+  },
+  {
+    id: "body-care-strawberry",
+    name: "Body Care",
+    description: "🍓 Strawberry Pound Cake vibes 🍓\n\nMini size… max love 💕\nلوشن + سبلاش يخلوكي دايمًا fresh، sweet، و irresistible\n\n✨ ريحة حلوة… تدلعك طول اليوم\n✨ حجم صغير يناسب الشنطة والخروجات\n✨ إحساس نظافة وأنوثة من أول رشّة\n\n💖 Your sweet moment, anywhere 💖",
+    image: "/images/body-care-strawberry.jpeg",
+    color: "from-pink-400 to-rose-500",
+    accent: "bg-pink-500",
+    price: 199,
+    oldPrice: 250,
+    isNew: true,
+    imageClass: "object-contain object-center p-4",
+    containerBg: "bg-gradient-to-br from-pink-50 to-rose-100 dark:from-pink-950/30 dark:to-rose-900/30",
+  },
 ]
 
 const containerVariants = {

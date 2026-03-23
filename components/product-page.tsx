@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Image from "next/image"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import Link from "next/link"
@@ -72,6 +72,16 @@ export function ProductPage({ product }: ProductPageProps) {
   )
 
   const productDisplayName = selectedShade ? `${product.name} (Shade: ${selectedShade})` : product.name
+
+  // Track product view on mount
+  useEffect(() => {
+    trackEvent('product_viewed', {
+      productId: product.id,
+      productName: product.name,
+      price: product.price,
+      color: product.color,
+    })
+  }, [product.id, product.name, product.price, product.color])
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -224,6 +234,16 @@ export function ProductPage({ product }: ProductPageProps) {
       });
 
       localStorage.removeItem('pendingOrderData');
+
+      // Track order completion
+      trackEvent('order_completed', {
+        orderId: generatedOrderId,
+        productId: product.id,
+        productName: productDisplayName,
+        quantity,
+        totalPrice: total_price,
+        governorate: formData.governorate,
+      })
 
       // Show order confirmation
       setSubmittedOrder({

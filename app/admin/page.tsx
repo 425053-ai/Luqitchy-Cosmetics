@@ -109,6 +109,7 @@ export default function AdminBIPage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
+            <Link href="/admin/visitors" className="h-10 px-4 rounded-xl border border-border bg-card inline-flex items-center text-sm">Visitors</Link>
             <Link href="/admin/orders" className="h-10 px-4 rounded-xl border border-border bg-card inline-flex items-center text-sm">Orders</Link>
             <Link href="/admin/transfers" className="h-10 px-4 rounded-xl border border-border bg-card inline-flex items-center text-sm">Transfers</Link>
             <button onClick={handleLogout} className="h-10 px-4 rounded-xl border border-border bg-card text-sm">Logout</button>
