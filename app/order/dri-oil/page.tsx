@@ -4,7 +4,7 @@ import { ProductPage } from "@/components/product-page"
 
 const product = {
   id: "dri-oil",
-  name: "Dri Oil",
+  name: "Dry Oil",
   image: "/images/dri-oil.jpeg",
   price: 250,
   oldPrice: 350,

@@ -55,7 +55,7 @@ visitSessions = new Set(['1234567890-abc123', ...])
 ## 👀 اللحظة الثانية: مشاهدة المنتج
 
 ### السيناريو:
-> المستخدم يدخل صفحة Dri Oil (`/order/dri-oil`)
+> المستخدم يدخل صفحة Dry Oil (`/order/dri-oil`)
 
 ### ما يحدث:
 
@@ -65,7 +65,7 @@ visitSessions = new Set(['1234567890-abc123', ...])
 useEffect(() => {
   trackEvent('product_viewed', {
     productId: 'dri-oil',
-    productName: 'Dri Oil',
+    productName: 'Dry Oil',
     price: 250,
     color: 'from-yellow-400 to-amber-500',
   })
@@ -77,7 +77,7 @@ useEffect(() => {
   sessionId: "1234567890-abc123",
   metadata: {
     productId: "dri-oil",
-    productName: "Dri Oil",
+    productName: "Dry Oil",
     price: 250,
     color: "from-yellow-400 to-amber-500",
     path: "/order/dri-oil"
@@ -95,7 +95,7 @@ VALUES ('product_viewed', '1234567890-abc123', {...}, NOW())
 ```javascript
 // يُحسب:
 - productViewed events = 1
-- allProducts = { "Dri Oil": 1, ... }
+- allProducts = { "Dry Oil": 1, ... }
 - Top 5 Products تُحدّث
 ```
 
@@ -137,7 +137,7 @@ const handleAddToCart = async (e: React.FormEvent) => {
   sessionId: "1234567890-abc123",
   metadata: {
     productId: "dri-oil",
-    productName: "Dri Oil",
+    productName: "Dry Oil",
     price: 250,
     quantity: 1
   }
@@ -222,7 +222,7 @@ const handleSubmit = async (e: React.FormEvent) => {
    (orderNumber, products, customer, finalTotal, createdAt)
    VALUES (
      'ORD-0001',
-     '[{"id": "dri-oil", "name": "Dri Oil", ...}]',
+     '[{"id": "dri-oil", "name": "Dry Oil", ...}]',
      '{"fullName": "أحمد", ...}',
      250,
      NOW()
@@ -296,7 +296,7 @@ Yearly Growth: نفس الفكرة
 
 ### Top Products:
 ```
-1. Dri Oil - Qty: 1, Revenue: 250 EGP
+1. Dry Oil - Qty: 1, Revenue: 250 EGP
 ```
 
 ### Sales by Governorate:
@@ -352,7 +352,7 @@ id | type | session_id | metadata | created_at
 ```sql
 id | orderNumber | products | customer | finalTotal | createdAt
 ---|-------------|----------|----------|-----------|----------
-1  | ORD-0001 | [{id: dri-oil, name: Dri Oil, price: 250, qty: 1}] | {name: أحمد, email: ahmed@test.com, phone: 201234567890, governorate: Cairo} | 250 | 2026-03-23 10:32:00
+1  | ORD-0001 | [{id: dri-oil, name: Dry Oil, price: 250, qty: 1}] | {name: أحمد, email: ahmed@test.com, phone: 201234567890, governorate: Cairo} | 250 | 2026-03-23 10:32:00
 ```
 
 ---

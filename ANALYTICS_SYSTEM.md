@@ -175,7 +175,7 @@ Body:
   "type": "product_viewed",
   "sessionId": "1234-abc",
   "metadata": {
-    "productName": "Dri Oil",
+    "productName": "Dry Oil",
     "price": 250,
     "path": "/order/dri-oil"
   }
@@ -242,7 +242,7 @@ Response:
   "sessionId": "1234567890-abc1234",
   "metadata": {
     "productId": "dri-oil",
-    "productName": "Dri Oil",
+    "productName": "Dry Oil",
     "price": 250,
     "color": "from-yellow-400 to-amber-500",
     "sessionDuration": 45,
@@ -262,7 +262,7 @@ Response:
     "products": [
       {
         "id": "dri-oil",
-        "name": "Dri Oil",
+        "name": "Dry Oil",
         "price": 250,
         "quantity": 1
       }

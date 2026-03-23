@@ -89,7 +89,7 @@ const products = [
   },
   {
     id: "dri-oil",
-    name: "Dri Oil",
+    name: "Dry Oil",
     description: "Glow من غير أي إحساس دهني - خفيف وناعم مع ريحة أنثوية",
     image: "/images/dri-oil.jpeg",
     color: "from-yellow-400 to-amber-500",

@@ -192,7 +192,7 @@ Super long lasting, easy to blend, natural look, hydrated, very safe on your ski
   },
   {
     id: "dri-oil",
-    name: "Dri Oil",
+    name: "Dry Oil",
     description: "✨ Glow من غير أي إحساس دهني ✨\n\nلو بتحبي بشرتك تبقى ناعمة، لامعة، وريحتها تحفة… يبقى الـ Dry Oil ده معمول علشانك 💖\n\n💧 خفيف جدًا على البشرة\n💧 بيمتص بسرعة من غير ما يسيب أي greasy feeling\n💧 بيدي لمعة صحية وجذابة (مش لامعة زيادة)\n💧 بريحة أنثوية ناعمة تخليكي دايمًا fresh\n\nاستخدميه بعد الشاور أو قبل الخروج علشان بشرتك تبقى soft & glowing طول اليوم ✨\n\n✨ لأنك تستاهلي تباني دايمًا بأحلى شكل ✨",
     image: "/images/dri-oil.jpeg",
     color: "from-yellow-400 to-amber-500",
