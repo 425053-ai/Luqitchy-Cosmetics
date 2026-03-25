@@ -11,7 +11,7 @@ const faqs = [
   {
     question: "What products do you offer?",
     answer:
-      "We offer a complete beauty collection: 5 stunning Lip Gloss shades (Black Honey, Burgundy, Wine, Mocha, and Strawberry Milk), a nourishing Lip Balm, and 2 luxurious Body Lotion + Splash Bundles (Mulberry and Sugar Drop). Each product is carefully crafted with premium ingredients.",
+      "We offer a complete beauty collection: 5 stunning Lip Gloss shades (Black Honey, Burgundy, Wine, Mocha, and Strawberry Milk), a nourishing Lip Balm, Eye Brow Gel, and a luxurious Dry Oil. Each product is carefully crafted with premium ingredients.",
     emoji: "💄",
     animation: "animate-dance",
   },
@@ -23,11 +23,11 @@ const faqs = [
     animation: "animate-float-rotate",
   },
   {
-    question: "What's included in the Body Lotion Bundles?",
+    question: "Is there a travel size option?",
     answer:
-      "Each Body Lotion + Splash Bundle includes a luxurious hydrating body lotion and a refreshing fragrant body splash. Available in Mulberry (wild berry scent) and Sugar Drop (sweet candy-like fragrance). Perfect as a gift or for your daily skincare routine!",
-    emoji: "🧴",
-    animation: "animate-kawaii-bounce",
+      "Yes! We offer smaller sizes of our popular products. Our Body Care collection includes mini sizes perfect for travel or gifting. These compact options give you all the luxury in a convenient size.",
+    emoji: "✈️",
+    animation: "animate-float-rotate",
   },
   {
     question: "How long do the products last?",

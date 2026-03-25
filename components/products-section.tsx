@@ -123,45 +123,7 @@ Super long lasting, easy to blend, natural look, hydrated, very safe on your ski
         imageClass: "object-cover object-top",
         containerBg: "bg-gradient-to-br from-pink-50 to-rose-50 dark:from-pink-950/30 dark:to-rose-950/30",
       },
-  {
-    id: "body-lotion-splash-mulberry",
-    name: "Body Lotion + Splash Bundle - Mulberry",
-    description: "Luxury bundle with two delightful scents",
-    image: "/images/body-lotion-splash-mulberry.png",
-    color: "from-purple-600 to-pink-600",
-    accent: "bg-purple-500",
-    price: 300,
-    isNew: true,
-    // Bundle images need contain to show both products
-    imageClass: "object-cover object-center",
-    containerBg: "bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30",
-  },
-  {
-    id: "body-lotion-splash-sugar-drop",
-    name: "Body Lotion + Splash Bundle - Sugar Drop",
-    description: "Sweet luxury bundle with irresistible fragrance",
-    image: "/images/body-lotion-splash-sugar-drop.png",
-    color: "from-pink-400 to-orange-300",
-    accent: "bg-pink-400",
-    price: 300,
-    isNew: true,
-    imageClass: "object-cover object-center",
-    containerBg: "bg-gradient-to-br from-pink-50 to-orange-50 dark:from-pink-950/30 dark:to-orange-950/30",
-  },
-  {
-    id: "lotion-splash-travel",
-    name: "Lotion & Splash travel Size",
-    description: "Mixed scent dupe Burberry Her and Strawberry Bound Cake. Strawberry and berry mix to give you the feeling of refreshment after showering. Stability for 8 hours.",
-    image: "/images/lotion-splash-travel.jpeg",
-    color: "from-pink-300 to-purple-400",
-    accent: "bg-pink-400",
-    price: 175,
-    isNew: true,
-    imageClass: "object-cover object-center",
-    containerBg: "bg-gradient-to-br from-pink-50 to-purple-50 dark:from-pink-950/30 dark:to-purple-950/30",
-    originalPrice: 250,
-    discount: 75,
-  },
+
   {
     id: "eyebrow-gel-20g",
     name: "Eyebrow Gel 20g",
@@ -485,13 +447,6 @@ export function ProductsSection() {
                         <span className="bg-green-500/10 text-green-600 dark:text-green-400 text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full ml-2">Save 35 EGP</span>
                       </>
                     )}
-                    {/* Discount for Lotion & Splash travel Size */}
-                    {product.id === "lotion-splash-travel" && (
-                      <>
-                        <span className="text-xs sm:text-sm text-muted-foreground line-through ml-2">250 EGP</span>
-                        <span className="bg-green-500/10 text-green-600 dark:text-green-400 text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full ml-2">Save 75 EGP</span>
-                      </>
-                    )}
                     {/* Discount for Limited Offer */}
                     {product.isLimitedOffer && (
                       <>
@@ -564,13 +519,6 @@ export function ProductsSection() {
                           <>
                             <span className="text-xs sm:text-sm text-muted-foreground line-through ml-2">100 EGP</span>
                             <span className="bg-green-500/10 text-green-600 dark:text-green-400 text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full ml-2">Save 35 EGP</span>
-                          </>
-                        )}
-                        {/* Discount for Lotion & Splash travel Size */}
-                        {product.id === "lotion-splash-travel" && (
-                          <>
-                            <span className="text-xs sm:text-sm text-muted-foreground line-through ml-2">250 EGP</span>
-                            <span className="bg-green-500/10 text-green-600 dark:text-green-400 text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full ml-2">Save 75 EGP</span>
                           </>
                         )}
                       </div>

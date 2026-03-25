@@ -44,11 +44,11 @@ const reviews = [
     name: "Yasmin Ali",
     avatar: "👱‍♀️",
     rating: 5,
-    product: "Body Lotion Splash",
-    review: "The body lotion is heavenly! My skin feels so soft and the scent lasts all day. Love it! 🌸",
+    product: "Lip Balm",
+    review: "The Lip Balm is pure luxury! My lips feel so soft and the flavor is delicious. This is a must-have! 💋",
     date: "5 days ago",
     verified: true,
-    image: "/images/body-lotion-splash-mulberry.jpeg"
+    image: "/images/lip-balm.jpeg"
   },
   {
     id: 5,

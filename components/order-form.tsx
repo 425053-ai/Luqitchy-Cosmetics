@@ -52,15 +52,6 @@ const products = [
     price: 65,
   },
   {
-    id: "body-lotion-splash-mulberry",
-    name: "Body Lotion + Splash Bundle - Mulberry",
-    description: "Luxury bundle with delightful scents",
-    image: "/images/body-lotion-splash-mulberry.png",
-    color: "from-purple-600 to-pink-600",
-    accent: "bg-purple-500",
-    price: 300,
-  },
-  {
     id: "lip-balm",
     name: "Lip Balm",
     description: "Nourishing lip care with delicious flavor",

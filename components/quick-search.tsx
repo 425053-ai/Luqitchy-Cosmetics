@@ -12,8 +12,6 @@ const products = [
   { id: "mocha", name: "Mocha", price: 99, image: "/images/mocha.jpeg", category: "Lip Gloss" },
   { id: "strawberry-milk", name: "Strawberry Milk", price: 100, image: "/images/strawberry-milk.jpeg", category: "Lip Gloss" },
   { id: "lip-balm", name: "Lip Balm", price: 100, image: "/images/lip-balm.jpeg", category: "Lip Care" },
-  { id: "body-lotion-splash-mulberry", name: "Body Lotion Bundle - Mulberry", price: 300, image: "/images/body-lotion-splash-mulberry.png", category: "Body Care" },
-  { id: "body-lotion-splash-sugar-drop", name: "Body Lotion Bundle - Sugar Drop", price: 300, image: "/images/body-lotion-splash-sugar-drop.png", category: "Body Care" },
 ]
 
 export function QuickSearch() {
