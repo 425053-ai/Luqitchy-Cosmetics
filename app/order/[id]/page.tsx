@@ -87,7 +87,7 @@ const products = [
     image: "/images/dri-oil.jpeg",
     color: "from-yellow-400 to-amber-500",
     accent: "bg-amber-500",
-    price: "EGP 150",
+    price: 250,
     features: ["خفيف على البشرة", "يمتص بسرعة", "لمعة صحية", "ريحة أنثوية ناعمة"],
   },
   {
@@ -99,7 +99,7 @@ const products = [
     image: "/images/body-care-strawberry.jpeg",
     color: "from-pink-400 to-rose-500",
     accent: "bg-pink-500",
-    price: "EGP 120",
+    price: 199,
     features: ["ريحة حلوة", "حجم صغير portable", "لوشن + سبلاش", "نظافة وأنوثة"],
   },
 ]

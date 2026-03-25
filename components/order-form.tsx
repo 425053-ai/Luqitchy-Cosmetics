@@ -49,7 +49,7 @@ const products = [
     image: "/images/strawberry-milk.jpeg",
     color: "from-pink-400 to-pink-600",
     accent: "bg-pink-400",
-    price: 65,
+    price: 99,
   },
   {
     id: "lip-balm",
