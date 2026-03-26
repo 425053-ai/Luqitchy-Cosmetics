@@ -68,16 +68,34 @@ interface TelegramPayload {
 
 const sentAdminEmailOrderIds = new Set<string>();
 
-// Sanitize string fields - remove extra spaces and limit length
+// STRICT sanitization - remove all control chars and problematic data
 function sanitizeString(str: any): string {
-  if (!str || typeof str !== 'string') return '';
-  return str.trim().replace(/\s+/g, ' ').substring(0, 500);
+  if (str === null || str === undefined) return '';
+  if (typeof str !== 'string') return String(str).trim();
+  
+  return str
+    .trim()
+    .replace(/[\n\r\t]/g, ' ')           // Remove newlines/tabs
+    .replace(/\s+/g, ' ')                 // Single spaces
+    .replace(/[\x00-\x1F\x7F]/g, '')      // Remove control characters
+    .substring(0, 1000);
 }
 
-// Sanitize phone numbers - keep only digits and +
+// Sanitize phone - keep only safe characters
 function sanitizePhone(phone: any): string {
   if (!phone || typeof phone !== 'string') return '';
-  return phone.trim().substring(0, 20);
+  return phone.trim().replace(/[^0-9+\-() ]/g, '').substring(0, 30);
+}
+
+// Sanitize products array
+function sanitizeProducts(products: any[]): any[] {
+  if (!Array.isArray(products)) return [];
+  return products.map(p => ({
+    name: sanitizeString(p.name),
+    quantity: Number(p.quantity) || 0,
+    price: Number(p.price) || 0,
+    total: Number(p.total) || 0,
+  }));
 }
 
 function generateProductsTable(products: OrderProduct[]): string {
@@ -575,8 +593,8 @@ export async function POST(request: NextRequest) {
   try {
     const body: UnifiedOrderRequest = await request.json();
 
-    // Sanitize all string inputs
-    const order_id = sanitizeString(body.order_id);
+    // AGGRESSIVE sanitization of ALL inputs
+    const order_id = sanitizeString(body.order_id).toUpperCase();
     const order_date = sanitizeString(body.order_date);
     const order_type = sanitizeString(body.order_type);
     const customer_name = sanitizeString(body.customer_name);
@@ -589,22 +607,32 @@ export async function POST(request: NextRequest) {
     const landmark = sanitizeString(body.landmark);
     const notes = sanitizeString(body.notes);
     const payment_method = sanitizeString(body.payment_method);
-    const products = body.products || [];
+    const products = sanitizeProducts(Array.isArray(body.products) ? body.products : []);
     const total_amount = Number(body.total_amount) || 0;
     const { imageData, transferImageMime } = body;
 
     console.log('═══════════════════════════════════════════════════');
     console.log('[Order Processing] New order received');
-    console.log(`   Type: ${order_type}`);
     console.log(`   Order ID: ${order_id}`);
-    console.log(`   Products: ${Array.isArray(products) ? products.length : 0}`);
+    console.log(`   Type: ${order_type}`);
+    console.log(`   Customer: ${customer_name}`);
+    console.log(`   Products: ${products.length}`);
     console.log('═══════════════════════════════════════════════════');
 
-    // Validate required fields
-    if (!order_id || !order_type || !customer_name || !customer_email || !Array.isArray(products) || products.length === 0 || !total_amount) {
-      console.error('❌ Validation failed:', {order_id, order_type, customer_name, customer_email, products, total_amount});
+    // Strict validation AFTER sanitization
+    if (!order_id || !order_type || !customer_name || !customer_email || 
+        !phone || products.length === 0 || !total_amount) {
+      console.error('❌ [Orders] Validation failed after sanitization');
+      console.error('   order_id:', !!order_id);
+      console.error('   order_type:', !!order_type);
+      console.error('   customer_name:', !!customer_name);
+      console.error('   customer_email:', !!customer_email);
+      console.error('   phone:', !!phone);
+      console.error('   products.length:', products.length);
+      console.error('   total_amount:', total_amount);
+      
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: 'Missing required fields after sanitization' },
         { status: 400 }
       );
     }
