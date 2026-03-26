@@ -147,6 +147,7 @@ export async function POST(request: NextRequest) {
 
     // STEP 5: Create order in transaction with DOUBLE-CLEANED data
     console.log('💾 [Order] Attempting database insert for order:', reservedOrderId);
+    const now = new Date();
     const order = await prisma.$transaction(async (tx) => {
       const created = await tx.order.create({
         data: {
@@ -156,6 +157,8 @@ export async function POST(request: NextRequest) {
           productsSubtotal,
           shippingFee,
           finalTotal,
+          createdAt: now,
+          updatedAt: now,
         },
       });
       return created;
