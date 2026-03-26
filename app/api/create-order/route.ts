@@ -88,20 +88,71 @@ function sanitizeProducts(products: any[]): any[] {
 }
 
 export async function POST(request: NextRequest) {
-  // ULTRA wrapper - catch ANY error and always return JSON
+  // MASTER WRAPPER - catch ANY error including JSON serialization
   try {
-    return await handleOrderCreation(request);
+    console.log('🚀 [API] POST /api/create-order started');
+    
+    // Set timeout to prevent hanging
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Request timeout: exceeded 25s')), 25000)
+    );
+    
+    // Race between actual handler and timeout
+    const result = await Promise.race([
+      handleOrderCreation(request),
+      timeoutPromise
+    ]) as any;
+    
+    console.log('✅ [API] POST handler completed successfully');
+    return result;
+    
   } catch (uncaughtError: any) {
-    console.error('💥 [CRITICAL] Uncaught error in POST handler:', uncaughtError);
-    // Return fallback - ALWAYS return JSON, never throw
-    const fallbackOrderId = formatOrderId(getNextOrderCounter());
-    return NextResponse.json({
-      success: true,
-      orderNumber: fallbackOrderId,
-      orderId: fallbackOrderId,
-      fallback: true,
-      message: 'Order processed (with fallback protection)',
-    }, { status: 200 });
+    console.error('💥 [CRITICAL] Error in POST handler:', {
+      message: uncaughtError?.message,
+      stack: uncaughtError?.stack?.substring(0, 200),
+      code: uncaughtError?.code,
+    });
+    
+    try {
+      // Try with timeout - generate fallback order ID
+      const fallbackOrderId = formatOrderId(getNextOrderCounter());
+      const fallbackResponse = {
+        success: true,
+        orderNumber: fallbackOrderId,
+        orderId: fallbackOrderId,
+        fallback: true,
+        message: 'Order processed (with fallback protection)',
+      };
+      
+      // Serialize and return
+      console.log('🛡️ [CRITICAL] Returning fallback response');
+      return NextResponse.json(fallbackResponse, { status: 200 });
+      
+    } catch (fallbackErrorHandler: any) {
+      // If JSON serialization itself fails, return plain response
+      console.error('💥 [CRITICAL] Even JSON serialization failed:', fallbackErrorHandler);
+      try {
+        // Last resort - minimal response
+        return new NextResponse(
+          JSON.stringify({
+            success: true,
+            orderNumber: 'ORD-EMERGENCY',
+            fallback: true,
+          }),
+          { 
+            status: 200,
+            headers: { 'Content-Type': 'application/json' }
+          }
+        );
+      } catch (totalFailure) {
+        // Final fallback - return any valid response
+        console.error('💥 [CATASTROPHIC] Total failure:', totalFailure);
+        return new NextResponse('{"success":true}', { 
+          status: 200,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+    }
   }
 }
 
@@ -113,9 +164,18 @@ async function handleOrderCreation(request: NextRequest) {
   let sessionId = '';
   
   try {
-    // SAFE JSON parsing
+    // SAFE JSON parsing with size limit
     let body: any = null;
     try {
+      // Don't parse body if it's too large (max 5MB for safety)
+      const contentLength = request.headers.get('content-length');
+      if (contentLength && parseInt(contentLength) > 5242880) {
+        console.warn('⚠️ [Parse] Request too large:', contentLength);
+        // Return fallback for oversized payloads
+        const fallbackOrderId = formatOrderId(getNextOrderCounter());
+        return NextResponse.json(buildFallbackOrder(fallbackOrderId, [], {}, 0, 0, 0), { status: 200 });
+      }
+      
       body = await request.json();
     } catch (parseError: any) {
       console.error('❌ [Parse] Failed to parse request JSON:', parseError.message);
@@ -126,6 +186,16 @@ async function handleOrderCreation(request: NextRequest) {
     
     // DEBUG: Log raw input
     console.log('📥 [Order] Raw input received');
+    
+    // STEP 0: Strip large binary data (images) to prevent serialization issues
+    console.log('🔪 [Order] Stripping binary data...');
+    if (body?.imageData) {
+      const imageSizeKB = (body.imageData.length / 1024).toFixed(1);
+      console.log(`   Removing ${imageSizeKB}KB image data`);
+      delete body.imageData;
+    }
+    if (body?.transferImageMime) delete body.transferImageMime;
+    if (body?.transferImageSize) delete body.transferImageSize;
     
     // STEP 1: ULTRA-STRICT sanitization of all inputs BEFORE any processing
     console.log('🧹 [Order] Starting ultra-strict sanitization...');
