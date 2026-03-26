@@ -571,7 +571,7 @@ export function ProductPage({ product }: ProductPageProps) {
                 )}
                 {/* Touch swipe support (all devices) */}
                 <div
-                  className="w-full h-full"
+                  className="w-full h-full relative"
                   onTouchStart={e => {
                     if (images.length < 2) return;
                     const touchStartX = e.touches[0].clientX;
