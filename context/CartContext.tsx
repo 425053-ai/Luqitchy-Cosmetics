@@ -27,6 +27,7 @@ const CartContext = createContext<CartContextType | undefined>(undefined)
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([])
+  const [isHydrated, setIsHydrated] = useState(false)
 
   // Load cart from localStorage on mount
   useEffect(() => {
@@ -38,6 +39,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         console.error('Error loading cart:', error)
       }
     }
+    setIsHydrated(true)
   }, [])
 
   // Save cart to localStorage whenever it changes
@@ -119,6 +121,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         totalItems,
         totalPrice,
       }}
+      suppressHydrationWarning
     >
       {children}
     </CartContext.Provider>

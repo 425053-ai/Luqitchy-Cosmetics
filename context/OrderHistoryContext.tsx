@@ -66,7 +66,7 @@ export function OrderHistoryProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <OrderHistoryContext.Provider value={{ orders, addOrder, clearHistory, getOrderById }}>
+    <OrderHistoryContext.Provider value={{ orders, addOrder, clearHistory, getOrderById }} suppressHydrationWarning>
       {children}
     </OrderHistoryContext.Provider>
   )

@@ -69,6 +69,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
   return (
     <WishlistContext.Provider
       value={{ wishlist, addToWishlist, removeFromWishlist, isInWishlist, clearWishlist, totalItems }}
+      suppressHydrationWarning
     >
       {children}
     </WishlistContext.Provider>
