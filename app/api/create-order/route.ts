@@ -145,46 +145,73 @@ export async function POST(request: NextRequest) {
     prisma = await createServerPrismaClient();
     console.log('🔌 [Order] Prisma client connected');
 
-    // STEP 5: Create order in transaction with DOUBLE-CLEANED data
+    // STEP 5: Create order with RETRY LOGIC (no transaction - simpler & faster)
     console.log('💾 [Order] Attempting database insert for order:', reservedOrderId);
     const now = new Date();
-    const order = await prisma.$transaction(async (tx) => {
-      const created = await tx.order.create({
-        data: {
-          orderNumber: reservedOrderId!,
-          products: JSON.parse(JSON.stringify(products)),
-          customer: JSON.parse(JSON.stringify(customer)),
-          productsSubtotal,
-          shippingFee,
-          finalTotal,
-          createdAt: now,
-          updatedAt: now,
-        },
-      });
-      return created;
-    });
+    let order: any = null;
+    let lastError: any = null;
 
-    console.log('✅ [Order] Database insert successful:', order.orderNumber);
-
-    // STEP 6: Send analytics event if available
-    if (sessionId) {
+    // Retry logic with exponential backoff (3 attempts max)
+    for (let attempt = 1; attempt <= 3; attempt++) {
       try {
-        await insertAnalyticsEvent(prisma, {
-          type: 'order_completed',
-          sessionId,
-          metadata: {
-            orderId: order.orderNumber,
+        console.log(`📤 [Order] Insert attempt ${attempt}/3...`);
+        
+        // ⚡ SIMPLE insert without transaction (faster, less likely to timeout)
+        order = await prisma.order.create({
+          data: {
+            orderNumber: reservedOrderId!,
+            products: JSON.parse(JSON.stringify(products)),
+            customer: JSON.parse(JSON.stringify(customer)),
+            productsSubtotal,
+            shippingFee,
             finalTotal,
-            productsCount: products.length,
+            createdAt: now,
+            updatedAt: now,
           },
         });
-        console.log('📊 [Analytics] Event recorded');
-      } catch (analyticsError) {
-        console.warn('⚠️ [Analytics] Failed to record event (non-critical):', analyticsError);
+        
+        console.log('✅ [Order] Database insert successful:', order.orderNumber);
+        break; // Success! Exit retry loop
+        
+      } catch (retryError: any) {
+        lastError = retryError;
+        console.error(`❌ [Order] Attempt ${attempt} failed:`, retryError.code, retryError.message);
+        
+        // If it's a transaction timeout, retry with backoff
+        if (retryError.code === 'P2028' && attempt < 3) {
+          const delayMs = Math.pow(2, attempt - 1) * 100; // 100ms, 200ms, 400ms
+          console.log(`⏳ [Order] Retrying in ${delayMs}ms...`);
+          await new Promise(resolve => setTimeout(resolve, delayMs));
+        } else if (attempt === 3) {
+          // Final attempt failed - throw to fallback
+          throw retryError;
+        }
       }
     }
 
-    // SUCCESS: Return the created order
+    if (!order) {
+      throw lastError || new Error('Unexpected: Order insert failed');
+    }
+
+    // STEP 6: Send analytics event if available (non-blocking, fire-and-forget)
+    if (sessionId) {
+      // Don't wait for analytics - it's non-critical
+      insertAnalyticsEvent(prisma, {
+        type: 'order_completed',
+        sessionId,
+        metadata: {
+          orderId: order.orderNumber,
+          finalTotal,
+          productsCount: products.length,
+        },
+      }).then(() => {
+        console.log('📊 [Analytics] Event recorded');
+      }).catch((analyticsError) => {
+        console.warn('⚠️ [Analytics] Failed to record event (non-critical):', analyticsError.message);
+      });
+    }
+
+    // SUCCESS: Return the created order immediately (don't wait for analytics)
     return NextResponse.json({ 
       success: true, 
       orderNumber: order.orderNumber, 
