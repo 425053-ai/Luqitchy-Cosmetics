@@ -94,10 +94,11 @@ export async function POST(request: NextRequest) {
   } catch (uncaughtError: any) {
     console.error('💥 [CRITICAL] Uncaught error in POST handler:', uncaughtError);
     // Return fallback - ALWAYS return JSON, never throw
+    const fallbackOrderId = formatOrderId(getNextOrderCounter());
     return NextResponse.json({
       success: true,
-      orderNumber: `ORD-${Date.now()}`,
-      orderId: `ORD-${Date.now()}`,
+      orderNumber: fallbackOrderId,
+      orderId: fallbackOrderId,
       fallback: true,
       message: 'Order processed (with fallback protection)',
     }, { status: 200 });
