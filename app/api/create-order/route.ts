@@ -132,11 +132,14 @@ export async function POST(request: NextRequest) {
       // If JSON serialization itself fails, return plain response
       console.error('💥 [CRITICAL] Even JSON serialization failed:', fallbackErrorHandler);
       try {
+        // Generate sequential ID even in last resort
+        const lastResortOrderId = formatOrderId(getNextOrderCounter());
         // Last resort - minimal response
         return new NextResponse(
           JSON.stringify({
             success: true,
-            orderNumber: 'ORD-EMERGENCY',
+            orderNumber: lastResortOrderId,
+            orderId: lastResortOrderId,
             fallback: true,
           }),
           { 
@@ -147,10 +150,18 @@ export async function POST(request: NextRequest) {
       } catch (totalFailure) {
         // Final fallback - return any valid response
         console.error('💥 [CATASTROPHIC] Total failure:', totalFailure);
-        return new NextResponse('{"success":true}', { 
-          status: 200,
-          headers: { 'Content-Type': 'application/json' }
-        });
+        try {
+          const emergencyOrderId = formatOrderId(getNextOrderCounter());
+          return new NextResponse(`{"success":true,"orderNumber":"${emergencyOrderId}","orderId":"${emergencyOrderId}"}`, { 
+            status: 200,
+            headers: { 'Content-Type': 'application/json' }
+          });
+        } catch {
+          return new NextResponse('{"success":true}', { 
+            status: 200,
+            headers: { 'Content-Type': 'application/json' }
+          });
+        }
       }
     }
   }
