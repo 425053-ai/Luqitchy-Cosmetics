@@ -122,6 +122,37 @@ export function ProductPage({ product }: ProductPageProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    console.log('🚀 Form submitted - validating fields...');
+    console.log('Form data:', { fullName: formData.fullName, email: formData.email, phone: formData.phone });
+    
+    // CRITICAL: Validate all required fields BEFORE submission
+    if (!formData.fullName || formData.fullName.trim().length < 2) {
+      console.warn('⚠️ Full name validation failed:', formData.fullName);
+      alert('⚠️ يرجى إدخال الاسم الكامل (4 أحرف على الأقل)')
+      return
+    }
+    if (!formData.email || !formData.email.includes('@')) {
+      alert('⚠️ يرجى إدخال بريد إلكتروني صحيح')
+      return
+    }
+    if (!formData.phone || formData.phone.trim().length < 8) {
+      alert('⚠️ يرجى إدخال رقم هاتف صحيح')
+      return
+    }
+    if (!formData.governorate || formData.governorate.trim().length < 2) {
+      alert('⚠️ يرجى إدخال المحافظة')
+      return
+    }
+    if (!formData.city || formData.city.trim().length < 2) {
+      alert('⚠️ يرجى إدخال المدينة/الحي')
+      return
+    }
+    if (!formData.streetAddress || formData.streetAddress.trim().length < 3) {
+      alert('⚠️ يرجى إدخال عنوان الشارع')
+      return
+    }
+    
     // Prevent double submission
     if (isSubmitting) return
 
@@ -162,13 +193,28 @@ export function ProductPage({ product }: ProductPageProps) {
       sessionId: getAnalyticsSessionId(),
     };
     try {
+      console.log('📤 Submitting order payload:', orderPayload);
+      
+      // Add timeout protection
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+      
       const response = await fetch('/api/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(orderPayload),
+        signal: controller.signal,
       });
+      
+      clearTimeout(timeoutId);
+      
       const result = await response.json();
       console.log('🔍 Create Order Response:', { status: response.status, result });
+      
+      if (!response.ok) {
+        console.error('❌ API returned non-OK status:', response.status);
+        throw new Error(`Server error: ${response.status}`);
+      }
       
       // Accept ANY response with success: true (including fallback orders)
       if (!result.success) {
@@ -293,8 +339,10 @@ export function ProductPage({ product }: ProductPageProps) {
       setSubmitted(true);
     } catch (error: any) {
       console.error('❌ Order submission error:', error);
-      setOrderError(error.message || 'حدث خطأ في إرسال الطلب');
-      alert(`❌ خطأ في إتمام الطلب:\n${error.message}\n\nيرجى إعادة المحاولة`);
+      const errorMsg = error?.message || 'حدث خطأ غير معروف';
+      setOrderError(errorMsg);
+      // Show friendly error - never show technical details
+      alert('⚠️ حدث خطأ أثناء معالجة الطلب.\n\nيرجى التأكد من:\n✓ البيانات المدخلة صحيحة\n✓ اتصالك بالإنترنت جيد\n✓ ثم أعد المحاولة');
       setIsSubmitting(false);
     } finally {
       setIsSubmitting(false);
