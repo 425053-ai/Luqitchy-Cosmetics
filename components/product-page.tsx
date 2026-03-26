@@ -170,21 +170,29 @@ export function ProductPage({ product }: ProductPageProps) {
       const result = await response.json();
       console.log('🔍 Create Order Response:', { status: response.status, result });
       
-      if (!response.ok || !result.success) {
-        const errorMsg = result.error || `Order creation failed (Status: ${response.status})`;
-        console.error('❌ Order creation error:', errorMsg, result);
-        setOrderError(errorMsg);
-        alert(`❌ خطأ في الطلب:\n${errorMsg}\n\nيرجى التحقق من البيانات و إعادة المحاولة`);
+      // Accept ANY response with success: true (including fallback orders)
+      if (!result.success) {
+        console.error('❌ Order creation error:', result);
+        setOrderError('حدث خطأ في معالجة الطلب. يرجى المحاولة مرة أخرى.');
+        // Show generic error - NEVER show technical patterns to user
+        alert('⚠️ حدث خطأ في معالجة الطلب.\n\nيرجى التحقق من اتصالك بالإنترنت والبيانات المدخلة و إعادة المحاولة.');
         setIsSubmitting(false);
         return;
       }
+      
+      // Extract order ID from response (works for both real and fallback orders)
       const generatedOrderId = result.orderNumber || result.orderId;
       if (!generatedOrderId) {
-        console.error('❌ No order ID returned:', result);
-        setOrderError('لم يتم الحصول على رقم الطلب');
-        alert('❌ خطأ: لم يتم الحصول على رقم الطلب');
+        console.error('❌ No order ID in response:', result);
+        setOrderError('حدث خطأ: لم يتم الحصول على رقم الطلب');
+        alert('⚠️ حدث خطأ في معالجة الطلب.\n\nيرجى المحاولة مرة أخرى.');
         setIsSubmitting(false);
         return;
+      }
+      
+      // Log fallback status for tracking
+      if (result.fallback) {
+        console.warn('⚠️ Order stored in local backup (database sync pending)');
       }
       const orderDateIso = result.order?.createdAt || result.orderDate || new Date().toISOString();
       const orderDateReadable = new Date(orderDateIso).toLocaleString("en-GB");
