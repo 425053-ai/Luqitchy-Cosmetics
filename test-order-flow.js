@@ -267,12 +267,13 @@ testProducts.forEach((product, idx) => {
     customer: sanitizeCustomer(orderPayload.customer)
   };
   
-  // Validate
-  const isValid = 
+  // Validate (convert to boolean to avoid returning string value)
+  const isValid = !!(
     sanitized.products.length > 0 &&
     sanitized.customer.fullName &&
     sanitized.customer.email &&
-    sanitized.customer.phone;
+    sanitized.customer.phone
+  );
   
   if (isValid) {
     passedTests++;
@@ -313,9 +314,10 @@ cartTests.forEach((cartItems, idx) => {
     customer: sanitizeCustomer(cartPayload.customer)
   };
   
-  const isValid = 
+  const isValid = !!(
     sanitized.products.length > 0 &&
-    sanitized.customer.fullName;
+    sanitized.customer.fullName
+  );
   
   if (isValid) {
     passedTests++;
@@ -366,9 +368,10 @@ edgeCases.forEach((testCase) => {
     customer: sanitizeCustomer(testCase.customer)
   };
   
-  const isValid = 
+  const isValid = !!(
     sanitized.products.length > 0 &&
-    sanitized.customer.fullName;
+    sanitized.customer.fullName
+  );
   
   const meetsExpectation = isValid === testCase.shouldPass;
   
