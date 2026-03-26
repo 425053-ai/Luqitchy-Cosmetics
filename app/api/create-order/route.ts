@@ -273,10 +273,11 @@ async function handleOrderCreation(request: NextRequest) {
     } catch (fallbackError: any) {
       console.error('💥 [CRITICAL] Even fallback failed:', fallbackError);
       // Last resort - return minimal response
+      const lastResortOrderId = formatOrderId(getNextOrderCounter());
       return NextResponse.json({
         success: true,
-        orderNumber: `ORD-${Date.now()}`,
-        orderId: `ORD-${Date.now()}`,
+        orderNumber: lastResortOrderId,
+        orderId: lastResortOrderId,
         fallback: true,
       }, { status: 200 });
     }
