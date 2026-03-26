@@ -945,7 +945,7 @@ export default function CartPage() {
                 {/* Transfer Image Upload */}
                 <div className="space-y-3">
                   <label className="text-sm font-semibold flex items-center gap-2">
-                    <span>📸</span> Attach Payment Confirmation <span className="text-accent">*</span>
+                    <span>📸</span> Attach Payment Confirmation
                   </label>
                   <div className="relative">
                     <input
@@ -953,7 +953,6 @@ export default function CartPage() {
                       id="transferImage"
                       onChange={handleImageChange}
                       accept="image/*"
-                      required
                       className="hidden"
                     />
                     <label 

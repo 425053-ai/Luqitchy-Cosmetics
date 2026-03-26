@@ -1012,7 +1012,7 @@ export function ProductPage({ product }: ProductPageProps) {
                   {/* Transfer Image Upload */}
                   <div className="space-y-3">
                     <label className="text-sm font-semibold flex items-center gap-2">
-                      <span>📸</span> Attach Payment Confirmation <span className="text-accent">*</span>
+                      <span>📸</span> Attach Payment Confirmation
                     </label>
                     
                     <div className="relative">
@@ -1021,7 +1021,6 @@ export function ProductPage({ product }: ProductPageProps) {
                         id="transferImage"
                         onChange={handleImageChange}
                         accept="image/*"
-                        required
                         className="hidden"
                       />
                       
@@ -1101,7 +1100,7 @@ export function ProductPage({ product }: ProductPageProps) {
 
                 <Button
                   type="submit"
-                  disabled={isSubmitting || uploadingImage || !transferImage}
+                  disabled={isSubmitting || uploadingImage}
                   className="w-full h-16 luxury-btn text-xl rounded-2xl transition-all duration-300 group disabled:opacity-70 disabled:cursor-not-allowed mt-2"
                 >
                   {isSubmitting ? (
