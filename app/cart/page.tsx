@@ -34,6 +34,7 @@ export default function CartPage() {
   const [submitted, setSubmitted] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [sameAsPhone, setSameAsPhone] = useState(true)
+  const [orderError, setOrderError] = useState<string>("")
   
   // Payment states
   const [showPaymentModal, setShowPaymentModal] = useState(false)
@@ -136,13 +137,22 @@ export default function CartPage() {
         body: JSON.stringify(orderPayload),
       })
       const result = await response.json();
+      console.log('🔍 Cart Create Order Response:', { status: response.status, result });
+      
       if (!response.ok || !result.success) {
+        const errorMsg = result.error || `Order creation failed (Status: ${response.status})`;
+        console.error('❌ Cart order creation error:', errorMsg, result);
+        setOrderError(errorMsg);
+        alert(`❌ خطأ في الطلب:\n${errorMsg}\n\nيرجى التحقق من البيانات و إعادة المحاولة`);
         setIsSubmitting(false)
         return
       }
 
       const generatedOrderId = result.orderNumber || result.orderId
       if (!generatedOrderId) {
+        console.error('❌ No order ID returned:', result);
+        setOrderError('لم يتم الحصول على رقم الطلب');
+        alert('❌ خطأ: لم يتم الحصول على رقم الطلب');
         setIsSubmitting(false)
         return
       }
@@ -240,8 +250,10 @@ export default function CartPage() {
 
       window.scrollTo({ top: 0, left: 0, behavior: "instant" })
       setSubmitted(true)
-    } catch {
-      // Silently handle errors
+    } catch (error: any) {
+      console.error('❌ Cart order submission error:', error);
+      setOrderError(error.message || 'حدث خطأ في إرسال الطلب');
+      alert(`❌ خطأ في إتمام الطلب:\n${error.message}\n\nيرجى إعادة المحاولة`);
     } finally {
       setIsSubmitting(false)
     }

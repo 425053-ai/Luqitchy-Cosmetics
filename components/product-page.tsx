@@ -57,6 +57,7 @@ export function ProductPage({ product }: ProductPageProps) {
   const [transferImage, setTransferImage] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string>("")
   const [uploadingImage, setUploadingImage] = useState(false)
+  const [orderError, setOrderError] = useState<string>("")
   
   // Save submitted order data
   const [submittedOrder, setSubmittedOrder] = useState<{
@@ -167,12 +168,21 @@ export function ProductPage({ product }: ProductPageProps) {
         body: JSON.stringify(orderPayload),
       });
       const result = await response.json();
+      console.log('🔍 Create Order Response:', { status: response.status, result });
+      
       if (!response.ok || !result.success) {
+        const errorMsg = result.error || `Order creation failed (Status: ${response.status})`;
+        console.error('❌ Order creation error:', errorMsg, result);
+        setOrderError(errorMsg);
+        alert(`❌ خطأ في الطلب:\n${errorMsg}\n\nيرجى التحقق من البيانات و إعادة المحاولة`);
         setIsSubmitting(false);
         return;
       }
       const generatedOrderId = result.orderNumber || result.orderId;
       if (!generatedOrderId) {
+        console.error('❌ No order ID returned:', result);
+        setOrderError('لم يتم الحصول على رقم الطلب');
+        alert('❌ خطأ: لم يتم الحصول على رقم الطلب');
         setIsSubmitting(false);
         return;
       }
@@ -273,6 +283,11 @@ export function ProductPage({ product }: ProductPageProps) {
       window.scrollTo({ top: 0, left: 0, behavior: "instant" });
 
       setSubmitted(true);
+    } catch (error: any) {
+      console.error('❌ Order submission error:', error);
+      setOrderError(error.message || 'حدث خطأ في إرسال الطلب');
+      alert(`❌ خطأ في إتمام الطلب:\n${error.message}\n\nيرجى إعادة المحاولة`);
+      setIsSubmitting(false);
     } finally {
       setIsSubmitting(false);
     }
