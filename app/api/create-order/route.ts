@@ -25,6 +25,28 @@ function buildFallbackOrder(orderNumber: string, products: any, customer: any, p
   };
 }
 
+// Sanitize string fields
+function sanitizeString(str: any): string {
+  if (!str || typeof str !== 'string') return '';
+  return str.trim().replace(/\s+/g, ' ').substring(0, 500);
+}
+
+// Sanitize customer object
+function sanitizeCustomer(customer: any): any {
+  if (!customer || typeof customer !== 'object') return {};
+  return {
+    fullName: sanitizeString(customer.fullName),
+    email: sanitizeString(customer.email),
+    phone: sanitizeString(customer.phone),
+    whatsapp: sanitizeString(customer.whatsapp),
+    governorate: sanitizeString(customer.governorate),
+    city: sanitizeString(customer.city),
+    streetAddress: sanitizeString(customer.streetAddress),
+    landmark: sanitizeString(customer.landmark),
+    notes: sanitizeString(customer.notes),
+  };
+}
+
 export async function POST(request: NextRequest) {
   let prisma: any = null;
   let products: any = [];
@@ -34,9 +56,9 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     products = body.products;
-    customer = body.customer;
-    sessionId = String(body?.sessionId || '');
-    if (!products || !customer) {
+    customer = sanitizeCustomer(body.customer);
+    sessionId = String(body?.sessionId || '').trim();
+    if (!products || !customer || !customer.fullName) {
       return NextResponse.json({ error: 'Missing products or customer data' }, { status: 400 });
     }
 

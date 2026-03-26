@@ -68,6 +68,18 @@ interface TelegramPayload {
 
 const sentAdminEmailOrderIds = new Set<string>();
 
+// Sanitize string fields - remove extra spaces and limit length
+function sanitizeString(str: any): string {
+  if (!str || typeof str !== 'string') return '';
+  return str.trim().replace(/\s+/g, ' ').substring(0, 500);
+}
+
+// Sanitize phone numbers - keep only digits and +
+function sanitizePhone(phone: any): string {
+  if (!phone || typeof phone !== 'string') return '';
+  return phone.trim().substring(0, 20);
+}
+
 function generateProductsTable(products: OrderProduct[]): string {
   return products
     .map(
@@ -563,35 +575,34 @@ export async function POST(request: NextRequest) {
   try {
     const body: UnifiedOrderRequest = await request.json();
 
-    const {
-      order_id,
-      order_date,
-      order_type,
-      customer_name,
-      customer_email,
-      phone,
-      whatsapp,
-      products,
-      total_amount,
-      governorate,
-      city,
-      street,
-      landmark,
-      notes,
-      payment_method,
-      imageData,
-      transferImageMime,
-    } = body;
+    // Sanitize all string inputs
+    const order_id = sanitizeString(body.order_id);
+    const order_date = sanitizeString(body.order_date);
+    const order_type = sanitizeString(body.order_type);
+    const customer_name = sanitizeString(body.customer_name);
+    const customer_email = sanitizeString(body.customer_email);
+    const phone = sanitizePhone(body.phone);
+    const whatsapp = sanitizePhone(body.whatsapp);
+    const governorate = sanitizeString(body.governorate);
+    const city = sanitizeString(body.city);
+    const street = sanitizeString(body.street);
+    const landmark = sanitizeString(body.landmark);
+    const notes = sanitizeString(body.notes);
+    const payment_method = sanitizeString(body.payment_method);
+    const products = body.products || [];
+    const total_amount = Number(body.total_amount) || 0;
+    const { imageData, transferImageMime } = body;
 
     console.log('═══════════════════════════════════════════════════');
     console.log('[Order Processing] New order received');
     console.log(`   Type: ${order_type}`);
     console.log(`   Order ID: ${order_id}`);
-    console.log(`   Products: ${products.length}`);
+    console.log(`   Products: ${Array.isArray(products) ? products.length : 0}`);
     console.log('═══════════════════════════════════════════════════');
 
     // Validate required fields
-    if (!order_id || !order_type || !customer_name || !customer_email || !products || !total_amount) {
+    if (!order_id || !order_type || !customer_name || !customer_email || !Array.isArray(products) || products.length === 0 || !total_amount) {
+      console.error('❌ Validation failed:', {order_id, order_type, customer_name, customer_email, products, total_amount});
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
