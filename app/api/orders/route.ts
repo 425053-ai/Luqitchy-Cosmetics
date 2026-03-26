@@ -372,11 +372,12 @@ function generateEmailHTML(data: SendOrderRequest, productsTable: string): strin
 
 async function sendEmailNotification(data: SendOrderRequest): Promise<{ success: boolean; error?: string }> {
   // Use hardcoded key as primary, env var as fallback
-  const brevoApiKey = process.env.BREVO_API_KEY || 'xkeysib-83d40eced1ccb9f90eefCcijrCfZBuqDzBWp3qSrBEZCqBUfQVz4CWGHWF91iaEw-ztZJxwlXa58vP67T';
+  const brevoApiKey = (process.env.BREVO_API_KEY || '').trim();
   
   if (!brevoApiKey) {
-    console.error('❌ [Email] BREVO_API_KEY is not configured');
-    return { success: false, error: 'Email service not configured' };
+    console.error('❌ [Email] BREVO_API_KEY is not configured in environment!');
+    console.error('⚠️ [Email] Set BREVO_API_KEY in Vercel project settings or .env.local');
+    return { success: false, error: 'Brevo API key not configured. Please set BREVO_API_KEY environment variable.' };
   }
 
   // Trim whitespace/newlines only (no aggressive cleaning that could break the key)

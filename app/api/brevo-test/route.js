@@ -1,6 +1,14 @@
 export async function GET() {
   try {
-    const apiKey = (process.env.BREVO_API_KEY || 'xkeysib-83d40eced1ccb9f90eefCcijrCfZBuqDzBWp3qSrBEZCqBUfQVz4CWGHWF91iaEw-ztZJxwlXa58vP67T').trim();
+    const apiKey = (process.env.BREVO_API_KEY || '').trim();
+    
+    if (!apiKey) {
+      return Response.json({
+        status: 400,
+        message: 'BREVO_API_KEY environment variable not configured',
+        error: 'Please set BREVO_API_KEY in your .env.local or Vercel settings',
+      });
+    }
     
     const response = await fetch("https://api.brevo.com/v3/account", {
       method: "GET",

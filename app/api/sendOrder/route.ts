@@ -205,12 +205,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 2️⃣ Get Brevo API key
-    const brevoApiKey = (process.env.BREVO_API_KEY || 'xkeysib-83d40eced1ccb9f90eefCcijrCfZBuqDzBWp3qSrBEZCqBUfQVz4CWGHWF91iaEw-ztZJxwlXa58vP67T').trim();
+    // 2️⃣ Get Brevo API key from environment
+    const brevoApiKey = (process.env.BREVO_API_KEY || '').trim();
     if (!brevoApiKey) {
-      console.error('❌ [Email] BREVO_API_KEY is not configured');
+      console.error('❌ [Email] BREVO_API_KEY is not configured in environment!');
+      console.error('⚠️ [Email] Set BREVO_API_KEY in Vercel project settings or .env.local');
       return NextResponse.json(
-        { error: 'Email service not configured' },
+        { error: 'Brevo API key not configured. Please set BREVO_API_KEY environment variable.' },
         { status: 500 }
       );
     }
