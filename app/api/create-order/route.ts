@@ -157,7 +157,8 @@ export async function POST(request: NextRequest) {
             headers: { 'Content-Type': 'application/json' }
           });
         } catch {
-          return new NextResponse('{"success":true}', { 
+          const finalOrderId = formatOrderId(getNextOrderCounter());
+          return new NextResponse(`{"success":true,"orderNumber":"${finalOrderId}","orderId":"${finalOrderId}"}`, { 
             status: 200,
             headers: { 'Content-Type': 'application/json' }
           });
