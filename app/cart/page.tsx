@@ -150,7 +150,7 @@ export default function CartPage() {
       const orderDateReadable = new Date(orderDateIso).toLocaleString("en-GB")
 
       try {
-        await fetch('/api/orders', {
+        const notifResponse = await fetch('/api/orders', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -177,9 +177,16 @@ export default function CartPage() {
             imageData,
             transferImageMime: imageMime,
           }),
-        })
+        });
+        if (!notifResponse.ok) {
+          const notifError = await notifResponse.json();
+          console.error('Notification API error:', notifResponse.status, notifError);
+        } else {
+          const notifResult = await notifResponse.json();
+          console.log('✅ Order notifications sent:', notifResult);
+        }
       } catch (notificationError) {
-        console.error('Order notifications failed:', notificationError)
+        console.error('Order notifications request failed:', notificationError)
       }
 
       // Add to order history
