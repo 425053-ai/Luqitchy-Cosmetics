@@ -165,8 +165,6 @@ export async function POST(request: NextRequest) {
             productsSubtotal,
             shippingFee,
             finalTotal,
-            createdAt: now,
-            updatedAt: now,
           },
         });
         
