@@ -3,7 +3,7 @@ import { formatOrderId, getCurrentOrderCounter, getNextOrderCounter, setOrderCou
 
 export async function GET() {
   try {
-    const currentOrder = getCurrentOrderCounter()
+    const currentOrder = await getCurrentOrderCounter()
     return NextResponse.json({
       currentOrder,
       orderId: formatOrderId(currentOrder),
@@ -16,7 +16,7 @@ export async function GET() {
 
 export async function POST() {
   try {
-    const newCounter = getNextOrderCounter()
+    const newCounter = await getNextOrderCounter()
     return NextResponse.json(
       {
         orderId: formatOrderId(newCounter),
@@ -30,9 +30,9 @@ export async function POST() {
   }
 }
 
-export async function PUT() {
+export async function PUT(req: Request) {
   try {
-    const resetTo = setOrderCounter(0)
+    const resetTo = await setOrderCounter(0)
 
     return NextResponse.json(
       {
