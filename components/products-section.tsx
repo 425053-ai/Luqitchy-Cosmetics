@@ -14,14 +14,15 @@ import { trackEvent } from "@/lib/analytics-client"
 const products = [
   {
     id: "creamy-blusher",
-    name: "Creamy Blusher",
-    description: `Our creamy blusher formula and shades
-Super long lasting, easy to blend, natural look, hydrated, very safe on your skin.`,
+    name: "Creamy Blush\n\" Strawberry Kiss \"",
+    description: `💗 مش بلاشر… ده glow بيحكي عنك  
+
+لو عايزة لون طبيعي يخلي خدودك باينة صحية ومليانة حياة…`,
     image: "/images/creamy-blusher.jpeg",
     color: "from-pink-400 to-rose-400",
     accent: "bg-pink-400",
     price: 95,
-    oldPrice: 125,
+    oldPrice: 150,
     isNew: true,
     imageClass: "object-contain object-center p-2 sm:p-3",
     imageContainerClass: "aspect-[4/5]",
@@ -29,7 +30,7 @@ Super long lasting, easy to blend, natural look, hydrated, very safe on your ski
     options: {
       shade: {
         label: "Choose Shade",
-        values: ["Hotty", "Hazelnut", "Pinky"],
+        values: ["Strawberry Kiss"],
         required: true,
       },
     },
@@ -125,27 +126,15 @@ Super long lasting, easy to blend, natural look, hydrated, very safe on your ski
       },
 
   {
-    id: "eyebrow-gel-20g",
-    name: "Eyebrow Gel 20g",
-    description: "20g. Brow gel for natural shaping and all-day hold.",
-    image: "/images/eyebrow-gel-20g.jpeg",
-    color: "from-gray-300 to-gray-500",
-    accent: "bg-gray-500",
-    price: 115,
-    isNew: true,
-    imageClass: "object-cover object-center",
-    containerBg: "bg-gradient-to-br from-gray-50 to-gray-200 dark:from-gray-900/30 dark:to-gray-700/30",
-    originalPrice: 0,
-    discount: 0,
-  },
-  {
     id: "eyebrow-gel-10g",
     name: "Eyebrow Gel 10g",
     description: "10g. Brow gel for natural shaping and all-day hold.",
     image: "/images/eyebrow-gel-10g.jpeg",
+    images: ["/images/eyebrow-gel-10g.jpeg", "/images/eyebrow-gel-10g-2.jpeg"],
     color: "from-gray-200 to-gray-400",
     accent: "bg-gray-400",
-    price: 60,
+    price: 35,
+    oldPrice: 100,
     isNew: true,
     imageClass: "object-cover object-center",
     containerBg: "bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900/30 dark:to-gray-600/30",

@@ -4,20 +4,33 @@ import { ProductPage } from "@/components/product-page"
 
 const product = {
   id: "creamy-blusher",
-  name: "Creamy Blusher",
+  name: "Creamy Blush\n\" Strawberry Kiss \"",
   image: "/images/creamy-blusher.jpeg",
   price: 95,
-  oldPrice: 125,
+  oldPrice: 150,
   color: "from-pink-400 to-rose-500",
-  shadeOptions: ["Hotty", "Hazelnut", "Pinky"],
+  shadeOptions: ["Strawberry Kiss"],
   features: [
-    "Super long lasting",
-    "Easy to blend",
-    "Natural hydrated finish",
-    "Shades: Hotty, Hazelnut, Pinky",
+    "Texture كريمي ناعم بيدوب على البشرة",
+    "لون بينك حيوي يناسب كل الـ vibes",
+    "Blend بسهولة من غير ما يسيب بقع",
+    "Finish glossy يخلي وشك منور طول اليوم",
   ],
-  description:
-    "Our creamy blusher formula gives a natural look, smooth blend, and skin-safe hydration with beautiful shades for every mood.",
+  description: `💗 مش بلاشر… ده glow بيحكي عنك  
+
+لو عايزة لون طبيعي يخلي خدودك باينة صحية ومليانة حياة…  
+الـ Creamy Blush ده معمول علشانك ✨  
+
+• Texture كريمي ناعم بيدوب على البشرة  
+• لون بينك حيوي يناسب كل الـ vibes 💕  
+• Blend بسهولة من غير ما يسيب بقع  
+• Finish glossy يخلي وشك منور طول اليوم  
+
+حطي نقطة واحدة بس… وهتشوفي الفرق بنفسك 👀  
+
+✨ خلي خدودك تقول "أنا الـ main character"  
+
+اطلبيه دلوقتي قبل ما يخلص 💖`,
 }
 
 export default function CreamyBlusherPage() {

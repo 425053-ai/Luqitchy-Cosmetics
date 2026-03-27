@@ -608,20 +608,20 @@ export function ProductPage({ product }: ProductPageProps) {
                 {images.length > 1 && (
                   <>
                     <button
-                      className="absolute left-2 top-1/2 -translate-y-1/2 z-20 bg-white/80 hover:bg-accent/80 text-accent hover:text-white rounded-full p-1 shadow-md focus:outline-none"
+                      className="absolute left-1 sm:left-2 top-1/2 -translate-y-1/2 z-20 bg-white/90 hover:bg-accent/90 text-accent hover:text-white rounded-full p-1.5 sm:p-2 shadow-lg focus:outline-none transform transition-all hover:scale-110"
                       onClick={() => setActiveImage((prev) => (prev === 0 ? images.length - 1 : prev - 1))}
                       aria-label="Previous image"
                       type="button"
                     >
-                      <ChevronLeft className="w-6 h-6" />
+                      <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
                     </button>
                     <button
-                      className="absolute right-2 top-1/2 -translate-y-1/2 z-20 bg-white/80 hover:bg-accent/80 text-accent hover:text-white rounded-full p-1 shadow-md focus:outline-none"
+                      className="absolute right-1 sm:right-2 top-1/2 -translate-y-1/2 z-20 bg-white/90 hover:bg-accent/90 text-accent hover:text-white rounded-full p-1.5 sm:p-2 shadow-lg focus:outline-none transform transition-all hover:scale-110"
                       onClick={() => setActiveImage((prev) => (prev === images.length - 1 ? 0 : prev + 1))}
                       aria-label="Next image"
                       type="button"
                     >
-                      <ChevronRight className="w-6 h-6" />
+                      <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
                     </button>
                   </>
                 )}
@@ -672,9 +672,11 @@ export function ProductPage({ product }: ProductPageProps) {
                     src={images[activeImage]}
                     alt={product.name}
                     fill
-                    className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-700"
-                    priority
+                    className="object-contain w-full h-full group-hover:scale-105 transition-transform duration-700"
+                    priority={activeImage === 0}
                     draggable={false}
+                    quality={95}
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 40vw"
                   />
                   <div className={`absolute inset-0 bg-gradient-to-br ${product.color} opacity-0 group-hover:opacity-20 transition-opacity duration-500`} />
                   {/* Premium overlay effect */}
@@ -686,17 +688,17 @@ export function ProductPage({ product }: ProductPageProps) {
                 </div>
                 {/* Carousel Thumbnails - clearer and larger on all devices */}
                 {images.length > 1 && (
-                  <div className="flex justify-center gap-3 mt-3 sm:mt-4">
+                  <div className="flex justify-center gap-2 sm:gap-3 mt-4 sm:mt-5 px-2">
                     {images.map((img, i) => (
                       <button
                         key={i}
-                        className={`w-5 h-5 sm:w-7 sm:h-7 rounded-full border-2 flex items-center justify-center transition-colors focus:outline-none ${i === activeImage ? 'border-accent bg-accent/90 scale-110' : 'border-muted bg-muted/70 opacity-70'}`}
+                        className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl border-2 flex items-center justify-center transition-all focus:outline-none flex-shrink-0 ${i === activeImage ? 'border-accent bg-accent/10 scale-110 shadow-lg shadow-accent/30' : 'border-muted bg-muted/50 opacity-60 hover:opacity-90 hover:border-accent/50'}`}
                         onClick={() => setActiveImage(i)}
                         aria-label={`Show image ${i + 1}`}
                         type="button"
-                        style={{ boxShadow: i === activeImage ? '0 0 0 2px #fff, 0 2px 8px #ffb6c1' : undefined }}
+                        style={{ boxShadow: i === activeImage ? '0 0 0 3px rgba(255, 255, 255, 0.5), 0 4px 12px rgba(255, 182, 193, 0.4)' : undefined }}
                       >
-                        <Image src={img} alt={`Thumbnail ${i + 1}`} width={36} height={36} className="rounded-full object-cover w-full h-full" />
+                        <Image src={img} alt={`Thumbnail ${i + 1}`} width={56} height={56} className="rounded-lg object-cover w-full h-full" />
                       </button>
                     ))}
                   </div>

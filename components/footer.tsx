@@ -9,7 +9,6 @@ const footerProducts = [
   { name: "Mocha", href: "/order/mocha" },
   { name: "Strawberry Milk", href: "/order/strawberry-milk" },
   { name: "Lip Balm", href: "/order/lip-balm" },
-  { name: "Eyebrow Gel 20g", href: "/order/eyebrow-gel-20g" },
   { name: "Eyebrow Gel 10g", href: "/order/eyebrow-gel-10g" },
 ];
 

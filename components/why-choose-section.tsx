@@ -41,7 +41,6 @@ const productBadges = [
   { label: "Mocha", emoji: "💄" },
   { label: "Strawberry Milk", emoji: "💄" },
   { label: "Lip Balm", emoji: "💋" },
-  { label: "Eyebrow Gel 20g", emoji: "🪞", key: "eyebrow-gel-20g" },
   { label: "Eyebrow Gel 10g", emoji: "🪞", key: "eyebrow-gel-10g" },
 ];
 
