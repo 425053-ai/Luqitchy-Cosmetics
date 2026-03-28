@@ -185,7 +185,7 @@ async function handleOrderCreation(request: NextRequest) {
       if (contentLength && parseInt(contentLength) > 5242880) {
         console.warn('⚠️ [Parse] Request too large:', contentLength);
         // Return fallback for oversized payloads
-        const fallbackOrderId = formatOrderId(getNextOrderCounter());
+        const fallbackOrderId = formatOrderId(await getNextOrderCounter());
         return NextResponse.json(buildFallbackOrder(fallbackOrderId, [], {}, 0, 0, 0), { status: 200 });
       }
       
@@ -203,14 +203,14 @@ async function handleOrderCreation(request: NextRequest) {
         type: parseError?.constructor?.name,
       });
       // Invalid JSON - return fallback
-      const fallbackOrderId = formatOrderId(getNextOrderCounter());
+      const fallbackOrderId = formatOrderId(await getNextOrderCounter());
       return NextResponse.json(buildFallbackOrder(fallbackOrderId, [], {}, 0, 0, 0), { status: 200 });
     }
     
     // SAFETY CHECK: Ensure body is an object
     if (!body || typeof body !== 'object') {
       console.warn('⚠️ [Parse] Body is not a valid object');
-      const fallbackOrderId = formatOrderId(getNextOrderCounter());
+      const fallbackOrderId = formatOrderId(await getNextOrderCounter());
       return NextResponse.json(buildFallbackOrder(fallbackOrderId, [], {}, 0, 0, 0), { status: 200 });
     }
     
