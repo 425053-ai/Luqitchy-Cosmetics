@@ -105,6 +105,19 @@ async function redisGetCounter(): Promise<number | null> {
 
 
 /**
+ * Ensure data directory exists
+ */
+async function ensureDir(): Promise<void> {
+  try {
+    await fs.mkdir(COUNTER_DIR, { recursive: true });
+  } catch (error: any) {
+    if (error?.code !== 'EEXIST') {
+      throw error;
+    }
+  }
+}
+
+/**
  * Acquire file lock (simple spinlock approach)
  */
 async function acquireLock(maxWait: number = 5000): Promise<void> {
