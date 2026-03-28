@@ -1,4 +1,4 @@
-// ✅ Reliable order counter with atomic file operations and lock mechanism
+// ✅ Reliable order counter with Redis (Upstash) primary + file fallback
 
 import { promises as fs } from 'fs'
 import path from 'path'
@@ -12,6 +12,14 @@ let cachedCounter: number | null = null;
 let lastReadTime = 0;
 const CACHE_TTL = 50; // 50ms cache
 
+// Redis (Upstash) configuration
+const UPSTASH_REDIS_URL = (process.env.UPSTASH_REDIS_REST_URL || '').trim()
+const UPSTASH_REDIS_TOKEN = (process.env.UPSTASH_REDIS_REST_TOKEN || '').trim()
+const REDIS_AVAILABLE = UPSTASH_REDIS_URL && UPSTASH_REDIS_TOKEN
+
+// Track last successful counter value for emergency fallback
+let lastSuccessfulCounter: number | null = null;
+
 interface CounterData {
   counter: number;
   updatedAt: string;
@@ -19,17 +27,82 @@ interface CounterData {
 }
 
 /**
- * Ensure data directory exists
+ * Increment counter in Upstash Redis
  */
-async function ensureDir(): Promise<void> {
+async function redisIncrement(): Promise<number | null> {
+  if (!REDIS_AVAILABLE) return null;
+  
   try {
-    await fs.mkdir(COUNTER_DIR, { recursive: true });
-  } catch (error: any) {
-    if (error?.code !== 'EEXIST') {
-      throw error;
+    console.log('🔄 [Redis] Attempting to increment counter...');
+    const response = await fetch(`${UPSTASH_REDIS_URL}/incr/luqitchy_order_counter`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${UPSTASH_REDIS_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      timeout: 5000,
+    } as any);
+
+    if (!response.ok) {
+      console.warn(`⚠️ [Redis] HTTP error: ${response.status}`);
+      return null;
     }
+
+    const data: any = await response.json();
+    if (data.result === undefined || data.result === null) {
+      console.warn('⚠️ [Redis] No result returned');
+      return null;
+    }
+
+    const value = Number(data.result);
+    if (!Number.isFinite(value) || value < 0) {
+      console.warn(`⚠️ [Redis] Invalid counter value: ${value}`);
+      return null;
+    }
+
+    console.log(`✅ [Redis] Counter incremented to: ${value}`);
+    lastSuccessfulCounter = value;
+    return Math.floor(value);
+  } catch (error: any) {
+    console.warn(`⚠️ [Redis] Connection failed: ${error.message}`);
+    return null;
   }
 }
+
+/**
+ * Get current counter from Upstash Redis
+ */
+async function redisGetCounter(): Promise<number | null> {
+  if (!REDIS_AVAILABLE) return null;
+
+  try {
+    const response = await fetch(`${UPSTASH_REDIS_URL}/get/luqitchy_order_counter`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${UPSTASH_REDIS_TOKEN}`,
+      },
+      timeout: 5000,
+    } as any);
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const data: any = await response.json();
+    const value = Number(data.result ?? 0);
+    
+    if (!Number.isFinite(value) || value < 0) {
+      return 0;
+    }
+
+    lastSuccessfulCounter = Math.floor(value);
+    return Math.floor(value);
+  } catch (error) {
+    console.warn(`⚠️ [Redis] Get failed: ${error}`);
+    return null;
+  }
+}
+
 
 /**
  * Acquire file lock (simple spinlock approach)
@@ -138,60 +211,97 @@ async function writeCounterFile(counter: number): Promise<void> {
 
 /**
  * Get current counter value (with caching)
+ * PRIMARY: Upstash Redis (if available)
+ * FALLBACK: File-based system
  */
 export async function getCurrentOrderCounter(): Promise<number> {
   try {
     const now = Date.now();
+    
+    // Use cache if fresh enough
     if (cachedCounter !== null && (now - lastReadTime) < CACHE_TTL) {
       return cachedCounter;
     }
-    
-    const value = await readCounterFile();
-    cachedCounter = value;
+
+    // Try Redis first
+    if (REDIS_AVAILABLE) {
+      const redisValue = await redisGetCounter();
+      if (redisValue !== null) {
+        cachedCounter = redisValue;
+        lastReadTime = now;
+        return redisValue;
+      }
+    }
+
+    // Fall back to file system
+    const fileValue = await readCounterFile();
+    cachedCounter = fileValue;
     lastReadTime = now;
-    
-    return value;
+    return fileValue;
   } catch (error) {
     console.error('❌ Failed to get current counter:', error);
-    return cachedCounter ?? 0;
+    return cachedCounter ?? lastSuccessfulCounter ?? 0;
   }
 }
 
 /**
- * Get next counter value (ATOMIC INCREMENT with locking)
+ * Get next counter value (ATOMIC INCREMENT)
+ * PRIMARY: Upstash Redis (if available)
+ * FALLBACK: File-based system (never timestamp-based)
  */
 export async function getNextOrderCounter(): Promise<number> {
-  let lockAcquired = false;
-  
   try {
-    // Acquire lock to ensure atomic read-modify-write
-    await acquireLock();
-    lockAcquired = true;
-    
-    // Read current value
-    const currentValue = await readCounterFile();
-    
-    // Increment
-    const nextValue = currentValue + 1;
-    
-    // Write back immediately
-    await writeCounterFile(nextValue);
-    
-    console.log(`✅ [OrderCounter] Next: ${nextValue}`);
-    return nextValue;
-    
-  } catch (error: any) {
-    console.error('❌ Failed to get next counter:', error);
-    
-    // Fallback: use timestamp-based counter
-    const fallback = Math.ceil(Date.now() / 1000);
-    console.warn(`⚠️ [OrderCounter] Fallback: ${fallback}`);
-    
-    return fallback;
-  } finally {
-    if (lockAcquired) {
-      await releaseLock().catch(() => {});
+    // STEP 1: Try Redis first (if configured)
+    if (REDIS_AVAILABLE) {
+      console.log('📡 [OrderCounter] Using Upstash Redis...');
+      const redisValue = await redisIncrement();
+      if (redisValue !== null && redisValue > 0) {
+        return redisValue;
+      }
+      console.warn('⚠️ [OrderCounter] Redis failed, falling back to file system');
     }
+
+    // STEP 2: Use file-based counter (with atomic locking)
+    console.log('📁 [OrderCounter] Using file-based counter...');
+    let lockAcquired = false;
+    try {
+      await acquireLock();
+      lockAcquired = true;
+
+      // Read current value
+      const currentValue = await readCounterFile();
+
+      // Increment
+      const nextValue = currentValue + 1;
+
+      // Write back
+      await writeCounterFile(nextValue);
+
+      console.log(`✅ [OrderCounter] File-based increment: ${currentValue} → ${nextValue}`);
+      lastSuccessfulCounter = nextValue;
+      return nextValue;
+    } finally {
+      if (lockAcquired) {
+        await releaseLock().catch(() => {});
+      }
+    }
+  } catch (error: any) {
+    console.error('❌ [OrderCounter] All methods failed:', error);
+    
+    // CRITICAL: Never use timestamp-based fallback!
+    // Instead, use last successful value or minimum
+    const fallbackValue = (lastSuccessfulCounter ?? 0) + 1;
+    console.warn(`⚠️ [OrderCounter] Emergency fallback to: ${fallbackValue}`);
+    
+    // Try to at least update the file with this value
+    try {
+      await writeCounterFile(fallbackValue).catch(() => {});
+    } catch (e) {
+      // Ignore write errors in fallback
+    }
+
+    lastSuccessfulCounter = fallbackValue;
+    return Math.max(1, fallbackValue);
   }
 }
 

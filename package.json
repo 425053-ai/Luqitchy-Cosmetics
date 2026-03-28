@@ -6,7 +6,8 @@
     "build": "next build",
     "dev": "next dev -p 3000",
     "lint": "eslint .",
-    "start": "next start"
+    "start": "next start",
+    "test:counter": "node scripts/test-order-counter.mjs"
   },
   "dependencies": {
     "@getbrevo/brevo": "^3.0.1",
