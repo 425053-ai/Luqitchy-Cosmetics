@@ -242,23 +242,27 @@ async function handleOrderCreation(request: NextRequest) {
     if (!products || products.length === 0) {
       console.error('❌ [Validate] No valid products after sanitization');
       // Still generate fallback - NEVER fail
+      let fallbackOrderId = 'ORD-FALLBACK';
       try {
-        const fallbackOrderId = formatOrderId(await getNextOrderCounter());
-        return NextResponse.json(buildFallbackOrder(fallbackOrderId, [], {}, 0, 0, 0), { status: 200 });
-      } catch (e) {
-        return NextResponse.json(buildFallbackOrder('ORD-0001', [], {}, 0, 0, 0), { status: 200 });
+        fallbackOrderId = formatOrderId(await getNextOrderCounter());
+      } catch (counterErr) {
+        console.error('⚠️ Counter fallback failed:', counterErr);
+        fallbackOrderId = `ORD-${Date.now()}`;
       }
+      return NextResponse.json(buildFallbackOrder(fallbackOrderId, [], {}, 0, 0, 0), { status: 200 });
     }
     
     if (!customer || !customer.fullName) {
       console.error('❌ [Validate] Invalid customer name');
       // Still generate fallback - NEVER fail
+      let fallbackOrderId = 'ORD-FALLBACK';
       try {
-        const fallbackOrderId = formatOrderId(await getNextOrderCounter());
-        return NextResponse.json(buildFallbackOrder(fallbackOrderId, products, customer, 0, 0, 0), { status: 200 });
-      } catch (e) {
-        return NextResponse.json(buildFallbackOrder('ORD-0001', products, customer, 0, 0, 0), { status: 200 });
+        fallbackOrderId = formatOrderId(await getNextOrderCounter());
+      } catch (counterErr) {
+        console.error('⚠️ Counter fallback failed:', counterErr);
+        fallbackOrderId = `ORD-${Date.now()}`;
       }
+      return NextResponse.json(buildFallbackOrder(fallbackOrderId, products, customer, 0, 0, 0), { status: 200 });
     }
 
     // STEP 3: Calculate totals from CLEANED products
@@ -268,7 +272,14 @@ async function handleOrderCreation(request: NextRequest) {
       reservedOrderId = formatOrderId(await getNextOrderCounter());
     } catch (counterError) {
       console.error('❌ Failed to get next counter:', counterError);
-      return NextResponse.json(buildFallbackOrder('ORD-0001', products, customer, productsSubtotal, shippingFee, finalTotal), { status: 200 });
+      let fallbackOrderId = 'ORD-FALLBACK';
+      try {
+        fallbackOrderId = formatOrderId(await getNextOrderCounter());
+      } catch (counterRetryErr) {
+        fallbackOrderId = `ORD-${Date.now()}`;
+        console.warn('⚠️ Using timestamp fallback:', fallbackOrderId);
+      }
+      return NextResponse.json(buildFallbackOrder(fallbackOrderId, products, customer, productsSubtotal, shippingFee, finalTotal), { status: 200 });
     }
     
     console.log('💰 [Order] Totals calculated:');
