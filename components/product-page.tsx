@@ -397,7 +397,6 @@ export function ProductPage({ product }: ProductPageProps) {
                     <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-green-400 rounded-full animate-pulse" />
                   </div>
                   <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-1 sm:mb-2">Order Receipt</h2>
-                  <p className="font-mono text-sm sm:text-base md:text-xl tracking-wider break-all">{submittedOrder.orderId}</p>
                   <p className="text-white/70 text-xs sm:text-sm mt-1 sm:mt-2">{submittedOrder.orderTime}</p>
                 </div>
               </div>

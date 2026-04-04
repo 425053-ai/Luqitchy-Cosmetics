@@ -240,7 +240,7 @@ export const sendSingleProductOrder = async (orderData: {
   if (orderData.productName.includes('Lipglosses') && orderData.productName.includes('Lotion Sample')) {
     message = `
 🎉 <b>LIMITED TIME OFFER ORDER!</b>
-🛒 <b>طلب جديد #${orderData.orderId}</b>
+🛒 <b>طلب جديد من ${customerData.fullName}</b>
 ━━━━━━━━━━━━━━━━━━━━
 👤 <b>بيانات العميل:</b>
 • الاسم: ${customerData.fullName}
@@ -266,7 +266,7 @@ ${customerData.landmark ? `• علامة مميزة: ${customerData.landmark}` 
     `.trim();
   } else {
     message = `
-🛒 <b>طلب جديد #${orderData.orderId}</b>
+🛒 <b>طلب جديد من ${customerData.fullName}</b>
 
 ━━━━━━━━━━━━━━━━━━━━
 
@@ -311,7 +311,7 @@ export const sendCartOrderToTelegram = async (orderData: OrderData): Promise<Tel
   const paymentMethodText = formatPaymentMethod(customerData.paymentMethod, customerData.billReference);
 
   const message = `
-🛍️ <b>طلب جديد من السلة #${orderNumber}</b>
+🛍️ <b>طلب جديد من السلة / ${customerData.fullName}</b>
 
 ━━━━━━━━━━━━━━━━━━━━
 
@@ -353,8 +353,8 @@ Shipping (all Egypt)
   // Send text message first, then photo
   const textResult = await sendTelegramMessage(message);
   const imageBuffer = Buffer.from(orderData.transferProofBase64, 'base64');
-  const photoCaption = 'اثبات الدفع - ' + orderData.orderId;
-  const photoFilename = orderData.orderId + '-proof.jpg';
+  const photoCaption = '✅ اثبات دفع - ' + orderData.customerData.fullName;
+  const photoFilename = orderData.customerData.fullName.replace(/\s+/g, '_') + '-proof.jpg';
   const photoResult = await sendPhotoToTelegram(imageBuffer, orderData.transferProofMime, photoCaption, photoFilename);
   if (!photoResult.success) {
     console.error('⚠️ [Telegram] Photo upload failed for bank transfer, but text was sent:', photoResult.error);

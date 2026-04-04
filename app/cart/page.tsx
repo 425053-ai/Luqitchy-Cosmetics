@@ -345,7 +345,6 @@ export default function CartPage() {
                   <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-green-400 rounded-full animate-pulse" />
                 </div>
                 <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-1 sm:mb-2">Order Receipt</h2>
-                <p className="font-mono text-sm sm:text-base md:text-xl tracking-wider break-all">{submittedOrder.orderId}</p>
                 <p className="text-white/70 text-xs sm:text-sm mt-1 sm:mt-2">{submittedOrder.orderTime}</p>
               </div>
             </div>
@@ -567,10 +566,6 @@ export default function CartPage() {
             
             <div className="p-6 space-y-4">
               <div className="bg-muted/30 rounded-xl p-4 space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">📋 Order ID</span>
-                  <span className="font-mono font-semibold">{billReferenceData.orderId}</span>
-                </div>
                 <div className="border-t border-border/50 pt-3">
                   <div className="text-center">
                     <p className="text-sm text-muted-foreground mb-1">
@@ -654,11 +649,7 @@ export default function CartPage() {
             <div className="p-6 space-y-4">
               <div className="bg-muted/30 rounded-xl p-4 space-y-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">📋 Order ID</span>
-                  <span className="font-mono font-semibold">{walletPaymentPending.orderId}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">📱 Phone Number</span>
+                  <span className="text-muted-foreground"> Phone Number</span>
                   <span className="font-mono font-semibold">{walletPaymentPending.phone}</span>
                 </div>
                 <div className="flex justify-between items-center">

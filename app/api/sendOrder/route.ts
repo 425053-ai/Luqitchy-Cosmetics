@@ -77,10 +77,6 @@ function generateEmailHTML(data: SendOrderRequest, productsTable: string): strin
         <div class="section">
           <h2>📋 Order Details</h2>
           <div class="info-row">
-            <span class="info-label">Order ID:</span>
-            <span class="info-value"><strong>${data.order_id}</strong></span>
-          </div>
-          <div class="info-row">
             <span class="info-label">Order Date:</span>
             <span class="info-value">${data.order_date}</span>
           </div>

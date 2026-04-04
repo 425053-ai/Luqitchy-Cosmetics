@@ -207,10 +207,6 @@ export default function ConfirmationPage() {
 
             <div className="relative space-y-2 sm:space-y-3 md:space-y-4">
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center pb-2 sm:pb-3 md:pb-4 border-b border-border/50 gap-1 sm:gap-0">
-                <span className="text-xs sm:text-sm text-muted-foreground">Order ID:</span>
-                <span className="font-mono font-bold text-accent text-xs sm:text-sm md:text-base break-all">{orderId || 'Processing...'}</span>
-              </div>
-              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center pb-2 sm:pb-3 md:pb-4 border-b border-border/50 gap-1 sm:gap-0">
                 <span className="text-xs sm:text-sm text-muted-foreground">Status:</span>
                 <span className="inline-flex items-center gap-2 bg-green-100/20 text-green-600 px-2 sm:px-3 md:px-4 py-1 rounded-full text-xs sm:text-sm font-semibold w-fit">
                   <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-green-600 rounded-full animate-pulse" />
