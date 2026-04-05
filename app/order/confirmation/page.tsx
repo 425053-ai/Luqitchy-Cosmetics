@@ -86,7 +86,6 @@ const paymentMethodInfo: Record<string, { icon: React.ReactNode; label: string; 
 export default function ConfirmationPage() {
   const [showConfetti, setShowConfetti] = useState(true)
   const searchParams = useSearchParams()
-  const [orderId, setOrderId] = useState<string>("")
   const [orderData, setOrderData] = useState<OrderData | null>(null)
   const [billReference, setBillReference] = useState<string>("")
   const [paymentMethod, setPaymentMethod] = useState<string>("cash")
@@ -96,20 +95,9 @@ export default function ConfirmationPage() {
     // Scroll to top of page
     window.scrollTo(0, 0)
     
-    // Get order ID from URL params or localStorage, always show as received (ORD-000X)
-    const urlOrderId = searchParams.get('orderId')
+    // Get payment details from URL params
     const urlBillRef = searchParams.get('billRef')
     const urlPayment = searchParams.get('payment')
-
-    if (urlOrderId) {
-      setOrderId(urlOrderId)
-    } else {
-      // Fallback to localStorage orderId
-      const lastOrder = localStorage.getItem('lastOrderId')
-      if (lastOrder) {
-        setOrderId(lastOrder)
-      }
-    }
 
     if (urlBillRef) {
       setBillReference(urlBillRef)
@@ -125,9 +113,6 @@ export default function ConfirmationPage() {
       try {
         const parsed = JSON.parse(pendingData)
         setOrderData(parsed)
-        if (!urlOrderId && parsed.orderId) {
-          setOrderId(parsed.orderId)
-        }
         if (parsed.paymentMethod) {
           setPaymentMethod(parsed.paymentMethod)
         }

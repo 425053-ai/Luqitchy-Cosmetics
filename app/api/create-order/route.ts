@@ -1,18 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { calculateOrderTotals } from '@/lib/order-totals';
-import { formatOrderId, getNextOrderCounter } from '@/lib/order-counter';
 import { insertAnalyticsEvent } from '@/lib/analytics-db';
 import { createServerPrismaClient } from '@/lib/server-prisma';
 
-function buildFallbackOrder(orderNumber: string, products: any, customer: any, productsSubtotal: number, shippingFee: number, finalTotal: number) {
+function buildFallbackOrder(customerName: string, products: any, customer: any, productsSubtotal: number, shippingFee: number, finalTotal: number) {
   const createdAt = new Date().toISOString();
   return {
     success: true,
-    orderNumber,
-    orderId: orderNumber,
+    customerName,
     order: {
-      id: orderNumber,
-      orderNumber,
+      customerName,
       products,
       customer,
       productsSubtotal,
@@ -101,23 +98,12 @@ export async function POST(request: NextRequest) {
     // Fail fast on oversized requests
     if (contentLengthNum > 6291456) { // 6MB limit
       console.warn('⚠️ [Request] Rejected: payload too large');
-      try {
-        const orderId = formatOrderId(await getNextOrderCounter());
-        return NextResponse.json({
-          success: true,
-          orderNumber: orderId,
-          orderId: orderId,
-          fallback: true,
-          message: 'Request too large - using fallback',
-        }, { status: 200 });
-      } catch (counterError) {
-        console.error('❌ Failed to get counter:', counterError);
-        return NextResponse.json({
-          success: true,
-          orderNumber: 'ORD-ERROR',
-          fallback: true,
-        }, { status: 200 });
-      }
+      return NextResponse.json({
+        success: true,
+        customerName: 'Customer',
+        fallback: true,
+        message: 'Request too large - using fallback',
+      }, { status: 200 });
     }
     
     // Set timeout to prevent hanging
@@ -141,32 +127,12 @@ export async function POST(request: NextRequest) {
     });
     
     // Generate safe fallback
-    try {
-      const safeFallbackId = formatOrderId(await getNextOrderCounter());
-      return NextResponse.json({
-        success: true,
-        orderNumber: safeFallbackId,
-        orderId: safeFallbackId,
-        fallback: true,
-        message: 'Fallback: order processed',
-      }, { status: 200 });
-    } catch (fallbackError) {
-      console.error('💥 [OUTER] Fallback also failed:', fallbackError);
-      // At this point, something is very wrong. Use raw string response.
-      try {
-        const emergencyId = formatOrderId(await getNextOrderCounter());
-        return new NextResponse(
-          `{"success":true,"orderId":"${emergencyId}","orderNumber":"${emergencyId}"}`,
-          { status: 200, headers: { 'Content-Type': 'application/json' } }
-        );
-      } catch {
-        return new NextResponse('{"success":true,"orderId":"ORD-FALLBACK"}', {
-          status: 200,
-          headers: { 'Content-Type': 'application/json' },
-        });
-      }
-    }
-  }
+    return NextResponse.json({
+      success: true,
+      customerName: 'Customer',
+      fallback: true,
+      message: 'Fallback: order processed',
+    }, { status: 200 });
 }
 
 async function handleOrderCreation(request: NextRequest) {
@@ -185,8 +151,7 @@ async function handleOrderCreation(request: NextRequest) {
       if (contentLength && parseInt(contentLength) > 5242880) {
         console.warn('⚠️ [Parse] Request too large:', contentLength);
         // Return fallback for oversized payloads
-        const fallbackOrderId = formatOrderId(await getNextOrderCounter());
-        return NextResponse.json(buildFallbackOrder(fallbackOrderId, [], {}, 0, 0, 0), { status: 200 });
+        return NextResponse.json(buildFallbackOrder('Customer', [], {}, 0, 0, 0), { status: 200 });
       }
       
       // Try parse with TIMEOUT protection
@@ -203,15 +168,13 @@ async function handleOrderCreation(request: NextRequest) {
         type: parseError?.constructor?.name,
       });
       // Invalid JSON - return fallback
-      const fallbackOrderId = formatOrderId(await getNextOrderCounter());
-      return NextResponse.json(buildFallbackOrder(fallbackOrderId, [], {}, 0, 0, 0), { status: 200 });
+      return NextResponse.json(buildFallbackOrder('Customer', [], {}, 0, 0, 0), { status: 200 });
     }
     
     // SAFETY CHECK: Ensure body is an object
     if (!body || typeof body !== 'object') {
       console.warn('⚠️ [Parse] Body is not a valid object');
-      const fallbackOrderId = formatOrderId(await getNextOrderCounter());
-      return NextResponse.json(buildFallbackOrder(fallbackOrderId, [], {}, 0, 0, 0), { status: 200 });
+      return NextResponse.json(buildFallbackOrder('Customer', [], {}, 0, 0, 0), { status: 200 });
     }
     
     // DEBUG: Log raw input
@@ -242,45 +205,19 @@ async function handleOrderCreation(request: NextRequest) {
     if (!products || products.length === 0) {
       console.error('❌ [Validate] No valid products after sanitization');
       // Still generate fallback - NEVER fail
-      let fallbackOrderId = 'ORD-FALLBACK';
-      try {
-        fallbackOrderId = formatOrderId(await getNextOrderCounter());
-      } catch (counterErr) {
-        console.error('⚠️ Counter fallback failed:', counterErr);
-        fallbackOrderId = `ORD-${Date.now()}`;
-      }
-      return NextResponse.json(buildFallbackOrder(fallbackOrderId, [], {}, 0, 0, 0), { status: 200 });
+      const customerName = customer?.fullName || 'Customer';
+      return NextResponse.json(buildFallbackOrder(customerName, [], {}, 0, 0, 0), { status: 200 });
     }
     
     if (!customer || !customer.fullName) {
       console.error('❌ [Validate] Invalid customer name');
       // Still generate fallback - NEVER fail
-      let fallbackOrderId = 'ORD-FALLBACK';
-      try {
-        fallbackOrderId = formatOrderId(await getNextOrderCounter());
-      } catch (counterErr) {
-        console.error('⚠️ Counter fallback failed:', counterErr);
-        fallbackOrderId = `ORD-${Date.now()}`;
-      }
-      return NextResponse.json(buildFallbackOrder(fallbackOrderId, products, customer, 0, 0, 0), { status: 200 });
+      return NextResponse.json(buildFallbackOrder('Customer', products, customer, 0, 0, 0), { status: 200 });
     }
 
     // STEP 3: Calculate totals from CLEANED products
     const { productsSubtotal, shippingFee, finalTotal } = calculateOrderTotals(products);
-    
-    try {
-      reservedOrderId = formatOrderId(await getNextOrderCounter());
-    } catch (counterError) {
-      console.error('❌ Failed to get next counter:', counterError);
-      let fallbackOrderId = 'ORD-FALLBACK';
-      try {
-        fallbackOrderId = formatOrderId(await getNextOrderCounter());
-      } catch (counterRetryErr) {
-        fallbackOrderId = `ORD-${Date.now()}`;
-        console.warn('⚠️ Using timestamp fallback:', fallbackOrderId);
-      }
-      return NextResponse.json(buildFallbackOrder(fallbackOrderId, products, customer, productsSubtotal, shippingFee, finalTotal), { status: 200 });
-    }
+    const customerName = customer?.fullName || 'Customer';
     
     console.log('💰 [Order] Totals calculated:');
     console.log('   Subtotal:', productsSubtotal);
@@ -291,14 +228,14 @@ async function handleOrderCreation(request: NextRequest) {
     const databaseUrl = process.env.DATABASE_URL;
     if (!databaseUrl) {
       console.warn('⚠️ [Order] No DATABASE_URL configured, using fallback');
-      return NextResponse.json(buildFallbackOrder(reservedOrderId, products, customer, productsSubtotal, shippingFee, finalTotal), { status: 200 });
+      return NextResponse.json(buildFallbackOrder(customerName, products, customer, productsSubtotal, shippingFee, finalTotal), { status: 200 });
     }
 
     prisma = await createServerPrismaClient();
     console.log('🔌 [Order] Prisma client connected');
 
     // STEP 5: Create order with RETRY LOGIC (no transaction - simpler & faster)
-    console.log('💾 [Order] Attempting database insert for order:', reservedOrderId);
+    console.log('💾 [Order] Attempting database insert for customer:', customerName);
     const now = new Date();
     let order: any = null;
     let lastError: any = null;
@@ -311,7 +248,7 @@ async function handleOrderCreation(request: NextRequest) {
         // ⚡ SIMPLE insert without transaction (faster, less likely to timeout)
         order = await prisma.order.create({
           data: {
-            orderNumber: reservedOrderId!,
+            orderNumber: customerName,
             products: JSON.parse(JSON.stringify(products)),
             customer: JSON.parse(JSON.stringify(customer)),
             productsSubtotal,
@@ -320,7 +257,7 @@ async function handleOrderCreation(request: NextRequest) {
           },
         });
         
-        console.log('✅ [Order] Database insert successful:', order.orderNumber);
+        console.log('✅ [Order] Database insert successful for:', customerName);
         break; // Success! Exit retry loop
         
       } catch (retryError: any) {
@@ -364,8 +301,7 @@ async function handleOrderCreation(request: NextRequest) {
     // SUCCESS: Return the created order immediately (don't wait for analytics)
     return NextResponse.json({ 
       success: true, 
-      orderNumber: order.orderNumber, 
-      orderId: order.orderNumber, 
+      customerName: customerName, 
       order,
       message: 'Order created successfully',
     }, { status: 200 });
@@ -382,18 +318,10 @@ async function handleOrderCreation(request: NextRequest) {
     
     try {
       const { productsSubtotal, shippingFee, finalTotal } = calculateOrderTotals(products || []);
-      
-      let fallbackOrderId = reservedOrderId;
-      if (!fallbackOrderId) {
-        try {
-          fallbackOrderId = formatOrderId(await getNextOrderCounter());
-        } catch (e) {
-          fallbackOrderId = `ORD-${Date.now()}`;
-        }
-      }
+      const fallbackCustomerName = customer?.fullName || 'Customer';
       
       const fallback = buildFallbackOrder(
-        fallbackOrderId, 
+        fallbackCustomerName, 
         products || [], 
         customer || {}, 
         productsSubtotal, 
@@ -401,26 +329,16 @@ async function handleOrderCreation(request: NextRequest) {
         finalTotal
       );
       
-      console.log('✅ [Fallback] Returning protected fallback order:', fallbackOrderId);
+      console.log('✅ [Fallback] Returning protected fallback order for:', fallbackCustomerName);
       return NextResponse.json(fallback, { status: 200 });
     } catch (fallbackError: any) {
       console.error('💥 [CRITICAL] Even fallback failed:', fallbackError);
       // Last resort - return minimal response
-      try {
-        const lastResortOrderId = formatOrderId(await getNextOrderCounter());
-        return NextResponse.json({
-          success: true,
-          orderNumber: lastResortOrderId,
-          orderId: lastResortOrderId,
-          fallback: true,
-        }, { status: 200 });
-      } catch {
-        return NextResponse.json({
-          success: true,
-          orderNumber: `ORD-${Date.now()}`,
-          fallback: true,
-        }, { status: 200 });
-      }
+      return NextResponse.json({
+        success: true,
+        customerName: 'Customer',
+        fallback: true,
+      }, { status: 200 });
     }
     
   } finally {

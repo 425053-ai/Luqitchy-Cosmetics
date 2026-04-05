@@ -62,7 +62,7 @@ export function ProductPage({ product }: ProductPageProps) {
   
   // Save submitted order data
   const [submittedOrder, setSubmittedOrder] = useState<{
-    orderId: string;
+    customerName: string;
     items: { id: string; name: string; price: number; quantity: number; image: string; shade?: string }[];
     totalPrice: number;
     totalQuantity: number;
@@ -222,15 +222,8 @@ export function ProductPage({ product }: ProductPageProps) {
         return;
       }
       
-      // Extract order ID from response (works for both real and fallback orders)
-      const generatedOrderId = result.orderNumber || result.orderId;
-      if (!generatedOrderId) {
-        console.error('❌ No order ID in response:', result);
-        setOrderError('حدث خطأ: لم يتم الحصول على رقم الطلب');
-        alert('⚠️ حدث خطأ في معالجة الطلب.\n\nيرجى المحاولة مرة أخرى.');
-        setIsSubmitting(false);
-        return;
-      }
+      // Extract customer name from response
+      const customerName = result.customerName || formData.fullName;
       
       // Log fallback status for tracking
       if (result.fallback) {
@@ -244,7 +237,7 @@ export function ProductPage({ product }: ProductPageProps) {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            order_id: generatedOrderId,
+            order_id: customerName,
             order_date: orderDateReadable,
             order_type: 'single_product',
             customer_name: formData.fullName,
@@ -282,7 +275,7 @@ export function ProductPage({ product }: ProductPageProps) {
       // Save to order history
       const fullAddressForHistory = `${formData.streetAddress}${formData.landmark ? ` (${formData.landmark})` : ''}, ${formData.city}, ${formData.governorate}`;
       addOrder({
-        orderId: generatedOrderId,
+        orderId: customerName,
         items: [{
           id: product.id,
           name: productDisplayName,
@@ -304,7 +297,7 @@ export function ProductPage({ product }: ProductPageProps) {
 
       // Track order completion
       trackEvent('order_completed', {
-        orderId: generatedOrderId,
+        customeName: customerName,
         productId: product.id,
         productName: productDisplayName,
         quantity,
@@ -314,7 +307,7 @@ export function ProductPage({ product }: ProductPageProps) {
 
       // Show order confirmation
       setSubmittedOrder({
-        orderId: generatedOrderId,
+        customerName: customerName,
         items: [{
           id: product.id,
           name: productDisplayName,

@@ -353,7 +353,7 @@ Shipping (all Egypt)
   // Send text message first, then photo
   const textResult = await sendTelegramMessage(message);
   const imageBuffer = Buffer.from(orderData.transferProofBase64, 'base64');
-  const photoCaption = '✅ اثبات دفع - ' + orderData.customerData.fullName;
+  const photoCaption = '✅ Payment Proof - ' + orderData.customerData.fullName;
   const photoFilename = orderData.customerData.fullName.replace(/\s+/g, '_') + '-proof.jpg';
   const photoResult = await sendPhotoToTelegram(imageBuffer, orderData.transferProofMime, photoCaption, photoFilename);
   if (!photoResult.success) {

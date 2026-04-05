@@ -153,7 +153,6 @@ function generateAdminOrderHTML(data: {
         .container { max-width: 640px; margin: 0 auto; background-color: #fff; padding: 30px; border-radius: 12px; border: 2px solid #9b59b6; box-shadow: 0 4px 12px rgba(155,89,182,0.15); }
         .header { background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%); color: white; padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 20px; }
         .header h1 { margin: 0; font-size: 24px; }
-        .header .order-id { font-size: 18px; margin-top: 8px; background: rgba(255,255,255,0.2); display: inline-block; padding: 4px 16px; border-radius: 20px; }
         .section { margin-bottom: 18px; padding: 15px; background-color: #faf8ff; border-left: 4px solid #9b59b6; border-radius: 6px; }
         .section h2 { color: #8e44ad; margin-top: 0; font-size: 16px; border-bottom: 1px solid #e8daf5; padding-bottom: 8px; }
         .info-row { display: flex; justify-content: space-between; margin: 6px 0; padding-bottom: 6px; border-bottom: 1px solid #f0eaf5; }
@@ -175,8 +174,7 @@ function generateAdminOrderHTML(data: {
     <body>
       <div class="container">
         <div class="header">
-          <h1>🛒 New Order!</h1>
-          <div class="order-id">${data.order_id}</div>
+          <h1>🛒 New Order from ${data.customer_name}!</h1>
         </div>
 
         <div class="section">

@@ -13,7 +13,6 @@ interface SendOrderRequest {
   customer_email: string;
   phone: string;
   whatsapp: string;
-  order_id: string;
   order_date: string;
   products: OrderProduct[];
   total_amount: number;
@@ -180,11 +179,11 @@ function generateEmailHTML(data: SendOrderRequest, productsTable: string): strin
 export async function POST(request: NextRequest) {
   try {
     const body: SendOrderRequest = await request.json();
-    const { customer_name, customer_email, order_id } = body;
+    const { customer_name, customer_email } = body;
 
     // Validate required fields
-    if (!customer_name || !customer_email || !order_id) {
-      console.error('❌ [Email] Missing required fields:', { customer_name, customer_email, order_id });
+    if (!customer_name || !customer_email) {
+      console.error('❌ [Email] Missing required fields:', { customer_name, customer_email });
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -227,7 +226,7 @@ export async function POST(request: NextRequest) {
         email: process.env.BREVO_SENDER_EMAIL || 'luqitchycosmetics@gmail.com',
         name: 'Luqitchy Cosmetics',
       },
-      subject: `Order Confirmation - ${order_id}`,
+      subject: `Order Confirmation - ${customer_name}`,
       htmlContent: emailHTML,
       replyTo: {
         email: 'luqitchycosmetics@gmail.com',
@@ -259,7 +258,6 @@ export async function POST(request: NextRequest) {
 
     // 5️⃣ Save to Excel
     const excelOrderData = {
-      order_id: body.order_id,
       product_name: body.products.map(p => p.name).join(', '),
       quantity: body.products.reduce((sum, p) => sum + p.quantity, 0),
       price: body.products[0]?.price || 0,
@@ -293,7 +291,6 @@ export async function POST(request: NextRequest) {
         success: true,
         message: 'Order confirmation email sent to customer',
         orderId: order_id,
-        customerEmail: customer_email,
         messageId: responseData?.messageId,
       },
       { status: 200 }

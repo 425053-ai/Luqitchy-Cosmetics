@@ -181,15 +181,8 @@ export default function CartPage() {
         return
       }
 
-      // Extract order ID from response (works for both real and fallback orders)
-      const generatedOrderId = result.orderNumber || result.orderId
-      if (!generatedOrderId) {
-        console.error('❌ No order ID in response:', result);
-        setOrderError('حدث خطأ: لم يتم الحصول على رقم الطلب');
-        alert('⚠️ حدث خطأ في معالجة الطلب.\n\nيرجى المحاولة مرة أخرى.');
-        setIsSubmitting(false)
-        return
-      }
+      // Extract customer name from response
+      const customerName = result.customerName || formData.fullName;
       
       // Log fallback status for tracking
       if (result.fallback) {
@@ -203,7 +196,7 @@ export default function CartPage() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            order_id: generatedOrderId,
+            order_id: customerName,
             order_date: orderDateReadable,
             order_type: 'cart',
             customer_name: formData.fullName,
@@ -242,7 +235,7 @@ export default function CartPage() {
       if (addOrder) {
         const fullAddress = `${formData.streetAddress}${formData.landmark ? ` (${formData.landmark})` : ''}, ${formData.city}, ${formData.governorate}`
         addOrder({
-          orderId: generatedOrderId,
+          orderId: customerName,
           items: savedItems.map(item => ({
             id: item.id,
             name: item.name,
@@ -266,7 +259,7 @@ export default function CartPage() {
 
       // Track order completion
       trackEvent('order_completed', {
-        orderId: generatedOrderId,
+        customerName: customerName,
         itemsCount: savedItems.length,
         totalPrice: savedTotalPrice + SHIPPING_FEE,
         governorate: formData.governorate,
@@ -279,7 +272,7 @@ export default function CartPage() {
       })
 
       setSubmittedOrder({
-        orderId: generatedOrderId,
+        orderId: customerName,
         items: savedItems,
         totalPrice: savedTotalPrice + SHIPPING_FEE,
         totalQuantity: savedTotalQuantity,

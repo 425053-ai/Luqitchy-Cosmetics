@@ -24,7 +24,7 @@ interface TelegramPayload {
       orderText = body.message;
     } else if (messageType === 'bank_transfer' && body.orderData) {
       const { orderData } = body;
-      orderText = `<b>New Order from Luqitchy Cosmetics</b>\n\n<b>Customer Info:</b>\nName: ${orderData.customer_name}\nPhone: ${orderData.phone}\nEmail: ${orderData.customer_email}\n\n<b>Order Details:</b>\nOrder ID: <code>${orderData.order_id}</code>\nProduct: ${orderData.product_name}\nQuantity: ${orderData.quantity}\n\n<b>Subtotal:</b> ${orderData.price * orderData.quantity} EGP\n<b>Shipping (all Egypt):</b> +70 EGP\n<b>Order Total:</b> <b>${orderData.price * orderData.quantity + 70} EGP</b>\n\n<b>Delivery Address:</b>\nGovernorate: ${orderData.governorate}\nCity: ${orderData.city}\nStreet: ${orderData.street}\n${orderData.landmark ? `Landmark: ${orderData.landmark}` : ''}\n\n<b>Payment Method:</b> ${orderData.payment_method || ''}\n${orderData.notes ? `<b>Notes:</b> ${orderData.notes}` : ''}`;
+      orderText = `<b>New Order from Luqitchy Cosmetics</b>\n\n<b>Customer Info:</b>\nName: ${orderData.customer_name}\nPhone: ${orderData.phone}\nEmail: ${orderData.customer_email}\n\n<b>Product:</b> ${orderData.product_name}\nQuantity: ${orderData.quantity}\n\n<b>Subtotal:</b> ${orderData.price * orderData.quantity} EGP\n<b>Shipping (all Egypt):</b> +70 EGP\n<b>Order Total:</b> <b>${orderData.price * orderData.quantity + 70} EGP</b>\n\n<b>Delivery Address:</b>\nGovernorate: ${orderData.governorate}\nCity: ${orderData.city}\nStreet: ${orderData.street}\n${orderData.landmark ? `Landmark: ${orderData.landmark}` : ''}\n\n<b>Payment Method:</b> ${orderData.payment_method || ''}\n${orderData.notes ? `<b>Notes:</b> ${orderData.notes}` : ''}`;
     } else if (messageType === 'cart_order' && body.orderData) {
       const { orderData } = body;
       const productsText = (orderData.items || orderData.products || []).map((p: any) => `• ${p.name} × ${p.quantity} = ${p.price * p.quantity} EGP`).join('\\n');
@@ -175,8 +175,8 @@ interface TelegramPayload {
         }
         const imageBuffer = Buffer.from(rawBase64, 'base64');
         const mimeType = body.transferImageMime || 'image/jpeg';
-        const filename = `${body.orderData?.order_id || 'transfer'}-proof.jpg`;
-        const caption = `📸 إثبات الدفع - ${body.orderData?.order_id || 'Order'}`;
+        const filename = `${body.orderData?.customer_name || 'transfer'}-proof.jpg`;
+        const caption = `📸 إثبات الدفع - ${body.orderData?.customer_name || 'عميل'}`;
         // Use sendPhotoToTelegram (not sendOrderToTelegram to avoid duplicate message)
         const { sendPhotoToTelegram } = await import('@/lib/telegram-service');
         const telegramResult = await sendPhotoToTelegram(imageBuffer, mimeType, caption, filename);

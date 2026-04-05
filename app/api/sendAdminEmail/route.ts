@@ -14,7 +14,6 @@ interface OrderProduct {
 }
 
 interface AdminEmailRequest {
-  order_id: string;
   order_date: string;
   order_type?: 'single_product' | 'cart';
   customer_name: string;
@@ -74,8 +73,7 @@ function generateAdminEmailHTML(data: AdminEmailRequest): string {
     <body>
       <div class="container">
         <div class="header">
-          <h1>🛒 New Order!</h1>
-          <div class="order-id">${data.order_id}</div>
+          <h1>🛒 New Order from ${data.customer_name}!</h1>
         </div>
 
         <div class="section">
@@ -172,12 +170,12 @@ function generateAdminEmailHTML(data: AdminEmailRequest): string {
 export async function POST(request: NextRequest) {
   try {
     const body: AdminEmailRequest = await request.json();
-    const { order_id, customer_name } = body;
+    const { customer_name } = body;
 
     // Validate minimum required fields
-    if (!order_id || !customer_name) {
+    if (!customer_name) {
       return NextResponse.json(
-        { error: 'Missing required fields (order_id, customer_name)' },
+        { error: 'Missing required fields (customer_name)' },
         { status: 400 }
       );
     }
@@ -210,11 +208,11 @@ export async function POST(request: NextRequest) {
         email: ADMIN_SENDER_EMAIL,
         name: ADMIN_SENDER_NAME,
       },
-      subject: `🛒 New Order - ${order_id} - ${customer_name}`,
+      subject: `🛒 New Order - ${customer_name}`,
       htmlContent: adminEmailHTML,
     };
 
-    console.log(`📬 [Admin Email] Sending admin notification to ${ADMIN_EMAIL} for order ${order_id}`);
+    console.log(`📬 [Admin Email] Sending admin notification to ${ADMIN_EMAIL} for customer ${customer_name}`);
     
     const brevoResponse = await fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
@@ -242,7 +240,6 @@ export async function POST(request: NextRequest) {
       {
         success: true,
         message: 'Admin notification email sent',
-        orderId: order_id,
         adminEmail: ADMIN_EMAIL,
         messageId: responseData.messageId,
       },
