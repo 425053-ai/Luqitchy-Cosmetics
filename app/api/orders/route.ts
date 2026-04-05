@@ -675,28 +675,6 @@ export async function POST(request: NextRequest) {
 
     // STEP 2: Send Telegram notification with image
     console.log('🤖 [Order Flow] STEP 2: Sending Telegram notification...');
-        whatsapp: whatsapp || phone,
-        order_id,
-        order_date,
-        products,
-        total_amount,
-        governorate,
-        city,
-        street,
-        landmark,
-        notes,
-        payment_method,
-      }).then(result => {
-        if (result.success) console.log('✅ [Email] Sent successfully');
-        else console.warn('⚠️ [Email] Failed:', result.error);
-        return result;
-      }).catch(err => {
-        console.error('❌ [Email] Exception:', err.message);
-        return { success: false, error: err.message };
-      }),
-      
-      // TASK 2: Telegram notification (with image support)
-      (async () => {
     
     // Unified Telegram message for both single and cart orders
     const productsTable = products
@@ -711,7 +689,6 @@ export async function POST(request: NextRequest) {
 ━━━━━━━━━━━━━━━━━━━━━━
 
 📋 <b>Order Info</b>
-├ Order ID: <code>${order_id}</code>
 ├ Date: ${order_date}
 └ Type: ${order_type === 'cart' ? 'Cart' : 'Single Product'}
 
