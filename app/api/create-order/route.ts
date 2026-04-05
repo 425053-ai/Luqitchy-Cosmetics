@@ -133,6 +133,7 @@ export async function POST(request: NextRequest) {
       fallback: true,
       message: 'Fallback: order processed',
     }, { status: 200 });
+  }
 }
 
 async function handleOrderCreation(request: NextRequest) {
