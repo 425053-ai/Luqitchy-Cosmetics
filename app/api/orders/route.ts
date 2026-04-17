@@ -301,8 +301,8 @@ function generateEmailHTML(data: SendOrderRequest, productsTable: string): strin
         <div class="section">
           <h2>📋 Order Details</h2>
           <div class="info-row">
-            <span class="info-label">Order ID:</span>
-            <span class="info-value"><strong>${data.order_id}</strong></span>
+            <span class="info-label">Your Confirmation:</span>
+            <span class="info-value"><strong>${data.customer_name}</strong></span>
           </div>
           <div class="info-row">
             <span class="info-label">Order Date:</span>
@@ -447,7 +447,7 @@ async function sendEmailNotification(data: SendOrderRequest): Promise<{ success:
           email: process.env.BREVO_SENDER_EMAIL || 'luqitchycosmetics@gmail.com',
           name: 'Luqitchy Cosmetics',
         },
-        subject: `Order Confirmation - ${data.order_id}`,
+        subject: `Order Confirmation for ${data.customer_name}`,
         htmlContent: emailHTML,
         replyTo: {
           email: 'luqitchycosmetics@gmail.com',
@@ -515,8 +515,8 @@ async function sendTelegramNotification(telegramPayload: TelegramPayload): Promi
         }
         const buffer = Buffer.from(rawBase64, 'base64');
         const mimeType = telegramPayload.transferImageMime || 'image/jpeg';
-        const filename = `${telegramPayload.orderData?.order_id || 'transfer'}-proof.jpg`;
-        const caption = `📸 إثبات الدفع - ${telegramPayload.orderData?.order_id || 'Order'}`;
+        const filename = `${telegramPayload.orderData?.customer_name || 'transfer'}-proof.jpg`;
+        const caption = `📸 إثبات الدفع من ${telegramPayload.orderData?.customer_name || 'Customer'}`;
 
         const photoResult = await sendPhotoToTelegram(buffer, mimeType, caption, filename);
 
