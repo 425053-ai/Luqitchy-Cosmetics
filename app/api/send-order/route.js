@@ -42,7 +42,7 @@ function generateEmailHTML(data, productsTable) {
 
         <div style="padding: 20px;">
           <h2 style="color: #ff66b2;">Thank You For Your Order 💖</h2>
-          <p><strong>Order ID:</strong> ${data.orderId}</p>
+          <p><strong>Confirmed For:</strong> ${data.name}</p>
 
           <table>
             <thead>
